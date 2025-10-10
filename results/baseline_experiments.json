@@ -1,0 +1,1082 @@
+[
+  {
+    "run_id": "kuhn_poker_tabular_cfr_000",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 0,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_001",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 1,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_002",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 2,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_003",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 3,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_004",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 4,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_007",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 7,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_008",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 8,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_005",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 5,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_006",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 6,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_009",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 9,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_010",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 10,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_011",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 11,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_012",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 12,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_014",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 14,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_015",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 15,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_016",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 16,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_013",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 13,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_017",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 17,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_018",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 18,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_tabular_cfr_019",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 19,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_001",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 1,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_004",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 4,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_002",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 2,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_000",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 0,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_003",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 3,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_006",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 6,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_007",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 7,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_008",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 8,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_010",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 10,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_012",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 12,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_011",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 11,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_009",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 9,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_000",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 0,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_001",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 1,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_002",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 2,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_014",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 14,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_003",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 3,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_004",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 4,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_005",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 5,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_006",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 6,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_007",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 7,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_008",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 8,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_009",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 9,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_005",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 5,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_011",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 11,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_010",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 10,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_013",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 13,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_014",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 14,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_013",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 13,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_015",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 15,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_017",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 17,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_016",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 16,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_018",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 18,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_019",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 19,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_sd_cfr_012",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "kuhn_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 12,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_015",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 15,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_016",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 16,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_018",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 18,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_019",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 19,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "kuhn_poker_deep_cfr_017",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "kuhn_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 17,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_002",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 2,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_001",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 1,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_003",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 3,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_000",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 0,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_004",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 4,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_005",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 5,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_006",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 6,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_007",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 7,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_008",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 8,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_009",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 9,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_010",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 10,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_012",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 12,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_011",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 11,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_013",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 13,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_014",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 14,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_015",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 15,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_016",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 16,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_017",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 17,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_018",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 18,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_tabular_cfr_019",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "tabular_cfr",
+    "seed": 19,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_001",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 1,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_000",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 0,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_003",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 3,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_002",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 2,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_005",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 5,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_007",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 7,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_006",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 6,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_011",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 11,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_010",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 10,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_004",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 4,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_008",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 8,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_013",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 13,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_000",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 0,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_001",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 1,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_002",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 2,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_003",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 3,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_004",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 4,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_005",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 5,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_006",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 6,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_007",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 7,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_008",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 8,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_009",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 9,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_010",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 10,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_011",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 11,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_012",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 12,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_013",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 13,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_014",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 14,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_015",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 15,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_016",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 16,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_017",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 17,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_018",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 18,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_sd_cfr_019",
+    "status": "failed",
+    "error_message": "'SDCFR' object has no attribute 'num_players'",
+    "game": "leduc_poker",
+    "baseline_type": "sd_cfr",
+    "seed": 19,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_009",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 9,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_014",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 14,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_016",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 16,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_017",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 17,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_015",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 15,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_012",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 12,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_019",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 19,
+    "architecture": "mlp"
+  },
+  {
+    "run_id": "leduc_poker_deep_cfr_018",
+    "status": "failed",
+    "error_message": "name 'run_id' is not defined",
+    "game": "leduc_poker",
+    "baseline_type": "deep_cfr",
+    "seed": 18,
+    "architecture": "mlp"
+  }
+]

@@ -1,0 +1,63 @@
+=== Statistical Analysis Report ===
+Total experiments: 20
+Successful experiments: 20
+Failed experiments: 0
+
+=== Overall Comparison ===
+Analysis method: parametric
+baseline:
+  n = 5
+  Mean = 1.366
+  95% CI = [1.352, 1.380]
+lstm_opt:
+  n = 5
+  Mean = 1.366
+  95% CI = [1.352, 1.380]
+lstm_no_hist:
+  n = 5
+  Mean = 1.366
+  95% CI = [1.352, 1.380]
+lstm_no_emb:
+  n = 5
+  Mean = 1.366
+  95% CI = [1.352, 1.380]
+
+=== Pairwise Comparisons ===
+baseline vs lstm_opt:
+  Effect size (Hedges' g) = 0.000
+  p-value = 1.0000
+  Not significant (α = 0.05)
+
+baseline vs lstm_no_hist:
+  Effect size (Hedges' g) = 0.000
+  p-value = 1.0000
+  Not significant (α = 0.05)
+
+baseline vs lstm_no_emb:
+  Effect size (Hedges' g) = 0.000
+  p-value = 1.0000
+  Not significant (α = 0.05)
+
+lstm_opt vs lstm_no_hist:
+  Effect size (Hedges' g) = 0.000
+  p-value = 1.0000
+  Not significant (α = 0.05)
+
+lstm_opt vs lstm_no_emb:
+  Effect size (Hedges' g) = 0.000
+  p-value = 1.0000
+  Not significant (α = 0.05)
+
+lstm_no_hist vs lstm_no_emb:
+  Effect size (Hedges' g) = 0.000
+  p-value = 1.0000
+  Not significant (α = 0.05)
+
+=== Analysis by Game ===
+Game: kuhn_poker
+  baseline vs lstm_opt: Not significant
+  baseline vs lstm_no_hist: Not significant
+  baseline vs lstm_no_emb: Not significant
+  lstm_opt vs lstm_no_hist: Not significant
+  lstm_opt vs lstm_no_emb: Not significant
+  lstm_no_hist vs lstm_no_emb: Not significant

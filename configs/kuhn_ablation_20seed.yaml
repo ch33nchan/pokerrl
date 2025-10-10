@@ -1,0 +1,16 @@
+experiment:
+  num_runs: 20
+  iterations: 400
+  checkpoint_interval: 50
+  evaluation_interval: 50
+  update_threshold: 25
+  batch_size: 64
+  device: cpu
+  random_seed: 20251004
+
+tagents:
+  include:
+    - kuhn_dcfr_baseline
+    - kuhn_dcfr_lstm
+    - kuhn_dcfr_gru
+    - kuhn_dcfr_transformer

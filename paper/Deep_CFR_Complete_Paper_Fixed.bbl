@@ -1,0 +1,69 @@
+\begin{thebibliography}{10}
+
+\bibitem{brown2019deep}
+Noam Brown, Adam Lerer, Sam Gross, and Tuomas Sandholm.
+\newblock Deep counterfactual regret minimization.
+\newblock In {\em International conference on machine learning}, pages
+  793--802, 2019.
+
+\bibitem{brown2019superhuman}
+Noam Brown and Tuomas Sandholm.
+\newblock Superhuman ai for multiplayer poker.
+\newblock {\em Science}, 365(6456):885--890, 2019.
+
+\bibitem{gibson2012efficient}
+Ryan Gibson, Marc Lanctot, Neil Burch, Duane Szafron, and Michael Bowling.
+\newblock Efficient monte carlo counterfactual regret minimization.
+\newblock In {\em International Conference on Autonomous Agents and Multiagent
+  Systems}, pages 83--90, 2012.
+
+\bibitem{heinrich2015fictitious}
+Johannes Heinrich, Marc Lanctot, and David Silver.
+\newblock Fictitious self-play in extensive-form games.
+\newblock In {\em International conference on machine learning}, pages
+  805--813, 2015.
+
+\bibitem{heinrich2016deep}
+Johannes Heinrich and David Silver.
+\newblock Deep learning for multi-player poker.
+\newblock In {\em Proceedings of the AAAI Conference on Artificial
+  Intelligence}, volume~30, 2016.
+
+\bibitem{lanctot2013efficient}
+Marc Lanctot, Ryan Gibson, Neil Burch, Duane Szafron, and Michael Bowling.
+\newblock Efficient monte carlo counterfactual regret minimization.
+\newblock In {\em International Conference on Artificial Intelligence and
+  Statistics}, pages 268--276, 2013.
+
+\bibitem{lanctot2009monte}
+Marc Lanctot, Kevin Waugh, Martin Zinkevich, and Michael Bowling.
+\newblock Monte carlo sampling and regret minimization for equilibrium
+  computation in extensive games.
+\newblock In {\em International Conference on Artificial Intelligence and
+  Statistics}, pages 352--359, 2009.
+
+\bibitem{mcaleer2022anytime}
+Stephen McAleer, Marc Lanctot, and Tuomas Sandholm.
+\newblock Anytime psro for two-player zero-sum games.
+\newblock In {\em International Conference on Machine Learning}, pages
+  15636--15650. PMLR, 2022.
+
+\bibitem{muller2019shared}
+Paul M{\"u}ller, Marc M{\"u}ller, and Johannes Heinrich.
+\newblock Neural replicator dynamics.
+\newblock In {\em International Conference on Machine Learning}, pages
+  4536--4545. PMLR, 2019.
+
+\bibitem{steinberger2019single}
+Eric Steinberger and Michael Bowling.
+\newblock Single deep counterfactual regret minimization.
+\newblock In {\em International Conference on Machine Learning}, pages
+  6143--6152. PMLR, 2019.
+
+\bibitem{zinkevich2007regret}
+Martin Zinkevich, Michael Johanson, Michael Bowling, and Carmelo Piccione.
+\newblock Regret minimization in games with incomplete information.
+\newblock In {\em Advances in neural information processing systems}, pages
+  1729--1736, 2007.
+
+\end{thebibliography}

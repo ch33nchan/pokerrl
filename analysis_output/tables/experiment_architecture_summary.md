@@ -1,0 +1,20 @@
+            experiment      architecture  num_runs  mean_final_exploitability  std_final_exploitability  min_final_exploitability  max_final_exploitability  delta_vs_baseline
+                20seed          baseline        40                   2.796539                  0.149640                  2.498258                  3.058815           0.000000
+                20seed lstm_no_embedding        40                   2.935997                  0.239719                  2.557355                  3.583789           0.139457
+                20seed   lstm_no_history        40                   2.936544                  0.290255                  2.503118                  3.537941           0.140004
+                20seed    lstm_optimized        40                   2.997707                  0.286229                  2.324748                  3.528694           0.201168
+ablation_study_results          baseline         5                   2.195070                  0.230516                  1.920211                  2.552740           0.000000
+ablation_study_results    opponent_model         5                   2.257846                  0.103074                  2.148196                  2.384371           0.062777
+ablation_study_results    lstm_optimized         5                   3.350528                  0.037646                  3.298279                  3.397657           1.155459
+ablation_study_results               gru         5                   3.390494                  0.069216                  3.279952                  3.467969           1.195425
+          architecture          baseline         5                   2.847952                  0.090379                  2.700130                  2.938625           0.000000
+          architecture    lstm_optimized         5                   2.970866                  0.254555                  2.565328                  3.158900           0.122914
+          architecture               gru         5                   3.036635                  0.213371                  2.710222                  3.249811           0.188683
+               batch32          baseline        20                   2.623190                  0.117810                  2.446203                  2.928294           0.000000
+               batch32   lstm_no_history        20                   3.044002                  0.240872                  2.562112                  3.429486           0.420812
+               batch32 lstm_no_embedding        20                   3.068365                  0.264626                  2.537119                  3.444425           0.445175
+               batch32    lstm_optimized        20                   3.103101                  0.366855                  2.287880                  3.557869           0.479911
+              update10          baseline        20                   2.615370                  0.103436                  2.423919                  2.778472           0.000000
+              update10    lstm_optimized        20                   3.092389                  0.213178                  2.781371                  3.463997           0.477019
+              update10 lstm_no_embedding        20                   3.133563                  0.263621                  2.603916                  3.535787           0.518193
+              update10   lstm_no_history        20                   3.157127                  0.273225                  2.575273                  3.515983           0.541757

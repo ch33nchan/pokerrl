@@ -1,0 +1,41 @@
+{
+  "total_experiments": 341,
+  "overall_success_rate": 100.0,
+  "architecture_breakdown": {
+    "count": {
+      "baseline": 88,
+      "gru": 5,
+      "lstm_no_embedding": 80,
+      "lstm_no_history": 80,
+      "lstm_optimized": 85,
+      "opponent_model": 3
+    },
+    "sum": {
+      "baseline": 88,
+      "gru": 5,
+      "lstm_no_embedding": 80,
+      "lstm_no_history": 80,
+      "lstm_optimized": 85,
+      "opponent_model": 3
+    },
+    "<lambda_0>": {
+      "baseline": 100.0,
+      "gru": 100.0,
+      "lstm_no_embedding": 100.0,
+      "lstm_no_history": 100.0,
+      "lstm_optimized": 100.0,
+      "opponent_model": 100.0
+    }
+  },
+  "game_breakdown": {
+    "count": {
+      "leduc": 341
+    },
+    "sum": {
+      "leduc": 341
+    },
+    "<lambda_0>": {
+      "leduc": 100.0
+    }
+  }
+}

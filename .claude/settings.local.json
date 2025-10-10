@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pdflatex:*)",
+      "Bash(bibtex:*)",
+      "Bash(rm:*)",
+      "Bash(python:*)",
+      "Bash(PYTHONPATH=/Users/cheencheen/Desktop/lossfunk/q-agent python:*)",
+      "Bash(find:*)",
+      "Bash(PYTHONPATH=/Users/cheencheen/Desktop/lossfunk/q-agent/dual_rl_poker python:*)",
+      "Bash(pkill:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git rm:*)",
+      "Bash(git fetch:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(git checkout:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

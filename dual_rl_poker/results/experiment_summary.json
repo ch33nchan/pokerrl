@@ -1,0 +1,80 @@
+{
+  "summary_statistics": {
+    "deep_cfr_kuhn_poker": {
+      "algorithm": "deep_cfr",
+      "game": "kuhn_poker",
+      "mean_exploitability": 0.08346210783499472,
+      "std_exploitability": 0.06084288314071089,
+      "min_exploitability": 0.01,
+      "max_exploitability": 0.1662523341780709,
+      "mean_training_time": 12.0,
+      "std_training_time": 0.0,
+      "num_runs": 10
+    },
+    "deep_cfr_leduc_poker": {
+      "algorithm": "deep_cfr",
+      "game": "leduc_poker",
+      "mean_exploitability": 0.17982698732887523,
+      "std_exploitability": 0.08950326271029002,
+      "min_exploitability": 0.01961279754336004,
+      "max_exploitability": 0.3155717669287084,
+      "mean_training_time": 12.0,
+      "std_training_time": 0.0,
+      "num_runs": 10
+    },
+    "sd_cfr_kuhn_poker": {
+      "algorithm": "sd_cfr",
+      "game": "kuhn_poker",
+      "mean_exploitability": 0.20310829884384085,
+      "std_exploitability": 0.12496079004615104,
+      "min_exploitability": 0.01,
+      "max_exploitability": 0.4169830490655285,
+      "mean_training_time": 12.0,
+      "std_training_time": 0.0,
+      "num_runs": 10
+    },
+    "sd_cfr_leduc_poker": {
+      "algorithm": "sd_cfr",
+      "game": "leduc_poker",
+      "mean_exploitability": 0.1612880200018062,
+      "std_exploitability": 0.09879563321719632,
+      "min_exploitability": 0.01,
+      "max_exploitability": 0.33724017329793066,
+      "mean_training_time": 12.0,
+      "std_training_time": 0.0,
+      "num_runs": 10
+    },
+    "armac_kuhn_poker": {
+      "algorithm": "armac",
+      "game": "kuhn_poker",
+      "mean_exploitability": 0.7724909651191683,
+      "std_exploitability": 0.07365761924855824,
+      "min_exploitability": 0.6701689804894108,
+      "max_exploitability": 0.9034765188461342,
+      "mean_training_time": 12.0,
+      "std_training_time": 0.0,
+      "num_runs": 10
+    },
+    "armac_leduc_poker": {
+      "algorithm": "armac",
+      "game": "leduc_poker",
+      "mean_exploitability": 0.7183842377573663,
+      "std_exploitability": 0.08983613307459695,
+      "min_exploitability": 0.6024662840995187,
+      "max_exploitability": 0.8789262624642121,
+      "mean_training_time": 12.0,
+      "std_training_time": 0.0,
+      "num_runs": 10
+    }
+  },
+  "total_experiments": 60,
+  "algorithms": [
+    "deep_cfr",
+    "sd_cfr",
+    "armac"
+  ],
+  "games": [
+    "kuhn_poker",
+    "leduc_poker"
+  ]
+}

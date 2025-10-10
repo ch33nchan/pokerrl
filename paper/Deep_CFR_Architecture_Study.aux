@@ -1,0 +1,75 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{brown2019deep}
+\citation{brown2019superhuman}
+\citation{he2016deep,vaswani2017attention,krizhevsky2012imagenet}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Significance and Impact}{1}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{1}{section.2}\protected@file@percent }
+\citation{zinkevich2007regret}
+\citation{lanctot2009monte}
+\citation{gibson2012efficient}
+\citation{lanctot2013efficient}
+\citation{gibson2012efficient}
+\citation{crowell2019cluster}
+\citation{heinrich2015fictitious}
+\citation{muller2019shared}
+\citation{heinrich2016deep}
+\citation{brown2019deep}
+\citation{brown2019superhuman}
+\citation{mcaleer2022anytime}
+\citation{steinberger2019single}
+\citation{zinkevich2007regret}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Counterfactual Regret Minimization and Extensions}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Neural Function Approximation in Game Theory}{2}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Deep CFR and Neural Regret Minimization}{2}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Background}{2}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Counterfactual Regret Minimization}{2}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Deep CFR Framework}{2}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Methodology}{3}{section.4}\protected@file@percent }
+\newlabel{sec:methodology}{{4}{3}{Methodology}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Game Environments}{3}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Architecture Implementation Details}{3}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Experimental Protocol}{3}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Evaluation Metrics}{3}{subsection.4.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Deep CFR architecture and data flow. Self-play traversal generates samples for regret and strategy buffers. Minibatches train $R_\theta $ and $\sigma _\phi $, whose outputs feed back into traversal. A diagnostics layer records gradient norms, KL divergence, wall-clock, and parameter counts to expose instability early.}}{4}{figure.caption.2}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:architecture_diagram}{{1}{4}{Deep CFR architecture and data flow. Self-play traversal generates samples for regret and strategy buffers. Minibatches train $R_\theta $ and $\sigma _\phi $, whose outputs feed back into traversal. A diagnostics layer records gradient norms, KL divergence, wall-clock, and parameter counts to expose instability early}{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Implementation Details}{4}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Results}{4}{section.5}\protected@file@percent }
+\newlabel{sec:results}{{5}{4}{Results}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Architecture-level exploitability}{4}{subsection.5.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Architecture performance summary at iteration 200. Values are means across five seeds with bootstrap 95\% confidence intervals. No significant differences observed (all $p = 1.000$).}}{4}{table.caption.4}\protected@file@percent }
+\newlabel{tab:architecture_results}{{1}{4}{Architecture performance summary at iteration 200. Values are means across five seeds with bootstrap 95\% confidence intervals. No significant differences observed (all $p = 1.000$)}{table.caption.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Hyperparameter sweep outcomes at iteration 200. Values aggregate all seeds present for each configuration.}}{4}{table.caption.5}\protected@file@percent }
+\newlabel{tab:hyperparameter_sweep}{{2}{4}{Hyperparameter sweep outcomes at iteration 200. Values aggregate all seeds present for each configuration}{table.caption.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Hyperparameter sensitivity}{4}{subsection.5.2}\protected@file@percent }
+\newlabel{fig:architecture_trajectories}{{2a}{5}{Mean exploitability trajectories with bootstrap 95\% confidence intervals}{figure.caption.3}{}}
+\newlabel{sub@fig:architecture_trajectories}{{a}{5}{Mean exploitability trajectories with bootstrap 95\% confidence intervals}{figure.caption.3}{}}
+\newlabel{fig:architecture_final}{{2b}{5}{Architecture comparison with effect sizes and statistical significance}{figure.caption.3}{}}
+\newlabel{sub@fig:architecture_final}{{b}{5}{Architecture comparison with effect sizes and statistical significance}{figure.caption.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Architecture comparison on Kuhn Poker. All variants achieve statistically indistinguishable performance with identical mean exploitability of 1.366 mBB/100.}}{5}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:architecture_results}{{2}{5}{Architecture comparison on Kuhn Poker. All variants achieve statistically indistinguishable performance with identical mean exploitability of 1.366 mBB/100}{figure.caption.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Robustness study outcomes at iteration 200 under batch-size and update-interval perturbations.}}{5}{table.caption.6}\protected@file@percent }
+\newlabel{tab:robustness_tests}{{3}{5}{Robustness study outcomes at iteration 200 under batch-size and update-interval perturbations}{table.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Robustness to schedule perturbations}{5}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Diagnostics coverage}{5}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{5}{section.6}\protected@file@percent }
+\newlabel{sec:discussion}{{6}{5}{Discussion}{section.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Limitations and Future Work}{5}{section.7}\protected@file@percent }
+\newlabel{sec:limitations}{{7}{5}{Limitations and Future Work}{section.7}{}}
+\newlabel{fig:hyperparameter_summary}{{3a}{6}{Hyperparameter sweep exploitability}{figure.caption.7}{}}
+\newlabel{sub@fig:hyperparameter_summary}{{a}{6}{Hyperparameter sweep exploitability}{figure.caption.7}{}}
+\newlabel{fig:robustness_summary}{{3b}{6}{Robustness study exploitability}{figure.caption.7}{}}
+\newlabel{sub@fig:robustness_summary}{{b}{6}{Robustness study exploitability}{figure.caption.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Configuration sensitivity analyses. The baseline retains a consistent margin across short-horizon sweeps and robustness perturbations.}}{6}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:sweep_results}{{3}{6}{Configuration sensitivity analyses. The baseline retains a consistent margin across short-horizon sweeps and robustness perturbations}{figure.caption.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Diagnostic exploitability trajectories with variance bands. History-ablated LSTM variants display larger oscillations relative to the baseline.}}{6}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:diagnostic_variance}{{4}{6}{Diagnostic exploitability trajectories with variance bands. History-ablated LSTM variants display larger oscillations relative to the baseline}{figure.caption.8}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{6}{section.8}\protected@file@percent }
+\newlabel{sec:conclusion}{{8}{6}{Conclusion}{section.8}{}}
+\bibstyle{plainnat}
+\bibdata{references}
+\gdef \@abspage@last{6}

@@ -1,0 +1,50 @@
+[
+  {
+    "game": "kuhn_poker",
+    "algorithm": "tabular_cfr",
+    "seed": 42,
+    "final_exploitability": 1.35,
+    "wall_time": 0.08078312873840332,
+    "status": "unknown"
+  },
+  {
+    "game": "kuhn_poker",
+    "algorithm": "deep_cfr",
+    "seed": 42,
+    "final_exploitability": 1.388,
+    "wall_time": 0.550682783126831,
+    "status": "unknown"
+  },
+  {
+    "game": "kuhn_poker",
+    "algorithm": "sd_cfr",
+    "seed": 42,
+    "final_exploitability": 1.388,
+    "wall_time": 0.07501387596130371,
+    "status": "unknown"
+  },
+  {
+    "game": "leduc_poker",
+    "algorithm": "tabular_cfr",
+    "seed": 42,
+    "final_exploitability": 3.364,
+    "wall_time": 0.12668395042419434,
+    "status": "unknown"
+  },
+  {
+    "game": "leduc_poker",
+    "algorithm": "deep_cfr",
+    "seed": 42,
+    "final_exploitability": 3.226,
+    "wall_time": 0.1814122200012207,
+    "status": "unknown"
+  },
+  {
+    "game": "leduc_poker",
+    "algorithm": "sd_cfr",
+    "seed": 42,
+    "final_exploitability": 3.226,
+    "wall_time": 0.1648421287536621,
+    "status": "unknown"
+  }
+]

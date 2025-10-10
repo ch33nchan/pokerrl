@@ -1,0 +1,244 @@
+{
+  "architecture_summary": [
+    {
+      "architecture": "opponent_model",
+      "num_runs": 5,
+      "mean_final_exploitability": 2.2578463611538004,
+      "std_final_exploitability": 0.10307439030472927,
+      "min_final_exploitability": 2.1481960310534274,
+      "max_final_exploitability": 2.384370541026932
+    },
+    {
+      "architecture": "baseline",
+      "num_runs": 90,
+      "mean_final_exploitability": 2.68719858666208,
+      "std_final_exploitability": 0.20081329382587138,
+      "min_final_exploitability": 1.920211479611094,
+      "max_final_exploitability": 3.0588145054766915
+    },
+    {
+      "architecture": "lstm_no_embedding",
+      "num_runs": 80,
+      "mean_final_exploitability": 3.0184804362404516,
+      "std_final_exploitability": 0.2633493674884192,
+      "min_final_exploitability": 2.5371186189461383,
+      "max_final_exploitability": 3.5837886895297246
+    },
+    {
+      "architecture": "lstm_no_history",
+      "num_runs": 80,
+      "mean_final_exploitability": 3.0185539784524145,
+      "std_final_exploitability": 0.28623360412922894,
+      "min_final_exploitability": 2.503118470048683,
+      "max_final_exploitability": 3.537941298527049
+    },
+    {
+      "architecture": "lstm_optimized",
+      "num_runs": 90,
+      "mean_final_exploitability": 3.0602783884802105,
+      "std_final_exploitability": 0.2913671703108957,
+      "min_final_exploitability": 2.287880343192152,
+      "max_final_exploitability": 3.5578691347369977
+    },
+    {
+      "architecture": "gru",
+      "num_runs": 10,
+      "mean_final_exploitability": 3.2135649189507616,
+      "std_final_exploitability": 0.2390520282266773,
+      "min_final_exploitability": 2.710221870845685,
+      "max_final_exploitability": 3.4679694138131256
+    }
+  ],
+  "experiment_architecture_summary": [
+    {
+      "experiment": "20seed",
+      "architecture": "baseline",
+      "num_runs": 40,
+      "mean_final_exploitability": 2.79653934789791,
+      "std_final_exploitability": 0.14963995486457765,
+      "min_final_exploitability": 2.498257875973398,
+      "max_final_exploitability": 3.0588145054766915,
+      "delta_vs_baseline": 0.0
+    },
+    {
+      "experiment": "20seed",
+      "architecture": "lstm_no_embedding",
+      "num_runs": 40,
+      "mean_final_exploitability": 2.935996662187215,
+      "std_final_exploitability": 0.23971932123775355,
+      "min_final_exploitability": 2.5573551423011494,
+      "max_final_exploitability": 3.5837886895297246,
+      "delta_vs_baseline": 0.13945731428930497
+    },
+    {
+      "experiment": "20seed",
+      "architecture": "lstm_no_history",
+      "num_runs": 40,
+      "mean_final_exploitability": 2.936543517660872,
+      "std_final_exploitability": 0.29025485880148477,
+      "min_final_exploitability": 2.503118470048683,
+      "max_final_exploitability": 3.537941298527049,
+      "delta_vs_baseline": 0.1400041697629617
+    },
+    {
+      "experiment": "20seed",
+      "architecture": "lstm_optimized",
+      "num_runs": 40,
+      "mean_final_exploitability": 2.9977073031598627,
+      "std_final_exploitability": 0.2862287982178816,
+      "min_final_exploitability": 2.324748247007423,
+      "max_final_exploitability": 3.528693881311055,
+      "delta_vs_baseline": 0.20116795526195252
+    },
+    {
+      "experiment": "ablation_study_results",
+      "architecture": "baseline",
+      "num_runs": 5,
+      "mean_final_exploitability": 2.195069670175017,
+      "std_final_exploitability": 0.23051557128052966,
+      "min_final_exploitability": 1.920211479611094,
+      "max_final_exploitability": 2.5527401043037394,
+      "delta_vs_baseline": 0.0
+    },
+    {
+      "experiment": "ablation_study_results",
+      "architecture": "opponent_model",
+      "num_runs": 5,
+      "mean_final_exploitability": 2.2578463611538004,
+      "std_final_exploitability": 0.10307439030472927,
+      "min_final_exploitability": 2.1481960310534274,
+      "max_final_exploitability": 2.384370541026932,
+      "delta_vs_baseline": 0.06277669097878347
+    },
+    {
+      "experiment": "ablation_study_results",
+      "architecture": "lstm_optimized",
+      "num_runs": 5,
+      "mean_final_exploitability": 3.3505281774954994,
+      "std_final_exploitability": 0.0376463735915278,
+      "min_final_exploitability": 3.2982793066744294,
+      "max_final_exploitability": 3.3976567642191116,
+      "delta_vs_baseline": 1.1554585073204824
+    },
+    {
+      "experiment": "ablation_study_results",
+      "architecture": "gru",
+      "num_runs": 5,
+      "mean_final_exploitability": 3.390494436766324,
+      "std_final_exploitability": 0.06921584696566051,
+      "min_final_exploitability": 3.279951685155182,
+      "max_final_exploitability": 3.4679694138131256,
+      "delta_vs_baseline": 1.195424766591307
+    },
+    {
+      "experiment": "architecture",
+      "architecture": "baseline",
+      "num_runs": 5,
+      "mean_final_exploitability": 2.847951970069929,
+      "std_final_exploitability": 0.0903789974792227,
+      "min_final_exploitability": 2.700130449832542,
+      "max_final_exploitability": 2.9386249025006825,
+      "delta_vs_baseline": 0.0
+    },
+    {
+      "experiment": "architecture",
+      "architecture": "lstm_optimized",
+      "num_runs": 5,
+      "mean_final_exploitability": 2.9708655532323633,
+      "std_final_exploitability": 0.2545549556598075,
+      "min_final_exploitability": 2.5653277913331634,
+      "max_final_exploitability": 3.1588997360706212,
+      "delta_vs_baseline": 0.12291358316243439
+    },
+    {
+      "experiment": "architecture",
+      "architecture": "gru",
+      "num_runs": 5,
+      "mean_final_exploitability": 3.0366354011352,
+      "std_final_exploitability": 0.21337113978021105,
+      "min_final_exploitability": 2.710221870845685,
+      "max_final_exploitability": 3.249810797144457,
+      "delta_vs_baseline": 0.1886834310652712
+    },
+    {
+      "experiment": "batch32",
+      "architecture": "baseline",
+      "num_runs": 20,
+      "mean_final_exploitability": 2.6231896981336553,
+      "std_final_exploitability": 0.11780998256381038,
+      "min_final_exploitability": 2.4462027913651365,
+      "max_final_exploitability": 2.9282940706789753,
+      "delta_vs_baseline": 0.0
+    },
+    {
+      "experiment": "batch32",
+      "architecture": "lstm_no_history",
+      "num_runs": 20,
+      "mean_final_exploitability": 3.0440018372056614,
+      "std_final_exploitability": 0.24087184033105424,
+      "min_final_exploitability": 2.5621120552075136,
+      "max_final_exploitability": 3.429485610164508,
+      "delta_vs_baseline": 0.4208121390720061
+    },
+    {
+      "experiment": "batch32",
+      "architecture": "lstm_no_embedding",
+      "num_runs": 20,
+      "mean_final_exploitability": 3.06836513399505,
+      "std_final_exploitability": 0.26462627449358245,
+      "min_final_exploitability": 2.5371186189461383,
+      "max_final_exploitability": 3.444424662650731,
+      "delta_vs_baseline": 0.44517543586139485
+    },
+    {
+      "experiment": "batch32",
+      "architecture": "lstm_optimized",
+      "num_runs": 20,
+      "mean_final_exploitability": 3.103100818126028,
+      "std_final_exploitability": 0.3668551180293594,
+      "min_final_exploitability": 2.287880343192152,
+      "max_final_exploitability": 3.5578691347369977,
+      "delta_vs_baseline": 0.47991111999237246
+    },
+    {
+      "experiment": "update10",
+      "architecture": "baseline",
+      "num_runs": 20,
+      "mean_final_exploitability": 2.615369835988647,
+      "std_final_exploitability": 0.10343646801922665,
+      "min_final_exploitability": 2.4239193750124577,
+      "max_final_exploitability": 2.778472405016467,
+      "delta_vs_baseline": 0.0
+    },
+    {
+      "experiment": "update10",
+      "architecture": "lstm_optimized",
+      "num_runs": 20,
+      "mean_final_exploitability": 3.092388891033228,
+      "std_final_exploitability": 0.21317849428033755,
+      "min_final_exploitability": 2.7813706518171815,
+      "max_final_exploitability": 3.46399695593109,
+      "delta_vs_baseline": 0.47701905504458075
+    },
+    {
+      "experiment": "update10",
+      "architecture": "lstm_no_embedding",
+      "num_runs": 20,
+      "mean_final_exploitability": 3.1335632865923264,
+      "std_final_exploitability": 0.26362068300712277,
+      "min_final_exploitability": 2.603915796595293,
+      "max_final_exploitability": 3.535786925703299,
+      "delta_vs_baseline": 0.5181934506036794
+    },
+    {
+      "experiment": "update10",
+      "architecture": "lstm_no_history",
+      "num_runs": 20,
+      "mean_final_exploitability": 3.1571270412822536,
+      "std_final_exploitability": 0.27322450544108673,
+      "min_final_exploitability": 2.5752734535637534,
+      "max_final_exploitability": 3.515983389302333,
+      "delta_vs_baseline": 0.5417572052936066
+    }
+  ]
+}

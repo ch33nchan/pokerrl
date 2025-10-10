@@ -1,0 +1,28 @@
+# Core dependencies
+torch==2.2.0
+numpy==1.26.4
+scipy==1.13.0
+pandas==2.2.1
+matplotlib==3.8.3
+seaborn==0.13.2
+
+# OpenSpiel (install from source)
+# pyspiel==1.4.0  # This will be installed manually
+
+# CLI and configuration
+tyro==0.8.4
+click==8.1.7
+pyyaml==6.0.1
+
+# Data handling and analysis
+pyarrow==15.0.0
+tqdm==4.66.2
+scikit-learn==1.4.1
+
+# LaTeX compilation (for paper generation)
+# latexmk needs to be installed via MacTeX or similar
+
+# Development tools
+pytest==8.0.2
+black==24.2.0
+mypy==1.8.0

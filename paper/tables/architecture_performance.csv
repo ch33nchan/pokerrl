@@ -1,0 +1,5 @@
+Architecture,Description,Hidden Layers,Learning Rate,Parameters,Final Exploitability,Training Time (s),Improvement (%)
+Deep,Deeper network with more layers,"[64, 64, 64]",0.01,"9,218",1.4480,1.94,4.7
+Wide,Wider network for more capacity,"[128, 128]",0.01,"18,306",1.4720,2.15,3.2
+Fast,Smaller network with faster learning,"[32, 32]",0.02,"1,506",1.4960,1.89,1.6
+Baseline,Standard MLP baseline,"[64, 64]",0.01,"5,058",1.5200,1.77,0.0

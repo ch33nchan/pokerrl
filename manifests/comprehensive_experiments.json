@@ -1,0 +1,5052 @@
+{
+  "successful": [
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_000",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 0,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4239320833543002,
+      "final_nashconv": 0.8478641667086004,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 1.3009021282196045,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_001",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 1,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.355320550181896,
+      "final_nashconv": 0.710641100363792,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.812835693359375,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_002",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 2,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4510288900953455,
+      "final_nashconv": 0.902057780190691,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.8404719829559326,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_003",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 3,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.41700705028945856,
+      "final_nashconv": 0.8340141005789171,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.899705171585083,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_004",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 4,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3628864618798985,
+      "final_nashconv": 0.725772923759797,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.8069992065429688,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_005",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 5,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3858785194582489,
+      "final_nashconv": 0.7717570389164978,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.8647251129150391,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_006",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 6,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4078239323758773,
+      "final_nashconv": 0.8156478647517545,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.8025388717651367,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_007",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 7,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.39898977782066836,
+      "final_nashconv": 0.7979795556413367,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.893887996673584,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_008",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 8,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3372089905176417,
+      "final_nashconv": 0.6744179810352834,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.8598101139068604,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_009",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 9,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3889309460910657,
+      "final_nashconv": 0.7778618921821314,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.7907812595367432,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_010",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 10,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4048263004032635,
+      "final_nashconv": 0.809652600806527,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.8897159099578857,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_011",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 11,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.39252425706341504,
+      "final_nashconv": 0.7850485141268301,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.817467212677002,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_012",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 12,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.39828734610382555,
+      "final_nashconv": 0.7965746922076511,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.8676543235778809,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_013",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 13,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4062096837031898,
+      "final_nashconv": 0.8124193674063795,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.8438982963562012,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_014",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 14,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.41965570407783587,
+      "final_nashconv": 0.8393114081556717,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.5255439281463623,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_015",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 15,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.43559598013675094,
+      "final_nashconv": 0.8711919602735019,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.6007559299468994,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_016",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 16,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.37491606408817524,
+      "final_nashconv": 0.7498321281763505,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.7424798011779785,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_017",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 17,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3992232257153982,
+      "final_nashconv": 0.7984464514307964,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.7058169841766357,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_018",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 18,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.40714571286984635,
+      "final_nashconv": 0.8142914257396927,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.6613948345184326,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_baseline_019",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "baseline",
+      "seed": 19,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.40819826687226474,
+      "final_nashconv": 0.8163965337445295,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.6823418140411377,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_000",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 0,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.33055755680575294,
+      "final_nashconv": 0.6611151136115059,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.8081142902374268,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_001",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 1,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3393090627520066,
+      "final_nashconv": 0.6786181255040132,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.7230050563812256,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_002",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 2,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3807489532422249,
+      "final_nashconv": 0.7614979064844498,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.7453129291534424,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_003",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 3,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.34311475800920016,
+      "final_nashconv": 0.6862295160184003,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.8461558818817139,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_004",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 4,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3591600055120008,
+      "final_nashconv": 0.7183200110240016,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.8862450122833252,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_005",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 5,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.2960534355492658,
+      "final_nashconv": 0.5921068710985316,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 1.0473618507385254,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_006",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 6,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3790089273801258,
+      "final_nashconv": 0.7580178547602516,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 1.0220119953155518,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_007",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 7,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3212351613588619,
+      "final_nashconv": 0.6424703227177238,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.7139670848846436,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_008",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 8,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3446658334806501,
+      "final_nashconv": 0.6893316669613002,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.6900391578674316,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_009",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 9,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3416570662699063,
+      "final_nashconv": 0.6833141325398125,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.7000710964202881,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_010",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 10,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3276015906378772,
+      "final_nashconv": 0.6552031812757544,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.8001852035522461,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_011",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 11,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3421600627259425,
+      "final_nashconv": 0.684320125451885,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 1.0019190311431885,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_012",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 12,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.331781524366187,
+      "final_nashconv": 0.663563048732374,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.9758541584014893,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_013",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 13,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3260356560812091,
+      "final_nashconv": 0.6520713121624182,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 1.0693082809448242,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_014",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 14,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3234584708902341,
+      "final_nashconv": 0.6469169417804682,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.9618949890136719,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_015",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 15,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3806546052763491,
+      "final_nashconv": 0.7613092105526982,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.9743297100067139,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_016",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 16,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.33153970861638604,
+      "final_nashconv": 0.6630794172327721,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 1.033095121383667,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_017",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 17,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.33732856794642113,
+      "final_nashconv": 0.6746571358928423,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 1.1053392887115479,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_018",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 18,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3181309093199072,
+      "final_nashconv": 0.6362618186398143,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.904365062713623,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_wide_019",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "wide",
+      "seed": 19,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3449411867302734,
+      "final_nashconv": 0.6898823734605468,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.517176628112793,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_000",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 0,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4125724319666193,
+      "final_nashconv": 0.8251448639332386,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.7727689743041992,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_001",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 1,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4029366228720417,
+      "final_nashconv": 0.8058732457440834,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.7979550361633301,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_002",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 2,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4153541143546236,
+      "final_nashconv": 0.8307082287092472,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.7881448268890381,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_003",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 3,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4466594163979577,
+      "final_nashconv": 0.8933188327959154,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 1.0844449996948242,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_004",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 4,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3815704678136044,
+      "final_nashconv": 0.7631409356272087,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 1.159775972366333,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_005",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 5,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.38117989282620285,
+      "final_nashconv": 0.7623597856524057,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 1.0767788887023926,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_006",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 6,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3820614579556292,
+      "final_nashconv": 0.7641229159112584,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.74782395362854,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_007",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 7,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4215941939671316,
+      "final_nashconv": 0.8431883879342632,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.5017859935760498,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_008",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 8,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.40622543755481766,
+      "final_nashconv": 0.8124508751096353,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.38247108459472656,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_009",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 9,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3821652768123652,
+      "final_nashconv": 0.7643305536247303,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.37093496322631836,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_010",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 10,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4239568782130113,
+      "final_nashconv": 0.8479137564260226,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3525722026824951,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_011",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 11,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3842684614990947,
+      "final_nashconv": 0.7685369229981894,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3457050323486328,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_012",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 12,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4088678702334073,
+      "final_nashconv": 0.8177357404668146,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.35566210746765137,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_013",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 13,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.35354084520921175,
+      "final_nashconv": 0.7070816904184235,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3506288528442383,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_014",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 14,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.43557233493721276,
+      "final_nashconv": 0.8711446698744255,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3586618900299072,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_015",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 15,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.39047369750858985,
+      "final_nashconv": 0.7809473950171797,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.7219998836517334,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_016",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 16,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.43300032059155774,
+      "final_nashconv": 0.8660006411831155,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.43471193313598633,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_017",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 17,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.40320727661973177,
+      "final_nashconv": 0.8064145532394635,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.33032703399658203,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_018",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 18,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3785615341946612,
+      "final_nashconv": 0.7571230683893224,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3389890193939209,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_deep_019",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "deep",
+      "seed": 19,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.44333234182206316,
+      "final_nashconv": 0.8866646836441263,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.33907103538513184,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_000",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 0,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.45682506030063985,
+      "final_nashconv": 0.9136501206012797,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2805459499359131,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_001",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 1,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.44144120123645747,
+      "final_nashconv": 0.8828824024729149,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.275115966796875,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_002",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 2,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4722590596953181,
+      "final_nashconv": 0.9445181193906362,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.29311609268188477,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_003",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 3,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4541927195857962,
+      "final_nashconv": 0.9083854391715924,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.27551794052124023,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_004",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 4,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4369147411270958,
+      "final_nashconv": 0.8738294822541915,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.27627110481262207,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_005",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 5,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.43707223472375883,
+      "final_nashconv": 0.8741444694475177,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2842748165130615,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_006",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 6,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.43359870848288357,
+      "final_nashconv": 0.8671974169657671,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.27710390090942383,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_007",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 7,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.44116639695211424,
+      "final_nashconv": 0.8823327939042285,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2759387493133545,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_008",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 8,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4216469524238976,
+      "final_nashconv": 0.8432939048477952,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.32491183280944824,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_009",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 9,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.45235417679143897,
+      "final_nashconv": 0.9047083535828779,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.28693604469299316,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_010",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 10,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.419239228079143,
+      "final_nashconv": 0.838478456158286,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2815248966217041,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_011",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 11,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4361228752088475,
+      "final_nashconv": 0.872245750417695,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2749819755554199,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_012",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 12,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4308638026138232,
+      "final_nashconv": 0.8617276052276464,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2883150577545166,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_013",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 13,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.41897174473193527,
+      "final_nashconv": 0.8379434894638705,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.28055500984191895,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_014",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 14,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4099226851215552,
+      "final_nashconv": 0.8198453702431104,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2852818965911865,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_015",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 15,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4330272164631253,
+      "final_nashconv": 0.8660544329262506,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2821061611175537,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_016",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 16,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4316940294908137,
+      "final_nashconv": 0.8633880589816274,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2786540985107422,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_017",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 17,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4115839080450482,
+      "final_nashconv": 0.8231678160900964,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.27747201919555664,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_018",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 18,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4283058009406997,
+      "final_nashconv": 0.8566116018813994,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.27910590171813965,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_deep_cfr_fast_019",
+      "game": "kuhn_poker",
+      "baseline_type": "deep_cfr",
+      "architecture": "fast",
+      "seed": 19,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4566101793372487,
+      "final_nashconv": 0.9132203586744974,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2948319911956787,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_000",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 0,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4239320833543002,
+      "final_nashconv": 0.8478641667086004,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2937190532684326,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_001",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 1,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.355320550181896,
+      "final_nashconv": 0.710641100363792,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2996981143951416,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_002",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 2,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4510288900953455,
+      "final_nashconv": 0.902057780190691,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.29709792137145996,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_003",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 3,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.41700705028945856,
+      "final_nashconv": 0.8340141005789171,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.30051302909851074,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_004",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 4,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3628864618798985,
+      "final_nashconv": 0.725772923759797,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3034400939941406,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_005",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 5,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3858785194582489,
+      "final_nashconv": 0.7717570389164978,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2985861301422119,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_006",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 6,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4078239323758773,
+      "final_nashconv": 0.8156478647517545,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.29022908210754395,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_007",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 7,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.39898977782066836,
+      "final_nashconv": 0.7979795556413367,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2941629886627197,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_008",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 8,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3372089905176417,
+      "final_nashconv": 0.6744179810352834,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2971489429473877,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_009",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 9,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3889309460910657,
+      "final_nashconv": 0.7778618921821314,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.30077290534973145,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_010",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 10,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4048263004032635,
+      "final_nashconv": 0.809652600806527,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2878730297088623,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_011",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 11,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.39252425706341504,
+      "final_nashconv": 0.7850485141268301,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2885410785675049,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_012",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 12,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.39828734610382555,
+      "final_nashconv": 0.7965746922076511,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.29993581771850586,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_013",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 13,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4062096837031898,
+      "final_nashconv": 0.8124193674063795,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.29427409172058105,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_014",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 14,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.41965570407783587,
+      "final_nashconv": 0.8393114081556717,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.29503583908081055,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_015",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 15,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.43559598013675094,
+      "final_nashconv": 0.8711919602735019,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2940969467163086,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_016",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 16,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.37491606408817524,
+      "final_nashconv": 0.7498321281763505,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2900881767272949,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_017",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 17,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3992232257153982,
+      "final_nashconv": 0.7984464514307964,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2904989719390869,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_018",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 18,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.40714571286984635,
+      "final_nashconv": 0.8142914257396927,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.29845690727233887,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_baseline_019",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "baseline",
+      "seed": 19,
+      "params_count": 5058,
+      "flops_est": 4928,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.40819826687226474,
+      "final_nashconv": 0.8163965337445295,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2966129779815674,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_000",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 0,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.33055755680575294,
+      "final_nashconv": 0.6611151136115059,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3273050785064697,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_001",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 1,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3393090627520066,
+      "final_nashconv": 0.6786181255040132,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3388040065765381,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_002",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 2,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3807489532422249,
+      "final_nashconv": 0.7614979064844498,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3314180374145508,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_003",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 3,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.34311475800920016,
+      "final_nashconv": 0.6862295160184003,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3276801109313965,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_004",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 4,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3591600055120008,
+      "final_nashconv": 0.7183200110240016,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3355119228363037,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_005",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 5,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.2960534355492658,
+      "final_nashconv": 0.5921068710985316,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3388102054595947,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_006",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 6,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3790089273801258,
+      "final_nashconv": 0.7580178547602516,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.33379507064819336,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_007",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 7,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3212351613588619,
+      "final_nashconv": 0.6424703227177238,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3333742618560791,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_008",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 8,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3446658334806501,
+      "final_nashconv": 0.6893316669613002,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3267340660095215,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_009",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 9,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3416570662699063,
+      "final_nashconv": 0.6833141325398125,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.33269500732421875,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_010",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 10,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3276015906378772,
+      "final_nashconv": 0.6552031812757544,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3418569564819336,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_011",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 11,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3421600627259425,
+      "final_nashconv": 0.684320125451885,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3872337341308594,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_012",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 12,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.331781524366187,
+      "final_nashconv": 0.663563048732374,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.33798789978027344,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_013",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 13,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3260356560812091,
+      "final_nashconv": 0.6520713121624182,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.33124709129333496,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_014",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 14,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3234584708902341,
+      "final_nashconv": 0.6469169417804682,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3267819881439209,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_015",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 15,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3806546052763491,
+      "final_nashconv": 0.7613092105526982,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.32590270042419434,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_016",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 16,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.33153970861638604,
+      "final_nashconv": 0.6630794172327721,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.32581305503845215,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_017",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 17,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.33732856794642113,
+      "final_nashconv": 0.6746571358928423,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3340919017791748,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_018",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 18,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3181309093199072,
+      "final_nashconv": 0.6362618186398143,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3257746696472168,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_wide_019",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "wide",
+      "seed": 19,
+      "params_count": 18306,
+      "flops_est": 18048,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3449411867302734,
+      "final_nashconv": 0.6898823734605468,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.33445119857788086,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_000",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 0,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4125724319666193,
+      "final_nashconv": 0.8251448639332386,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.33278703689575195,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_001",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 1,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4029366228720417,
+      "final_nashconv": 0.8058732457440834,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.330244779586792,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_002",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 2,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4153541143546236,
+      "final_nashconv": 0.8307082287092472,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.34308695793151855,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_003",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 3,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4466594163979577,
+      "final_nashconv": 0.8933188327959154,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.34143877029418945,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_004",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 4,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3815704678136044,
+      "final_nashconv": 0.7631409356272087,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.35090184211730957,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_005",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 5,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.38117989282620285,
+      "final_nashconv": 0.7623597856524057,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.33431410789489746,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_006",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 6,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3820614579556292,
+      "final_nashconv": 0.7641229159112584,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.34169697761535645,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_007",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 7,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4215941939671316,
+      "final_nashconv": 0.8431883879342632,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3526761531829834,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_008",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 8,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.40622543755481766,
+      "final_nashconv": 0.8124508751096353,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3513448238372803,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_009",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 9,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3821652768123652,
+      "final_nashconv": 0.7643305536247303,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.34277915954589844,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_010",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 10,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4239568782130113,
+      "final_nashconv": 0.8479137564260226,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.34725403785705566,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_011",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 11,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3842684614990947,
+      "final_nashconv": 0.7685369229981894,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3831217288970947,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_012",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 12,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4088678702334073,
+      "final_nashconv": 0.8177357404668146,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.335817813873291,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_013",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 13,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.35354084520921175,
+      "final_nashconv": 0.7070816904184235,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3418428897857666,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_014",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 14,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.43557233493721276,
+      "final_nashconv": 0.8711446698744255,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3485591411590576,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_015",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 15,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.39047369750858985,
+      "final_nashconv": 0.7809473950171797,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3443419933319092,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_016",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 16,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.43300032059155774,
+      "final_nashconv": 0.8660006411831155,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.34472179412841797,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_017",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 17,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.40320727661973177,
+      "final_nashconv": 0.8064145532394635,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3282608985900879,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_018",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 18,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.3785615341946612,
+      "final_nashconv": 0.7571230683893224,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.3630702495574951,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_deep_019",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "deep",
+      "seed": 19,
+      "params_count": 9218,
+      "flops_est": 9024,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.44333234182206316,
+      "final_nashconv": 0.8866646836441263,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.34693002700805664,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_000",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 0,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.45682506030063985,
+      "final_nashconv": 0.9136501206012797,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2790060043334961,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_001",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 1,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.44144120123645747,
+      "final_nashconv": 0.8828824024729149,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.28308820724487305,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_002",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 2,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4722590596953181,
+      "final_nashconv": 0.9445181193906362,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.28249597549438477,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_003",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 3,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4541927195857962,
+      "final_nashconv": 0.9083854391715924,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.28438496589660645,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_004",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 4,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4369147411270958,
+      "final_nashconv": 0.8738294822541915,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2826969623565674,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_005",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 5,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.43707223472375883,
+      "final_nashconv": 0.8741444694475177,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2859010696411133,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_006",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 6,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.43359870848288357,
+      "final_nashconv": 0.8671974169657671,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2868978977203369,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_007",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 7,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.44116639695211424,
+      "final_nashconv": 0.8823327939042285,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2809178829193115,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_008",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 8,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4216469524238976,
+      "final_nashconv": 0.8432939048477952,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2915928363800049,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_009",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 9,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.45235417679143897,
+      "final_nashconv": 0.9047083535828779,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.285322904586792,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_010",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 10,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.419239228079143,
+      "final_nashconv": 0.838478456158286,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.28478312492370605,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_011",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 11,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4361228752088475,
+      "final_nashconv": 0.872245750417695,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2819058895111084,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_012",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 12,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4308638026138232,
+      "final_nashconv": 0.8617276052276464,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2916300296783447,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_013",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 13,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.41897174473193527,
+      "final_nashconv": 0.8379434894638705,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2813122272491455,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_014",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 14,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4099226851215552,
+      "final_nashconv": 0.8198453702431104,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.30190110206604004,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_015",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 15,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4330272164631253,
+      "final_nashconv": 0.8660544329262506,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2963888645172119,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_016",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 16,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4316940294908137,
+      "final_nashconv": 0.8633880589816274,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2874641418457031,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_017",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 17,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4115839080450482,
+      "final_nashconv": 0.8231678160900964,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2762019634246826,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_018",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 18,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4283058009406997,
+      "final_nashconv": 0.8566116018813994,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.28537511825561523,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_sd_cfr_fast_019",
+      "game": "kuhn_poker",
+      "baseline_type": "sd_cfr",
+      "architecture": "fast",
+      "seed": 19,
+      "params_count": 1506,
+      "flops_est": 1440,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.4566101793372487,
+      "final_nashconv": 0.9132203586744974,
+      "steps_to_threshold": null,
+      "time_to_threshold": null,
+      "wall_clock_s": 0.2854011058807373,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_000",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 0,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.0684096516145622,
+      "final_nashconv": 0.1368193032291244,
+      "steps_to_threshold": 325,
+      "time_to_threshold": 0.07376190423965454,
+      "wall_clock_s": 0.1134798526763916,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_001",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 1,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.07623179310044866,
+      "final_nashconv": 0.1524635862008973,
+      "steps_to_threshold": 400,
+      "time_to_threshold": 0.08667907714843749,
+      "wall_clock_s": 0.10834884643554688,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_003",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 3,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.07244639339545837,
+      "final_nashconv": 0.14489278679091674,
+      "steps_to_threshold": 225,
+      "time_to_threshold": 0.047853398323059085,
+      "wall_clock_s": 0.10634088516235352,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_004",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 4,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.09997124517112208,
+      "final_nashconv": 0.19994249034224415,
+      "steps_to_threshold": 175,
+      "time_to_threshold": 0.037506699562072754,
+      "wall_clock_s": 0.1071619987487793,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_007",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 7,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.04019211458224806,
+      "final_nashconv": 0.08038422916449613,
+      "steps_to_threshold": 175,
+      "time_to_threshold": 0.03748533725738525,
+      "wall_clock_s": 0.1071009635925293,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_008",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 8,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.06222473113704453,
+      "final_nashconv": 0.12444946227408905,
+      "steps_to_threshold": 150,
+      "time_to_threshold": 0.03226747512817383,
+      "wall_clock_s": 0.1075582504272461,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_009",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 9,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.0627381671925234,
+      "final_nashconv": 0.1254763343850468,
+      "steps_to_threshold": 400,
+      "time_to_threshold": 0.08335685729980469,
+      "wall_clock_s": 0.10419607162475586,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_010",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 10,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.0835596535539663,
+      "final_nashconv": 0.1671193071079326,
+      "steps_to_threshold": 400,
+      "time_to_threshold": 0.08581199645996093,
+      "wall_clock_s": 0.10726499557495117,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_011",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 11,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.08672853622832398,
+      "final_nashconv": 0.17345707245664796,
+      "steps_to_threshold": 200,
+      "time_to_threshold": 0.04095325469970703,
+      "wall_clock_s": 0.10238313674926758,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_014",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 14,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.06954177735683745,
+      "final_nashconv": 0.1390835547136749,
+      "steps_to_threshold": 200,
+      "time_to_threshold": 0.042650794982910155,
+      "wall_clock_s": 0.10662698745727539,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_016",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 16,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.06190195679135705,
+      "final_nashconv": 0.1238039135827141,
+      "steps_to_threshold": 275,
+      "time_to_threshold": 0.057924413681030275,
+      "wall_clock_s": 0.1053171157836914,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_017",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 17,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.058326742215790664,
+      "final_nashconv": 0.11665348443158133,
+      "steps_to_threshold": 475,
+      "time_to_threshold": 0.10127389430999756,
+      "wall_clock_s": 0.10660409927368164,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_018",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 18,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.07568014734817873,
+      "final_nashconv": 0.15136029469635745,
+      "steps_to_threshold": 375,
+      "time_to_threshold": 0.07800006866455078,
+      "wall_clock_s": 0.10400009155273438,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_019",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 19,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": 0.08130398424323435,
+      "final_nashconv": 0.1626079684864687,
+      "steps_to_threshold": 250,
+      "time_to_threshold": 0.05333447456359863,
+      "wall_clock_s": 0.10666894912719727,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    }
+  ],
+  "failed": [
+    {
+      "run_id": "kuhn_poker_tabular_cfr_002",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 2,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": Infinity,
+      "final_nashconv": Infinity,
+      "steps_to_threshold": 225,
+      "time_to_threshold": 0.047167181968688965,
+      "wall_clock_s": 0.10481595993041992,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_005",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 5,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": Infinity,
+      "final_nashconv": Infinity,
+      "steps_to_threshold": 225,
+      "time_to_threshold": 0.046505749225616455,
+      "wall_clock_s": 0.10334610939025879,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_006",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 6,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": Infinity,
+      "final_nashconv": Infinity,
+      "steps_to_threshold": 150,
+      "time_to_threshold": 0.031960558891296384,
+      "wall_clock_s": 0.10653519630432129,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_012",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 12,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": Infinity,
+      "final_nashconv": Infinity,
+      "steps_to_threshold": 175,
+      "time_to_threshold": 0.037818956375122066,
+      "wall_clock_s": 0.10805416107177734,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_013",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 13,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": Infinity,
+      "final_nashconv": Infinity,
+      "steps_to_threshold": 150,
+      "time_to_threshold": 0.03262166976928711,
+      "wall_clock_s": 0.10873889923095703,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    },
+    {
+      "run_id": "kuhn_poker_tabular_cfr_015",
+      "game": "kuhn_poker",
+      "baseline_type": "tabular_cfr",
+      "architecture": "baseline",
+      "seed": 15,
+      "params_count": 0,
+      "flops_est": 0,
+      "optimizer_cfg": {
+        "type": "adam",
+        "lr": 0.001
+      },
+      "replay_cfg": {
+        "buffer_size": 10000,
+        "batch_size": 64
+      },
+      "update_cadence": 10,
+      "iterations": 500,
+      "eval_every": 25,
+      "final_exploitability": Infinity,
+      "final_nashconv": Infinity,
+      "steps_to_threshold": 425,
+      "time_to_threshold": 0.0887910008430481,
+      "wall_clock_s": 0.10446000099182129,
+      "openspiel_version": "1.6.3",
+      "python_version": "3.9",
+      "git_hash": "20799f4225146ecc805039235d37a37c487b5d28"
+    }
+  ],
+  "metadata": {
+    "total_experiments": 180,
+    "successful_experiments": 174,
+    "failed_experiments": 6,
+    "timestamp": 1760118763.872352
+  }
+}

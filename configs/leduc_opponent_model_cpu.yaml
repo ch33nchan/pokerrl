@@ -1,0 +1,15 @@
+experiment:
+  num_runs: 3
+  iterations: 200
+  checkpoint_interval: 50
+  evaluation_interval: 50
+  update_threshold: 25
+  batch_size: 64
+  device: cpu
+  plot_title: "Leduc: DCFR Opponent Model Study"
+  plot_output_filename: opponent_model_exploitability.png
+
+agents:
+  include:
+    - baseline
+    - opponent_model

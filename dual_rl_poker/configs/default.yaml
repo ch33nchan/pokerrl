@@ -1,0 +1,77 @@
+# Default configuration for Dual RL Poker experiments
+
+# Experiment settings
+experiment:
+  name: "dual_rl_poker_default"
+  seed: 42
+  device: "cpu"
+  log_level: "INFO"
+
+# Game settings
+game:
+  name: "kuhn_poker"  # kuhn_poker or leduc_poker
+  num_players: 2
+
+# Training protocol
+training:
+  iterations: 500
+  eval_every: 25
+  save_every: 100
+  batch_size: 2048
+  replay_window: 10
+  buffer_size: 10000
+  learning_rate: 3e-4
+  weight_decay: 0.0
+  gradient_clip: 5.0
+
+# Network architecture
+network:
+  type: "mlp"  # mlp, deep_cfr, sd_cfr, armac
+  hidden_dims: [64, 64]
+  dropout: 0.0
+
+# Evaluation settings
+evaluation:
+  num_episodes: 1000
+  head_to_head_episodes: 5000
+  bootstrap_samples: 1000
+  confidence_level: 0.95
+
+# Algorithm-specific settings
+algorithms:
+  deep_cfr:
+    advantage_memory_size: 10000
+    strategy_memory_size: 10000
+    external_sampling: true
+
+  sd_cfr:
+    memory_size: 10000
+    external_sampling: true
+
+  armac:
+    buffer_size: 10000
+    policy_replay_size: 5
+    update_frequency: 1
+    gamma: 0.99
+
+# Optimizer settings
+optimizer:
+  type: "adam"
+  lr: 3e-4
+  betas: [0.9, 0.999]
+  eps: 1e-8
+  weight_decay: 0.0
+
+# Logging and saving
+logging:
+  log_dir: "logs"
+  save_dir: "results"
+  tensorboard: true
+  print_frequency: 25
+  save_frequency: 100
+
+# Reproducibility
+reproducibility:
+  deterministic: true
+  torch_deterministic: true
+  benchmark: false

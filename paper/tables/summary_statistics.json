@@ -1,0 +1,21 @@
+{
+  "best_architecture": "deep",
+  "worst_architecture": "baseline",
+  "best_exploitability": 1.448,
+  "worst_exploitability": 1.52,
+  "improvement_percentage": 4.736842105263162,
+  "mean_exploitability": 1.484,
+  "std_exploitability": 0.0268328157299975,
+  "parameter_efficiency": {
+    "baseline": 0.30051403716884145,
+    "wide": 0.08041079427510106,
+    "deep": 0.15708396615317857,
+    "fast": 0.9933598937583001
+  },
+  "time_efficiency": {
+    "baseline": 0.8605175353940554,
+    "wide": 0.6840809735332017,
+    "deep": 0.7454978971869121,
+    "fast": 0.79191805733755
+  }
+}
