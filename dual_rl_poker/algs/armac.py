@@ -15,6 +15,8 @@ from collections import defaultdict, deque
 
 from algs.base import BaseAlgorithm, TrainingState, ExperienceBuffer
 from utils.logging import get_experiment_logger
+from eval.policy_adapter import PolicyMetadata
+from algs.armac_dual_rl import ARMACDualRL
 
 
 class ARMACAlgorithm(BaseAlgorithm):
@@ -36,61 +38,60 @@ class ARMACAlgorithm(BaseAlgorithm):
         """
         super().__init__(game_wrapper, config)
 
-        self.logger = get_experiment_logger("armac")
+        self.experiment_logger = get_experiment_logger("armac")
+        self.logger = self.experiment_logger.get_logger()
 
         # ARMAC specific parameters
-        self.actor_lr = config.get('actor_lr', 1e-4)
-        self.critic_lr = config.get('critic_lr', 1e-3)
-        self.regret_lr = config.get('regret_lr', 1e-3)
-        self.buffer_size = config.get('buffer_size', 10000)
-        self.batch_size = config.get('batch_size', 64)
-        self.gamma = config.get('gamma', 0.99)  # Discount factor
-        self.tau = config.get('tau', 0.005)  # Soft update parameter
-        self.regret_weight = config.get('regret_weight', 0.1)
-        self.policy_update_frequency = config.get('policy_update_frequency', 1)
-        self.value_update_frequency = config.get('value_update_frequency', 1)
+        self.actor_lr = config.get("actor_lr", 1e-4)
+        self.critic_lr = config.get("critic_lr", 1e-3)
+        self.regret_lr = config.get("regret_lr", 1e-3)
+        self.buffer_size = config.get("buffer_size", 10000)
+        self.batch_size = config.get("batch_size", 64)
+        self.gamma = config.get("gamma", 0.99)  # Discount factor
+        self.tau = config.get("tau", 0.005)  # Soft update parameter
+        self.regret_weight = config.get("regret_weight", 0.1)
+        self.lambda_mode = config.get("lambda_mode", "fixed")
+        self.lambda_alpha = config.get("lambda_alpha", 0.5)
+        self.policy_update_frequency = config.get("policy_update_frequency", 1)
+        self.value_update_frequency = config.get("value_update_frequency", 1)
+        self.gradient_clip = config.get(
+            "gradient_clip", config.get("training", {}).get("gradient_clip", 5.0)
+        )
 
         # Initialize networks
         from nets.mlp import ARMACNetwork
+
         encoding_size = game_wrapper.get_encoding_size()
         num_actions = game_wrapper.num_actions
 
         # Actor and Critic networks
+        hidden_dims = config.get(
+            "hidden_dims", config.get("network", {}).get("hidden_dims", [64, 64])
+        )
+
         self.actor = ARMACNetwork(
-            encoding_size,
-            num_actions,
-            config['network']['hidden_dims'],
-            network_type='actor'
+            encoding_size, num_actions, hidden_dims, network_type="actor"
         )
 
         self.critic = ARMACNetwork(
             encoding_size,
             1,  # Value output
-            config['network']['hidden_dims'],
-            network_type='critic'
+            hidden_dims,
+            network_type="critic",
         )
 
         # Target networks for stability
         self.actor_target = ARMACNetwork(
-            encoding_size,
-            num_actions,
-            config['network']['hidden_dims'],
-            network_type='actor'
+            encoding_size, num_actions, hidden_dims, network_type="actor"
         )
 
         self.critic_target = ARMACNetwork(
-            encoding_size,
-            1,
-            config['network']['hidden_dims'],
-            network_type='critic'
+            encoding_size, 1, hidden_dims, network_type="critic"
         )
 
         # Regret network for strategic guidance
         self.regret_network = ARMACNetwork(
-            encoding_size,
-            num_actions,
-            config['network']['hidden_dims'],
-            network_type='regret'
+            encoding_size, num_actions, hidden_dims, network_type="regret"
         )
 
         # Initialize target networks
@@ -98,16 +99,13 @@ class ARMACAlgorithm(BaseAlgorithm):
 
         # Optimizers
         self.actor_optimizer = torch.optim.Adam(
-            self.actor.parameters(),
-            lr=self.actor_lr
+            self.actor.parameters(), lr=self.actor_lr
         )
         self.critic_optimizer = torch.optim.Adam(
-            self.critic.parameters(),
-            lr=self.critic_lr
+            self.critic.parameters(), lr=self.critic_lr
         )
         self.regret_optimizer = torch.optim.Adam(
-            self.regret_network.parameters(),
-            lr=self.regret_lr
+            self.regret_network.parameters(), lr=self.regret_lr
         )
 
         # Experience replay buffer
@@ -122,14 +120,40 @@ class ARMACAlgorithm(BaseAlgorithm):
         self.total_steps = 0
 
         # Exploration parameters
-        self.initial_noise_scale = config.get('initial_noise_scale', 0.5)
-        self.final_noise_scale = config.get('final_noise_scale', 0.01)
-        self.noise_decay_steps = config.get('noise_decay_steps', 1000)
+        self.initial_noise_scale = config.get("initial_noise_scale", 0.5)
+        self.final_noise_scale = config.get("final_noise_scale", 0.01)
+        self.noise_decay_steps = config.get("noise_decay_steps", 1000)
+
+        # ARMAC dual RL module with adaptive lambda support
+        self.armac_dual_rl = ARMACDualRL(
+            num_actions=num_actions,
+            mixture_weight=self.regret_weight,
+            lambda_mode=self.lambda_mode,
+            lambda_alpha=self.lambda_alpha,
+        )
 
         self.logger.info("Initialized ARMAC algorithm")
-        self.logger.info(f"Actor parameters: {sum(p.numel() for p in self.actor.parameters())}")
-        self.logger.info(f"Critic parameters: {sum(p.numel() for p in self.critic.parameters())}")
-        self.logger.info(f"Regret parameters: {sum(p.numel() for p in self.regret_network.parameters())}")
+        self.logger.info(
+            f"Actor parameters: {sum(p.numel() for p in self.actor.parameters())}"
+        )
+        self.logger.info(
+            f"Critic parameters: {sum(p.numel() for p in self.critic.parameters())}"
+        )
+        self.logger.info(
+            f"Regret parameters: {sum(p.numel() for p in self.regret_network.parameters())}"
+        )
+
+    def _create_network(self):
+        """ARMAC manages dedicated actor/critic networks explicitly."""
+        return None
+
+    def train_step(self) -> Dict[str, float]:
+        state = self.train_iteration()
+        return {
+            "loss": state.loss,
+            "gradient_norm": state.gradient_norm,
+            "wall_time": state.wall_time,
+        }
 
     def _update_target_networks(self, tau: float = 1.0):
         """Soft update target networks.
@@ -137,10 +161,14 @@ class ARMACAlgorithm(BaseAlgorithm):
         Args:
             tau: Soft update parameter
         """
-        for target_param, param in zip(self.actor_target.parameters(), self.actor.parameters()):
+        for target_param, param in zip(
+            self.actor_target.parameters(), self.actor.parameters()
+        ):
             target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
-        for target_param, param in zip(self.critic_target.parameters(), self.critic.parameters()):
+        for target_param, param in zip(
+            self.critic_target.parameters(), self.critic.parameters()
+        ):
             target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
     def train_iteration(self) -> TrainingState:
@@ -163,30 +191,54 @@ class ARMACAlgorithm(BaseAlgorithm):
         # Step 4: Update actor network with regret guidance
         actor_metrics = self._update_actor_network()
 
-        # Step 5: Soft update target networks
+        # Step 5: Update adaptive lambda if enabled
+        current_lambda = self.regret_weight
+        if self.lambda_mode == "adaptive":
+            # Update loss averages for adaptive lambda
+            self.armac_dual_rl.update_loss_averages(
+                regret_metrics["loss"], actor_metrics["policy_gradient_loss"]
+            )
+            current_lambda = self.armac_dual_rl.compute_lambda_t(
+                self.armac_dual_rl.avg_regret_loss,
+                self.armac_dual_rl.avg_policy_loss,
+                self.lambda_alpha,
+            )
+
+        # Step 6: Soft update target networks
         self._update_target_networks(self.tau)
 
         # Calculate training statistics
         iteration_time = time.time() - start_time
-        total_loss = actor_metrics['loss'] + critic_metrics['loss'] + regret_metrics['loss']
+        total_loss = (
+            actor_metrics["loss"] + critic_metrics["loss"] + regret_metrics["loss"]
+        )
 
         training_state = TrainingState(
             iteration=self.iteration_count,
             loss=total_loss,
-            regret_loss=regret_metrics['loss'],
-            strategy_loss=actor_metrics['loss'],
-            value_loss=critic_metrics['loss'],
             buffer_size=len(self.replay_buffer),
             wall_time=iteration_time,
-            gradient_norm=actor_metrics['gradient_norm'] + critic_metrics['gradient_norm'] + regret_metrics['gradient_norm'],
+            gradient_norm=(
+                actor_metrics["gradient_norm"]
+                + critic_metrics["gradient_norm"]
+                + regret_metrics["gradient_norm"]
+            ),
             extra_metrics={
-                'num_trajectories': len(trajectories),
-                'actor_loss': actor_metrics['loss'],
-                'critic_loss': critic_metrics['loss'],
-                'regret_loss': regret_metrics['loss'],
-                'noise_scale': self._get_current_noise_scale(),
-                'avg_regret_norm': np.mean([np.linalg.norm(r) for r in self.cumulative_regrets.values()]) if self.cumulative_regrets else 0.0
-            }
+                "strategy_loss": actor_metrics["loss"],
+                "value_loss": critic_metrics["loss"],
+                "regret_loss": regret_metrics["loss"],
+                "policy_gradient_loss": actor_metrics["policy_gradient_loss"],
+                "num_trajectories": len(trajectories),
+                "noise_scale": self._get_current_noise_scale(),
+                "avg_regret_norm": np.mean(
+                    [np.linalg.norm(r) for r in self.cumulative_regrets.values()]
+                )
+                if self.cumulative_regrets
+                else 0.0,
+                "current_lambda": current_lambda,
+                "avg_regret_loss": self.armac_dual_rl.avg_regret_loss,
+                "avg_policy_loss": self.armac_dual_rl.avg_policy_loss,
+            },
         )
 
         self.iteration_count += 1
@@ -199,7 +251,9 @@ class ARMACAlgorithm(BaseAlgorithm):
             List of trajectory transitions
         """
         trajectories = []
-        episodes_per_iteration = max(1, self.batch_size // 10)  # Adjust based on game length
+        episodes_per_iteration = max(
+            1, self.batch_size // 10
+        )  # Adjust based on game length
 
         for _ in range(episodes_per_iteration):
             episode_trajectory = self._generate_armac_episode()
@@ -235,21 +289,27 @@ class ARMACAlgorithm(BaseAlgorithm):
             info_state_key = self.game_wrapper.get_info_state_key(state, current_player)
 
             # Get action probabilities from actor with regret guidance
-            action_probs = self._get_armac_strategy(info_state, legal_actions, info_state_key)
+            action_probs = self._get_armac_strategy(
+                info_state, legal_actions, info_state_key
+            )
+
+            # Extract probabilities for legal actions only
+            legal_action_probs = action_probs[legal_actions]
 
             # Sample action
-            action = np.random.choice(legal_actions, p=action_probs)
+            action = np.random.choice(legal_actions, p=legal_action_probs)
 
             # Store transition
             transition = {
-                'info_state': info_state,
-                'info_state_key': info_state_key,
-                'legal_actions': legal_actions,
-                'action': action,
-                'action_probs': action_probs,
-                'player': current_player,
-                'episode_step': episode_step,
-                'iteration': self.iteration_count
+                "info_state": info_state,
+                "info_state_key": info_state_key,
+                "legal_actions": legal_actions,
+                "legal_actions_mask": self._legal_actions_mask(legal_actions),
+                "action": action,
+                "action_probs": action_probs,
+                "player": current_player,
+                "episode_step": episode_step,
+                "iteration": self.iteration_count,
             }
             trajectory.append(transition)
 
@@ -268,7 +328,9 @@ class ARMACAlgorithm(BaseAlgorithm):
 
         return trajectory
 
-    def _get_armac_strategy(self, info_state: np.ndarray, legal_actions: List[int], info_state_key: str) -> np.ndarray:
+    def _get_armac_strategy(
+        self, info_state: np.ndarray, legal_actions: List[int], info_state_key: str
+    ) -> np.ndarray:
         """Get ARMAC action probabilities with improved regret matching integration.
 
         Args:
@@ -283,7 +345,7 @@ class ARMACAlgorithm(BaseAlgorithm):
         with torch.no_grad():
             info_tensor = torch.FloatTensor(info_state).unsqueeze(0)
             actor_output = self.actor(info_tensor)
-            policy_probs = actor_output['action_probs'].squeeze().cpu().numpy()
+            policy_probs = actor_output["action_probs"].squeeze().cpu().numpy()
 
         # Apply legal action mask to policy
         legal_mask = np.zeros(len(policy_probs))
@@ -301,7 +363,9 @@ class ARMACAlgorithm(BaseAlgorithm):
             positive_regrets = np.maximum(regrets[legal_actions], 0)
             if np.sum(positive_regrets) > 0:
                 regret_probs = np.zeros(len(policy_probs))
-                regret_probs[legal_actions] = positive_regrets / np.sum(positive_regrets)
+                regret_probs[legal_actions] = positive_regrets / np.sum(
+                    positive_regrets
+                )
             else:
                 # If no positive regrets, use uniform distribution over legal actions
                 regret_probs = np.zeros(len(policy_probs))
@@ -312,10 +376,14 @@ class ARMACAlgorithm(BaseAlgorithm):
             regret_probs[legal_actions] = 1.0 / len(legal_actions)
 
         # Adaptive regret weight based on training progress
-        adaptive_regret_weight = self.regret_weight * min(1.0, self.iteration_count / 1000.0)
+        adaptive_regret_weight = self.regret_weight * min(
+            1.0, self.iteration_count / 1000.0
+        )
 
         # Combine policy and regret matching using adaptive weighting
-        combined_probs = (1 - adaptive_regret_weight) * policy_probs + adaptive_regret_weight * regret_probs
+        combined_probs = (
+            1 - adaptive_regret_weight
+        ) * policy_probs + adaptive_regret_weight * regret_probs
 
         # Apply exploration noise (decreasing over time)
         noise_scale = self._get_current_noise_scale()
@@ -336,6 +404,11 @@ class ARMACAlgorithm(BaseAlgorithm):
 
         return final_probs
 
+    def _legal_actions_mask(self, legal_actions: List[int]) -> np.ndarray:
+        mask = np.zeros(self.game_wrapper.num_actions, dtype=np.float32)
+        mask[legal_actions] = 1.0
+        return mask
+
     def _get_current_noise_scale(self) -> float:
         """Get current exploration noise scale.
 
@@ -343,9 +416,13 @@ class ARMACAlgorithm(BaseAlgorithm):
             Current noise scale
         """
         decay_progress = min(self.total_steps, self.noise_decay_steps)
-        return self.initial_noise_scale * (self.final_noise_scale / self.initial_noise_scale) ** (decay_progress / self.noise_decay_steps)
+        return self.initial_noise_scale * (
+            self.final_noise_scale / self.initial_noise_scale
+        ) ** (decay_progress / self.noise_decay_steps)
 
-    def _assign_armac_returns(self, trajectory: List[Dict[str, Any]], final_rewards: Dict[int, float]):
+    def _assign_armac_returns(
+        self, trajectory: List[Dict[str, Any]], final_rewards: Dict[int, float]
+    ):
         """Assign returns and advantages to trajectory transitions using proper TD and advantage computation.
 
         Args:
@@ -357,32 +434,32 @@ class ARMACAlgorithm(BaseAlgorithm):
         next_values = {p: 0.0 for p in range(self.game_wrapper.num_players)}
 
         for transition in reversed(trajectory):
-            player = transition['player']
-            info_state = transition['info_state']
-            action = transition['action']
-            legal_actions = transition['legal_actions']
+            player = transition["player"]
+            info_state = transition["info_state"]
+            action = transition["action"]
+            legal_actions = transition["legal_actions"]
 
             # Store immediate reward
-            transition['reward'] = final_rewards[player]
+            transition["reward"] = final_rewards[player]
 
             # Get current value estimate for this state
             with torch.no_grad():
                 info_tensor = torch.FloatTensor(info_state).unsqueeze(0)
                 value_output = self.critic(info_tensor)
-                current_value = value_output['value'].item()
+                current_value = value_output["value"].item()
 
             # Store current value
-            transition['value'] = current_value
+            transition["value"] = current_value
 
             # Calculate TD target: r + γ * V(s')
             td_target = final_rewards[player] + self.gamma * next_values[player]
 
             # Calculate TD error: δ = r + γ * V(s') - V(s)
-            transition['td_error'] = td_target - current_value
+            transition["td_error"] = td_target - current_value
 
             # Calculate advantage: A = Q(s,a) - V(s)
             # We use TD target as Q estimate for simplicity
-            transition['advantage'] = td_target - current_value
+            transition["advantage"] = td_target - current_value
 
             # Update next value for next iteration
             next_values[player] = current_value
@@ -390,12 +467,12 @@ class ARMACAlgorithm(BaseAlgorithm):
             # Store legal actions mask
             legal_mask = np.zeros(self.game_wrapper.num_actions)
             legal_mask[legal_actions] = 1.0
-            transition['legal_actions_mask'] = legal_mask
+            transition["legal_actions_mask"] = legal_mask
 
             # One-hot encode action
             action_one_hot = np.zeros(self.game_wrapper.num_actions)
             action_one_hot[action] = 1.0
-            transition['action_one_hot'] = action_one_hot
+            transition["action_one_hot"] = action_one_hot
 
             # Calculate regrets for regret network update
             self._update_regrets(transition, final_rewards[player])
@@ -409,11 +486,11 @@ class ARMACAlgorithm(BaseAlgorithm):
             transition: Trajectory transition
             reward: Reward received
         """
-        info_state_key = transition['info_state_key']
-        legal_actions = transition['legal_actions']
-        action = transition['action']
-        value = transition['value']  # Current value estimate from critic
-        advantage = transition['advantage']  # Advantage computed earlier
+        info_state_key = transition["info_state_key"]
+        legal_actions = transition["legal_actions"]
+        action = transition["action"]
+        value = transition["value"]  # Current value estimate from critic
+        advantage = transition["advantage"]  # Advantage computed earlier
 
         # Compute counterfactual regrets
         # r_i(a) = Q_i(s,a) - V_i(s) = advantage for taken action
@@ -447,7 +524,9 @@ class ARMACAlgorithm(BaseAlgorithm):
 
         # Update cumulative regrets with decay for stability
         decay_factor = 0.99  # Regret decay for stability
-        self.cumulative_regrets[info_state_key] = self.cumulative_regrets[info_state_key] * decay_factor + positive_regrets
+        self.cumulative_regrets[info_state_key] = (
+            self.cumulative_regrets[info_state_key] * decay_factor + positive_regrets
+        )
         self.regret_counts[info_state_key] += 1
 
     def _update_regret_network(self) -> Dict[str, float]:
@@ -457,19 +536,21 @@ class ARMACAlgorithm(BaseAlgorithm):
             Training metrics
         """
         if len(self.replay_buffer) < self.batch_size:
-            return {'loss': 0.0, 'gradient_norm': 0.0}
+            return {"loss": 0.0, "gradient_norm": 0.0}
 
         # Sample batch
-        batch = random.sample(list(self.replay_buffer), min(self.batch_size, len(self.replay_buffer)))
+        batch = random.sample(
+            list(self.replay_buffer), min(self.batch_size, len(self.replay_buffer))
+        )
 
         # Prepare training data
-        info_states = torch.FloatTensor([t['info_state'] for t in batch])
-        legal_actions_mask = torch.FloatTensor([t['legal_actions_mask'] for t in batch])
+        info_states = torch.FloatTensor([t["info_state"] for t in batch])
+        legal_actions_mask = torch.FloatTensor([t["legal_actions_mask"] for t in batch])
 
         # Calculate target regrets from cumulative regrets
         target_regrets = []
         for transition in batch:
-            info_state_key = transition['info_state_key']
+            info_state_key = transition["info_state_key"]
             if info_state_key in self.cumulative_regrets:
                 regrets = self.cumulative_regrets[info_state_key]
                 # Apply positive transformation and normalize
@@ -479,14 +560,17 @@ class ARMACAlgorithm(BaseAlgorithm):
                 else:
                     target_regrets.append(np.ones(len(regrets)) / len(regrets))
             else:
-                target_regrets.append(np.ones(self.game_wrapper.num_actions) / self.game_wrapper.num_actions)
+                target_regrets.append(
+                    np.ones(self.game_wrapper.num_actions)
+                    / self.game_wrapper.num_actions
+                )
 
-        target_regrets = torch.FloatTensor(target_regrets)
+        target_regrets = torch.FloatTensor(np.array(target_regrets))
 
         # Update regret network
         self.regret_optimizer.zero_grad()
         regret_output = self.regret_network(info_states)
-        predicted_regrets = regret_output['action_probs']
+        predicted_regrets = regret_output["action_probs"]
 
         # Apply legal actions mask
         masked_pred = predicted_regrets * legal_actions_mask
@@ -496,16 +580,14 @@ class ARMACAlgorithm(BaseAlgorithm):
 
         # Backward pass
         regret_loss.backward()
+        training_cfg = self.config.get("training", {})
+        gradient_clip = training_cfg.get("gradient_clip", self.gradient_clip)
         gradient_norm = torch.nn.utils.clip_grad_norm_(
-            self.regret_network.parameters(),
-            self.config['training'].get('gradient_clip', 5.0)
+            self.regret_network.parameters(), gradient_clip
         )
         self.regret_optimizer.step()
 
-        return {
-            'loss': regret_loss.item(),
-            'gradient_norm': gradient_norm.item()
-        }
+        return {"loss": regret_loss.item(), "gradient_norm": gradient_norm.item()}
 
     def _update_critic_network(self) -> Dict[str, float]:
         """Update critic network using TD learning.
@@ -514,20 +596,22 @@ class ARMACAlgorithm(BaseAlgorithm):
             Training metrics
         """
         if len(self.replay_buffer) < self.batch_size:
-            return {'loss': 0.0, 'gradient_norm': 0.0}
+            return {"loss": 0.0, "gradient_norm": 0.0}
 
         # Sample batch
-        batch = random.sample(list(self.replay_buffer), min(self.batch_size, len(self.replay_buffer)))
+        batch = random.sample(
+            list(self.replay_buffer), min(self.batch_size, len(self.replay_buffer))
+        )
 
         # Prepare training data
-        info_states = torch.FloatTensor([t['info_state'] for t in batch])
-        rewards = torch.FloatTensor([t['reward'] for t in batch])
-        td_errors = torch.FloatTensor([t['td_error'] for t in batch])
+        info_states = torch.FloatTensor([t["info_state"] for t in batch])
+        rewards = torch.FloatTensor([t["reward"] for t in batch])
+        td_errors = torch.FloatTensor([t["td_error"] for t in batch])
 
         # Get current value estimates
         self.critic_optimizer.zero_grad()
         value_output = self.critic(info_states)
-        predicted_values = value_output['value'].squeeze()
+        predicted_values = value_output["value"].squeeze()
 
         # Calculate TD loss
         target_values = rewards + self.gamma * td_errors
@@ -535,16 +619,14 @@ class ARMACAlgorithm(BaseAlgorithm):
 
         # Backward pass
         critic_loss.backward()
+        training_cfg = self.config.get("training", {})
+        gradient_clip = training_cfg.get("gradient_clip", self.gradient_clip)
         gradient_norm = torch.nn.utils.clip_grad_norm_(
-            self.critic.parameters(),
-            self.config['training'].get('gradient_clip', 5.0)
+            self.critic.parameters(), gradient_clip
         )
         self.critic_optimizer.step()
 
-        return {
-            'loss': critic_loss.item(),
-            'gradient_norm': gradient_norm.item()
-        }
+        return {"loss": critic_loss.item(), "gradient_norm": gradient_norm.item()}
 
     def _update_actor_network(self) -> Dict[str, float]:
         """Update actor network using advantage-based policy gradient with regret guidance.
@@ -553,77 +635,72 @@ class ARMACAlgorithm(BaseAlgorithm):
             Training metrics
         """
         if len(self.replay_buffer) < self.batch_size:
-            return {'loss': 0.0, 'gradient_norm': 0.0}
+            return {"loss": 0.0, "gradient_norm": 0.0}
 
         # Sample batch
-        batch = random.sample(list(self.replay_buffer), min(self.batch_size, len(self.replay_buffer)))
+        batch = random.sample(
+            list(self.replay_buffer), min(self.batch_size, len(self.replay_buffer))
+        )
 
         # Prepare training data
-        info_states = torch.FloatTensor([t['info_state'] for t in batch])
-        legal_actions_mask = torch.FloatTensor([t['legal_actions_mask'] for t in batch])
-        actions = torch.LongTensor([t['action'] for t in batch])
-        advantages = torch.FloatTensor([t.get('advantage', t.get('td_error', 0.0)) for t in batch])
+        info_states = torch.FloatTensor([t["info_state"] for t in batch])
+        legal_actions_mask = torch.FloatTensor([t["legal_actions_mask"] for t in batch])
+        actions = torch.LongTensor([t["action"] for t in batch])
 
-        # Normalize advantages for stability
-        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+        # Use ARMAC dual RL for proper advantage computation
+        advantages = self.armac_dual_rl.compute_advantages(
+            info_states, self.critic, self.actor, legal_actions_mask
+        )
+
+        # Get selected advantages
+        selected_advantages = advantages.gather(1, actions.unsqueeze(1)).squeeze()
 
         # Get policy from actor
         self.actor_optimizer.zero_grad()
         actor_output = self.actor(info_states)
-        action_probs = actor_output['action_probs']
+        action_probs = actor_output["action_probs"]
 
         # Apply legal actions mask and normalize
         masked_probs = action_probs * legal_actions_mask
         normalized_probs = masked_probs / (masked_probs.sum(dim=1, keepdim=True) + 1e-8)
 
-        # Calculate policy gradient loss using advantages (REINFORCE with baseline)
+        # Calculate policy gradient loss using advantages
         selected_probs = normalized_probs.gather(1, actions.unsqueeze(1)).squeeze()
-        policy_gradient_loss = -(torch.log(selected_probs + 1e-8) * advantages.detach()).mean()
+        policy_gradient_loss = -(
+            torch.log(selected_probs + 1e-8) * selected_advantages.detach()
+        ).mean()
 
-        # Add entropy regularization to encourage exploration
-        entropy = -(normalized_probs * torch.log(normalized_probs + 1e-8)).sum(dim=1).mean()
-        entropy_bonus = 0.01 * entropy  # Entropy coefficient
+        # Add entropy regularization
+        entropy = (
+            -(normalized_probs * torch.log(normalized_probs + 1e-8)).sum(dim=1).mean()
+        )
+        entropy_bonus = 0.01 * entropy
 
-        # Add regret matching loss to incorporate strategic guidance
-        regret_loss = 0.0
-        if 'info_state_key' in batch[0]:  # Check if we have info state keys
-            regret_targets = []
-            for transition in batch:
-                info_state_key = transition['info_state_key']
-                if info_state_key in self.cumulative_regrets:
-                    regrets = self.cumulative_regrets[info_state_key]
-                    # Convert regrets to strategy target using regret matching
-                    positive_regrets = np.maximum(regrets, 0)
-                    if np.sum(positive_regrets) > 0:
-                        regret_strategy = positive_regrets / np.sum(positive_regrets)
-                    else:
-                        regret_strategy = np.ones(len(regrets)) / len(regrets)
-                else:
-                    regret_strategy = np.ones(self.game_wrapper.num_actions) / self.game_wrapper.num_actions
-                regret_targets.append(regret_strategy)
-
-            if regret_targets:
-                regret_targets = torch.FloatTensor(np.array(regret_targets))
-                regret_loss = F.mse_loss(normalized_probs, regret_targets.detach())
-                regret_loss *= 0.1  # Scale down regret loss
+        # Add regret matching loss
+        regret_policy = self.armac_dual_rl.regret_matching_policy(
+            advantages, legal_actions_mask
+        )
+        regret_loss = F.mse_loss(normalized_probs, regret_policy.detach())
+        regret_loss *= 0.1  # Scale down regret loss
 
         # Total actor loss
         actor_loss = policy_gradient_loss - entropy_bonus + regret_loss
 
         # Backward pass
         actor_loss.backward()
+        training_cfg = self.config.get("training", {})
+        gradient_clip = training_cfg.get("gradient_clip", self.gradient_clip)
         gradient_norm = torch.nn.utils.clip_grad_norm_(
-            self.actor.parameters(),
-            self.config['training'].get('gradient_clip', 5.0)
+            self.actor.parameters(), gradient_clip
         )
         self.actor_optimizer.step()
 
         return {
-            'loss': actor_loss.item(),
-            'gradient_norm': gradient_norm.item(),
-            'policy_gradient_loss': policy_gradient_loss.item(),
-            'entropy_bonus': entropy_bonus.item(),
-            'regret_loss': regret_loss.item() if isinstance(regret_loss, torch.Tensor) else regret_loss
+            "loss": actor_loss.item(),
+            "gradient_norm": gradient_norm.item(),
+            "policy_gradient_loss": policy_gradient_loss.item(),
+            "entropy_bonus": entropy_bonus.item(),
+            "regret_loss": regret_loss.item(),
         }
 
     def get_policy(self, player: int) -> callable:
@@ -635,6 +712,7 @@ class ARMACAlgorithm(BaseAlgorithm):
         Returns:
             Policy function
         """
+
         def policy(info_state_key: str, legal_actions: List[int]) -> np.ndarray:
             # Get information state encoding
             info_state = self.game_wrapper.encode_info_state_key(info_state_key, player)
@@ -643,7 +721,7 @@ class ARMACAlgorithm(BaseAlgorithm):
             with torch.no_grad():
                 info_tensor = torch.FloatTensor(info_state).unsqueeze(0)
                 actor_output = self.actor(info_tensor)
-                action_probs = actor_output['action_probs'].squeeze().cpu().numpy()
+                action_probs = actor_output["action_probs"].squeeze().cpu().numpy()
 
             # Apply legal action mask
             legal_mask = np.zeros(len(action_probs))
@@ -671,14 +749,17 @@ class ARMACAlgorithm(BaseAlgorithm):
 
         # Sample some common information states from the replay buffer
         if len(self.replay_buffer) > 0:
-            sample_transitions = random.sample(list(self.replay_buffer),
-                                             min(1000, len(self.replay_buffer)))
+            sample_transitions = random.sample(
+                list(self.replay_buffer), min(1000, len(self.replay_buffer))
+            )
 
             for transition in sample_transitions:
-                info_state_key = transition['info_state_key']
+                info_state_key = transition["info_state_key"]
                 if info_state_key not in avg_strategy:
-                    legal_actions = transition['legal_actions']
-                    action_probs = self.get_policy(transition['player'])(info_state_key, legal_actions)
+                    legal_actions = transition["legal_actions"]
+                    action_probs = self.get_policy(transition["player"])(
+                        info_state_key, legal_actions
+                    )
                     avg_strategy[info_state_key] = action_probs
 
         return avg_strategy
@@ -697,19 +778,29 @@ class ARMACAlgorithm(BaseAlgorithm):
         Returns:
             Evaluation metrics
         """
-        from eval.evaluator import OpenSpielEvaluator
+        from eval.openspiel_evaluator import OpenSpielExactEvaluator
 
-        evaluator = OpenSpielEvaluator(self.game_wrapper)
+        evaluator = OpenSpielExactEvaluator(self.game_wrapper.game_name)
+        metadata = PolicyMetadata(method="armac", iteration=self.iteration_count)
 
-        # Get policies for all players
-        policies = {}
-        for player in range(self.game_wrapper.num_players):
-            policies[player] = self.get_policy(player)
+        def policy_fn(
+            player_id: int, info_state: str, legal_actions: List[int]
+        ) -> np.ndarray:
+            return self.get_policy(player_id)(info_state, list(legal_actions))
 
-        # Run evaluation
-        eval_metrics = evaluator.evaluate_with_diagnostics(policies, num_episodes=100)
+        policy_adapter = evaluator.build_policy(policy_fn, metadata=metadata)
+        result = evaluator.evaluate(policy_adapter, metadata=metadata)
 
-        return eval_metrics
+        return {
+            "nash_conv": result.nash_conv,
+            "exploitability": result.exploitability,
+            "player_0_value": result.player_0_value,
+            "player_1_value": result.player_1_value,
+            "mean_value": result.mean_value,
+            "info_state_count": result.info_state_count,
+            "openspiel_version": result.openspiel_version,
+            "python_version": result.python_version,
+        }
 
     def save_checkpoint(self, path: str):
         """Save algorithm checkpoint.
@@ -718,19 +809,19 @@ class ARMACAlgorithm(BaseAlgorithm):
             path: Path to save checkpoint
         """
         checkpoint = {
-            'iteration': self.iteration_count,
-            'total_steps': self.total_steps,
-            'actor_state': self.actor.state_dict(),
-            'critic_state': self.critic.state_dict(),
-            'actor_target_state': self.actor_target.state_dict(),
-            'critic_target_state': self.critic_target.state_dict(),
-            'regret_network_state': self.regret_network.state_dict(),
-            'actor_optimizer_state': self.actor_optimizer.state_dict(),
-            'critic_optimizer_state': self.critic_optimizer.state_dict(),
-            'regret_optimizer_state': self.regret_optimizer.state_dict(),
-            'cumulative_regrets': dict(self.cumulative_regrets),
-            'regret_counts': dict(self.regret_counts),
-            'config': self.config
+            "iteration": self.iteration_count,
+            "total_steps": self.total_steps,
+            "actor_state": self.actor.state_dict(),
+            "critic_state": self.critic.state_dict(),
+            "actor_target_state": self.actor_target.state_dict(),
+            "critic_target_state": self.critic_target.state_dict(),
+            "regret_network_state": self.regret_network.state_dict(),
+            "actor_optimizer_state": self.actor_optimizer.state_dict(),
+            "critic_optimizer_state": self.critic_optimizer.state_dict(),
+            "regret_optimizer_state": self.regret_optimizer.state_dict(),
+            "cumulative_regrets": dict(self.cumulative_regrets),
+            "regret_counts": dict(self.regret_counts),
+            "config": self.config,
         }
 
         torch.save(checkpoint, path)
@@ -742,20 +833,52 @@ class ARMACAlgorithm(BaseAlgorithm):
         Args:
             path: Path to load checkpoint
         """
-        checkpoint = torch.load(path, map_location='cpu')
+        checkpoint = torch.load(path, map_location="cpu")
 
-        self.iteration_count = checkpoint['iteration']
-        self.total_steps = checkpoint.get('total_steps', 0)
-        self.actor.load_state_dict(checkpoint['actor_state'])
-        self.critic.load_state_dict(checkpoint['critic_state'])
-        self.actor_target.load_state_dict(checkpoint['actor_target_state'])
-        self.critic_target.load_state_dict(checkpoint['critic_target_state'])
-        self.regret_network.load_state_dict(checkpoint['regret_network_state'])
-        self.actor_optimizer.load_state_dict(checkpoint['actor_optimizer_state'])
-        self.critic_optimizer.load_state_dict(checkpoint['critic_optimizer_state'])
-        self.regret_optimizer.load_state_dict(checkpoint['regret_optimizer_state'])
-        self.cumulative_regrets = defaultdict(lambda: np.zeros(self.game_wrapper.num_actions),
-                                            checkpoint['cumulative_regrets'])
-        self.regret_counts = defaultdict(int, checkpoint['regret_counts'])
+        self.iteration_count = checkpoint["iteration"]
+        self.total_steps = checkpoint.get("total_steps", 0)
+        self.actor.load_state_dict(checkpoint["actor_state"])
+        self.critic.load_state_dict(checkpoint["critic_state"])
+        self.actor_target.load_state_dict(checkpoint["actor_target_state"])
+        self.critic_target.load_state_dict(checkpoint["critic_target_state"])
+        self.regret_network.load_state_dict(checkpoint["regret_network_state"])
+        self.actor_optimizer.load_state_dict(checkpoint["actor_optimizer_state"])
+        self.critic_optimizer.load_state_dict(checkpoint["critic_optimizer_state"])
+        self.regret_optimizer.load_state_dict(checkpoint["regret_optimizer_state"])
+        self.cumulative_regrets = defaultdict(
+            lambda: np.zeros(self.game_wrapper.num_actions),
+            checkpoint["cumulative_regrets"],
+        )
+        self.regret_counts = defaultdict(int, checkpoint["regret_counts"])
 
-        self.logger.info(f"Loaded ARMAC checkpoint from {path} (iteration {self.iteration_count})")
+        self.logger.info(
+            f"Loaded ARMAC checkpoint from {path} (iteration {self.iteration_count})"
+        )
+
+    def get_policy_adapter(self):
+        """Return a PolicyAdapter instance for the current averaged strategy."""
+
+        def policy_fn(
+            player: int, info_state: str, legal_actions: List[int]
+        ) -> np.ndarray:
+            del player
+            strategy = self.get_average_strategy().get(info_state)
+            if strategy is None or strategy.sum() <= 0:
+                return np.full(
+                    len(legal_actions), 1.0 / len(legal_actions), dtype=np.float64
+                )
+            legal_strategy = strategy[legal_actions]
+            total = legal_strategy.sum()
+            if total <= 0:
+                return np.full(
+                    len(legal_actions), 1.0 / len(legal_actions), dtype=np.float64
+                )
+            return (legal_strategy / total).astype(np.float64)
+
+        from eval.openspiel_evaluator import create_evaluator
+
+        evaluator = create_evaluator(self.game_wrapper.game_name)
+        return evaluator.build_policy(
+            policy_fn,
+            metadata=PolicyMetadata(method="armac", iteration=self.iteration_count),
+        )

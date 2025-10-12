@@ -82,7 +82,7 @@ def plot_exploitability_curves(all_results, save_path="plots/exploitability_curv
                                    color=colors[alg_idx], alpha=0.2)
 
         ax.set_xlabel('Training Iteration')
-        ax.set_ylabel('Exploitability (mbb/h)')
+        ax.set_ylabel('Exploitability (game units)')
         ax.set_title(f'{game.replace("_", " ").title()}')
         ax.set_yscale('log')
         ax.grid(True, alpha=0.3)
@@ -149,7 +149,7 @@ def plot_comparison_bar_chart(all_results, save_path="plots/performance_comparis
                yerr=errors, capsize=5, alpha=0.8)
 
     ax.set_xlabel('Game')
-    ax.set_ylabel('Final Exploitability (mbb/h)')
+    ax.set_ylabel('Final Exploitability (game units)')
     ax.set_title('Algorithm Performance Comparison')
     ax.set_xticks(x + width)
     ax.set_xticklabels(games_list)
@@ -189,7 +189,7 @@ def plot_training_efficiency(all_results, save_path="plots/training_efficiency.p
                       s=50, alpha=0.7)
 
     ax.set_xlabel('Training Time (seconds)')
-    ax.set_ylabel('Final Exploitability (mbb/h)')
+    ax.set_ylabel('Final Exploitability (game units)')
     ax.set_title('Training Efficiency: Performance vs Time')
     ax.set_xscale('log')
     ax.set_yscale('log')
@@ -304,7 +304,7 @@ def create_summary_table(all_results, save_path="tables/performance_table.tex"):
     # Create LaTeX table
     latex_table = "\\begin{table}[h]\n"
     latex_table += "\\centering\n"
-    latex_table += "\\caption{Algorithm performance comparison across games. Values show mean exploitability (mbb/h) with standard deviation.}\n"
+    latex_table += "\\caption{Algorithm performance comparison across games. Values show mean exploitability (game units) with standard deviation.}\n"
     latex_table += "\\label{tab:performance_comparison}\n"
     latex_table += "\\begin{tabular}{lcc}\n"
     latex_table += "\\toprule\n"

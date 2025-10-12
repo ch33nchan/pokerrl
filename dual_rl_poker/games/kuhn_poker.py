@@ -41,8 +41,10 @@ class KuhnPokerWrapper(GameWrapper):
         Returns:
             Encoded state vector
         """
-        # Use OpenSpiel's information state tensor
-        tensor = state.information_state_tensor()
+        player = state.current_player()
+        if player < 0:
+            player = 0
+        tensor = state.information_state_tensor(player)
         return np.array(tensor, dtype=np.float32)
 
     def decode_state(self, encoding: np.ndarray) -> dict:

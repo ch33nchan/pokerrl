@@ -114,7 +114,7 @@ def plot_exploitability_curves(results_dir: str,
                            linewidth=2, alpha=0.8)
 
         ax.set_xlabel('Iteration')
-        ax.set_ylabel('Exploitability (mbb/h)')
+        ax.set_ylabel('Exploitability (game units)')
         ax.set_title(f'Exploitability Curves - {game.replace("_", " ").title()}')
         ax.legend()
         ax.grid(True, alpha=0.3)
@@ -181,7 +181,7 @@ def plot_comparison_charts(results_data: Dict[str, Any],
     ax1 = axes[0, 0]
     pivot_exploit = df.pivot(index='Algorithm', columns='Game', values='Final Exploitability')
     pivot_exploit.plot(kind='bar', ax=ax1, rot=45)
-    ax1.set_ylabel('Final Exploitability (mbb/h)')
+    ax1.set_ylabel('Final Exploitability (game units)')
     ax1.set_title('Final Exploitability Comparison')
     ax1.legend(title='Game')
     ax1.set_yscale('log')
@@ -209,7 +209,7 @@ def plot_comparison_charts(results_data: Dict[str, Any],
                    label=alg, alpha=0.7, s=50)
 
     ax4.set_xlabel('Training Time (seconds)')
-    ax4.set_ylabel('Final Exploitability (mbb/h)')
+    ax4.set_ylabel('Final Exploitability (game units)')
     ax4.set_title('Performance vs Training Time')
     ax4.set_yscale('log')
     ax4.legend()

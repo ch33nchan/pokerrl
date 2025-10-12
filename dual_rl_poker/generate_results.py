@@ -187,7 +187,7 @@ def main():
     print(f"Summary saved to {summary_file}")
 
     # Print summary statistics
-    print("\nFinal Results (Exploitability mbb/h):")
+    print("\nFinal Results (Exploitability in game units):")
     print("-" * 60)
     for algorithm in algorithms:
         print(f"\n{algorithm.upper()}:")

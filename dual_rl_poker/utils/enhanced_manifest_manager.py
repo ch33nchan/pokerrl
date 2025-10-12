@@ -146,7 +146,10 @@ class EnhancedManifestManager:
             self.logger.info(f"Created enhanced manifest at {self.manifest_path}")
 
         # Save schema
-        schema = {field.name: field.type.__name__ for field in RunMetadata.__dataclass_fields__.values()}
+        schema = {
+            field.name: getattr(field.type, '__name__', str(field.type))
+            for field in RunMetadata.__dataclass_fields__.values()
+        }
         with open(self.schema_path, 'w') as f:
             json.dump(schema, f, indent=2)
 
@@ -169,9 +172,12 @@ class EnhancedManifestManager:
         # OpenSpiel version
         try:
             import pyspiel
-            env_info['openspiel_version'] = pyspiel.version()
+            env_info['openspiel_version'] = getattr(pyspiel, 'version', lambda: getattr(pyspiel, '__version__', 'unknown'))()
         except ImportError:
             env_info['openspiel_version'] = 'unknown'
+        except TypeError:
+            # Handle cases where getattr returns a string version directly
+            env_info['openspiel_version'] = getattr(pyspiel, '__version__', 'unknown')
 
         # PyTorch version
         try:
@@ -221,11 +227,17 @@ class EnhancedManifestManager:
             if field not in kwargs:
                 kwargs[field] = self._get_default_value(field)
 
-        # Add environment information
-        kwargs.update(self.env_info)
+        # Add environment information for overlapping fields only
+        metadata_fields = {field.name for field in RunMetadata.__dataclass_fields__.values()}
+        for key, value in self.env_info.items():
+            if key in metadata_fields:
+                kwargs[key] = value
+
+        # Filter kwargs to valid metadata fields
+        filtered_kwargs = {k: v for k, v in kwargs.items() if k in metadata_fields}
 
         # Create metadata object
-        metadata = RunMetadata(**kwargs)
+        metadata = RunMetadata(**filtered_kwargs)
 
         # Validate metadata
         self._validate_metadata(metadata)

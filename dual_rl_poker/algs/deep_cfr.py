@@ -8,7 +8,7 @@ import time
 
 from algs.base import BaseAlgorithm, TrainingState, ExperienceBuffer
 from nets.mlp import DeepCFRNetwork
-from eval.openspiel_exact_evaluator import create_evaluator
+from eval.openspiel_evaluator import create_evaluator, PolicyMetadata
 
 
 class DeepCFRAlgorithm(BaseAlgorithm):
@@ -57,7 +57,7 @@ class DeepCFRAlgorithm(BaseAlgorithm):
             weight_decay=config.get('weight_decay', 0.0)
         )
 
-        # Separate buffers
+    # Separate buffers
         self.regret_buffer = ExperienceBuffer(self.advantage_memory_size)
         self.strategy_buffer = ExperienceBuffer(self.strategy_memory_size)
 
@@ -182,7 +182,8 @@ class DeepCFRAlgorithm(BaseAlgorithm):
             'action_idx': action_idx,
             'player': current_player,
             'reach_prob': reach_prob[0],
-            'strategy': strategy.copy()
+            'strategy': strategy.copy(),
+            'behavior_policy': strategy.copy()
         })
 
         # Continue trajectory
@@ -225,6 +226,35 @@ class DeepCFRAlgorithm(BaseAlgorithm):
         self.regret_optimizer.zero_grad()
         network_output = self.regret_network(info_states, network_type='regret')
         predicted_advantages = network_output['advantages']
+
+        if self.diagnostics is not None:
+            self.diagnostics.log_advantage_statistics(
+                predicted_advantages.detach().cpu(),
+                iteration=self.iteration
+            )
+
+        if self.diagnostics is not None:
+            with torch.no_grad():
+                legal_mask_float = legal_actions_masks.float()
+                positive_advantages = torch.clamp(predicted_advantages.detach(), min=0.0)
+                masked_advantages = positive_advantages * legal_mask_float
+                mass = masked_advantages.sum(dim=-1, keepdim=True)
+                uniform_policy = legal_mask_float / (legal_mask_float.sum(dim=-1, keepdim=True) + 1e-8)
+                current_policy = torch.where(
+                    mass > 1e-8,
+                    masked_advantages / (mass + 1e-8),
+                    uniform_policy
+                )
+                behavior_policy = torch.stack([
+                    torch.tensor(t['behavior_policy'], dtype=torch.float32)
+                    for t in batch
+                ])
+                self.diagnostics.log_policy_kl(
+                    current_policy.cpu(),
+                    behavior_policy,
+                    legal_mask_float.cpu(),
+                    iteration=self.iteration,
+                )
 
         # MSE loss for regret matching
         loss = nn.functional.mse_loss(predicted_advantages, regret_targets)
@@ -280,8 +310,47 @@ class DeepCFRAlgorithm(BaseAlgorithm):
         network_output = self.strategy_network(info_states, network_type='strategy')
         predicted_policy = network_output['policy']
 
-        # Cross-entropy loss for strategy matching
-        loss = -(strategy_targets * torch.log(predicted_policy + 1e-8)).sum(dim=-1).mean()
+        if self.diagnostics is not None:
+            with torch.no_grad():
+                legal_mask_float = legal_actions_masks.float()
+                masked_policy = predicted_policy.detach() * legal_mask_float
+                policy_mass = masked_policy.sum(dim=-1, keepdim=True)
+                uniform_policy = legal_mask_float / (legal_mask_float.sum(dim=-1, keepdim=True) + 1e-8)
+                normalized_policy = torch.where(
+                    policy_mass > 1e-8,
+                    masked_policy / (policy_mass + 1e-8),
+                    uniform_policy
+                )
+                behavior_policy = torch.stack([
+                    torch.tensor(t['behavior_policy'], dtype=torch.float32)
+                    for t in batch
+                ])
+                self.diagnostics.log_policy_kl(
+                    normalized_policy.cpu(),
+                    behavior_policy,
+                    legal_mask_float.cpu(),
+                    iteration=self.iteration,
+                )
+
+        # Cross-entropy loss for strategy matching toward normalized positive regrets
+        # Apply legal actions mask to strategy targets
+        legal_mask_float = legal_actions_masks.float()
+        masked_strategy_targets = strategy_targets * legal_mask_float
+        
+        # Normalize strategy targets
+        target_sum = masked_strategy_targets.sum(dim=-1, keepdim=True)
+        normalized_targets = torch.where(
+            target_sum > 1e-8,
+            masked_strategy_targets / (target_sum + 1e-8),
+            legal_mask_float / (legal_mask_float.sum(dim=-1, keepdim=True) + 1e-8)
+        )
+        
+        # Apply softmax to policy logits with masking
+        masked_logits = predicted_policy + (1 - legal_mask_float) * (-1e9)
+        log_probs = torch.log_softmax(masked_logits, dim=-1)
+        
+        # Cross-entropy loss
+        loss = -(normalized_targets * log_probs).sum(dim=-1).mean()
 
         # Backward pass
         loss.backward()
@@ -372,24 +441,27 @@ class DeepCFRAlgorithm(BaseAlgorithm):
 
         Args:
             info_state_str: Information state string
-            legal_actions: List of legal actions
+            legal_actions: List of legal action indices
 
         Returns:
             Strategy probability distribution
         """
-        strategy = self.cumulative_strategies.get(info_state_str, None)
+        strategy = self.cumulative_strategies.get(info_state_str)
         if strategy is None:
-            # Uniform strategy
-            strategy = np.ones(self.num_actions) / self.num_actions
+            strategy = np.ones(self.num_actions, dtype=np.float64) / self.num_actions
 
-        # Mask to legal actions and renormalize
-        legal_strategy = np.array([strategy[a] for a in legal_actions])
-        if legal_strategy.sum() > 0:
-            legal_strategy = legal_strategy / legal_strategy.sum()
+        legal_mask = np.zeros_like(strategy)
+        legal_mask[legal_actions] = strategy[legal_actions]
+        total = legal_mask[legal_actions].sum()
+        if total <= 0:
+            legal_probs = np.full(len(legal_actions), 1.0 / len(legal_actions), dtype=np.float64)
         else:
-            legal_strategy = np.ones(len(legal_actions)) / len(legal_actions)
+            legal_probs = (legal_mask[legal_actions] / total).astype(np.float64)
 
-        return legal_strategy
+        # Construct full strategy vector for storage
+        full_strategy = np.zeros_like(strategy)
+        full_strategy[legal_actions] = legal_probs
+        return full_strategy
 
     def get_policy(self, player: int):
         """Get current policy for evaluation.
@@ -421,24 +493,41 @@ class DeepCFRAlgorithm(BaseAlgorithm):
         Returns:
             Dictionary with evaluation metrics
         """
-        # Build policy dictionary for exact evaluation
-        policy_dict = {}
-
-        # Get all information states from cumulative strategies
-        for info_state_str, strategy in self.cumulative_strategies.items():
-            policy_dict[info_state_str] = strategy
-
-        # Evaluate using exact OpenSpiel computation
-        eval_result = self.evaluator.evaluate_policy(policy_dict)
+        policy = self.get_policy_adapter()
+        result = self.evaluator.evaluate(
+            policy,
+            metadata=PolicyMetadata(method="deep_cfr", iteration=self.iteration),
+        )
 
         return {
-            'nash_conv': eval_result.nash_conv,
-            'exploitability': eval_result.exploitability,
-            'mean_value': eval_result.mean_value,
-            'player_0_value': eval_result.player_0_value,
-            'player_1_value': eval_result.player_1_value,
-            'num_info_states': eval_result.num_info_states
+            'nash_conv': result.nash_conv,
+            'exploitability': result.exploitability,
+            'mean_value': result.mean_value,
+            'player_0_value': result.player_0_value,
+            'player_1_value': result.player_1_value,
+            'num_info_states': result.info_state_count,
+            'openspiel_version': result.openspiel_version,
+            'python_version': result.python_version,
         }
+
+    def get_policy_adapter(self):
+        """Return a PolicyAdapter instance for the current averaged strategy."""
+
+        def policy_fn(player: int, info_state: str, legal_actions: List[int]) -> np.ndarray:
+            del player
+            strategy = self.cumulative_strategies.get(info_state)
+            if strategy is None or strategy.sum() <= 0:
+                return np.full(len(legal_actions), 1.0 / len(legal_actions), dtype=np.float64)
+            legal_strategy = strategy[legal_actions]
+            total = legal_strategy.sum()
+            if total <= 0:
+                return np.full(len(legal_actions), 1.0 / len(legal_actions), dtype=np.float64)
+            return (legal_strategy / total).astype(np.float64)
+
+        return self.evaluator.build_policy(
+            policy_fn,
+            metadata=PolicyMetadata(method="deep_cfr", iteration=self.iteration),
+        )
 
     def get_average_strategy(self) -> Dict[str, np.ndarray]:
         """Get average strategy for analysis.

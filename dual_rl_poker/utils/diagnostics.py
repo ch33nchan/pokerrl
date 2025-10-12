@@ -7,7 +7,7 @@ clipping events, and timing metrics with Parquet-compatible output.
 import torch
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional, Tuple, Union
 import time
 import json
 import logging
@@ -20,13 +20,33 @@ logger = logging.getLogger(__name__)
 class TrainingDiagnostics:
     """Comprehensive diagnostics logger for training monitoring."""
 
-    def __init__(self, output_dir: str = "results/diagnostics"):
+    def __init__(
+        self,
+        experiment_name: Optional[str] = None,
+        seed: Optional[int] = None,
+        output_root: Union[str, Path] = "results/diagnostics",
+    ):
         """Initialize diagnostics logger.
 
         Args:
-            output_dir: Directory to save diagnostic data
+            experiment_name: Optional descriptive experiment label used for directory naming.
+            seed: Optional random seed for run-specific logging separation.
+            output_root: Root directory to save diagnostic data.
         """
-        self.output_dir = Path(output_dir)
+        output_root = Path(output_root)
+        output_root.mkdir(parents=True, exist_ok=True)
+
+        if experiment_name is not None:
+            safe_name = experiment_name.strip().lower().replace(" ", "_")
+        else:
+            safe_name = "run"
+
+        if seed is not None:
+            subdir = f"{safe_name}_seed_{seed}"
+        else:
+            subdir = safe_name
+
+        self.output_dir = output_root / subdir
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         self.run_id = self._generate_run_id()
@@ -39,6 +59,8 @@ class TrainingDiagnostics:
         self.policy_kls = []
         self.clipping_events = []
         self.timing_data = []
+        self.iteration_logs = []
+        self.evaluation_logs = []
 
         logger.info(f"Initialized diagnostics with run_id: {self.run_id}")
 
@@ -147,16 +169,17 @@ class TrainingDiagnostics:
         # Compute KL divergence
         kl_per_sample = torch.sum(prev_norm * (torch.log(prev_norm + 1e-8) - torch.log(curr_norm + 1e-8)), dim=-1)
 
+        # Use correction=0 to avoid warnings when there is only a single sample.
         kl_stats = {
             "run_id": self.run_id,
             "iteration": iteration,
             "timestamp": time.time(),
             "kl_mean": float(torch.mean(kl_per_sample)),
-            "kl_std": float(torch.std(kl_per_sample)),
+            "kl_std": float(torch.std(kl_per_sample, correction=0)),
             "kl_max": float(torch.max(kl_per_sample)),
             "kl_min": float(torch.min(kl_per_sample)),
             "kl_sum": float(torch.sum(kl_per_sample)),
-            "num_samples": int(kl_per_sample.size()),
+            "num_samples": int(kl_per_sample.numel()),
             "infoset_key": infoset_key
         }
 
@@ -200,6 +223,83 @@ class TrainingDiagnostics:
 
         self.timing_data.append(timing_info)
 
+    def log_iteration(self, training_state: Any):
+        """Log a training iteration state.
+
+        Args:
+            training_state: Training state object or dictionary.
+        """
+        if hasattr(training_state, "to_dict"):
+            payload = training_state.to_dict()
+        elif isinstance(training_state, dict):
+            payload = dict(training_state)
+        else:
+            raise TypeError("training_state must be dict-like or expose to_dict()")
+
+        record = {
+            "run_id": self.run_id,
+            "timestamp": time.time(),
+            **payload,
+        }
+        self.iteration_logs.append(record)
+
+        iteration_index = record.get("iteration", len(self.iteration_logs))
+
+        grad_norm = record.get("gradient_norm")
+        if grad_norm is not None:
+            grad_entry = {
+                "run_id": self.run_id,
+                "iteration": iteration_index,
+                "timestamp": record["timestamp"],
+                "total_gradient_norm": float(grad_norm),
+                "param_norms_mean": float(grad_norm),
+                "param_norms_std": 0.0,
+                "layer_norms": {"aggregate": [float(grad_norm)]},
+            }
+            self.gradient_norms.append(grad_entry)
+
+        avg_regret_norm = record.get("avg_regret_norm")
+        if avg_regret_norm is not None:
+            advantage_entry = {
+                "run_id": self.run_id,
+                "iteration": iteration_index,
+                "timestamp": record["timestamp"],
+                "advantage_mean": float(avg_regret_norm),
+                "advantage_std": 0.0,
+                "advantage_min": float(avg_regret_norm),
+                "advantage_max": float(avg_regret_norm),
+                "advantage_25th": float(avg_regret_norm),
+                "advantage_50th": float(avg_regret_norm),
+                "advantage_75th": float(avg_regret_norm),
+                "advantage_count": 1,
+                "positive_ratio": 1.0 if avg_regret_norm >= 0 else 0.0,
+            }
+            self.advantage_stats.append(advantage_entry)
+
+        wall_time = record.get("wall_time")
+        if wall_time is not None:
+            timing_entry = {
+                "run_id": self.run_id,
+                "iteration": iteration_index,
+                "timestamp": time.time(),
+                "phase": "iteration",
+                "duration_seconds": float(wall_time),
+                "wall_clock_elapsed": time.time() - self.start_time,
+            }
+            self.timing_data.append(timing_entry)
+
+    def log_evaluation(self, iteration: int, metrics: Dict[str, Any], elapsed_time: float):
+        """Log evaluation metrics for an iteration."""
+        record = {
+            "run_id": self.run_id,
+            "iteration": iteration,
+            "timestamp": time.time(),
+            "wall_clock_elapsed": elapsed_time,
+        }
+        if metrics:
+            record.update(metrics)
+        self.evaluation_logs.append(record)
+
     def log_checkpoint_metrics(self, iteration: int,
                               nash_conv: float,
                               exploitability: float,
@@ -233,6 +333,8 @@ class TrainingDiagnostics:
         self._flush_policy_kls()
         self._flush_clipping_events()
         self._flush_timing_data()
+        self._flush_iteration_logs()
+        self._flush_evaluation_logs()
         self._flush_checkpoint_data()
 
         logger.info(f"Flushed diagnostics data to {self.output_dir}")
@@ -296,6 +398,24 @@ class TrainingDiagnostics:
         output_path = self.output_dir / "timing_data.parquet"
         df.to_parquet(output_path, index=False)
 
+    def _flush_iteration_logs(self):
+        """Flush iteration logs to Parquet."""
+        if not self.iteration_logs:
+            return
+
+        df = pd.DataFrame(self.iteration_logs)
+        output_path = self.output_dir / "iteration_logs.parquet"
+        df.to_parquet(output_path, index=False)
+
+    def _flush_evaluation_logs(self):
+        """Flush evaluation logs to Parquet."""
+        if not self.evaluation_logs:
+            return
+
+        df = pd.DataFrame(self.evaluation_logs)
+        output_path = self.output_dir / "evaluation_logs.parquet"
+        df.to_parquet(output_path, index=False)
+
     def _flush_checkpoint_data(self):
         """Flush checkpoint data to Parquet."""
         if not self.checkpoint_data:
@@ -339,6 +459,17 @@ class TrainingDiagnostics:
             summary["final_nash_conv"] = nash_convs[-1] if nash_convs else None
             summary["final_exploitability"] = exploitabilities[-1] if exploitabilities else None
             summary["nash_conv_improvement"] = nash_convs[0] - nash_convs[-1] if len(nash_convs) > 1 else 0
+
+        if self.iteration_logs:
+            summary["num_iterations"] = len(self.iteration_logs)
+            summary["final_loss"] = self.iteration_logs[-1].get("loss")
+
+        if self.evaluation_logs:
+            summary["num_evaluations"] = len(self.evaluation_logs)
+            summary["best_exploitability"] = min(
+                (log.get("exploitability") for log in self.evaluation_logs if log.get("exploitability") is not None),
+                default=None,
+            )
 
         return summary
 

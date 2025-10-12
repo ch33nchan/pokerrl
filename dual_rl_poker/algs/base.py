@@ -109,11 +109,14 @@ class BaseAlgorithm(ABC):
         self.network = self._create_network()
 
         # Initialize optimizer
-        self.optimizer = optim.Adam(
-            self.network.parameters(),
-            lr=self.learning_rate,
-            weight_decay=config.get('weight_decay', 0.0)
-        )
+        if self.network is not None:
+            self.optimizer = optim.Adam(
+                self.network.parameters(),
+                lr=self.learning_rate,
+                weight_decay=config.get('weight_decay', 0.0)
+            )
+        else:
+            self.optimizer = None
 
         # Experience buffers
         self.regret_buffer = ExperienceBuffer(config.get('regret_buffer_size', 10000))
@@ -121,6 +124,7 @@ class BaseAlgorithm(ABC):
 
         # Training history
         self.training_history: List[TrainingState] = []
+        self.diagnostics = None
 
         # Timing
         self.start_time = time.time()
@@ -154,6 +158,10 @@ class BaseAlgorithm(ABC):
             Policy function
         """
         pass
+
+    def attach_diagnostics(self, diagnostics):
+        """Attach a diagnostics logger to the algorithm."""
+        self.diagnostics = diagnostics
 
     def _external_sampling_traversal(self) -> List[Dict[str, Any]]:
         """Perform external sampling traversal of the game.

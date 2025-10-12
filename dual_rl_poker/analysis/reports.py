@@ -234,7 +234,7 @@ def _generate_recommendations(summary_stats: Dict[str, Any],
 
         recommendations.append(
             f"Best overall performance: {best_method[0]} with mean exploitability of "
-            f"{best_method[1]['mean_exploitability']:.4f} mbb/h"
+            f"{best_method[1]['mean_exploitability']:.4f} game units"
         )
 
     # Statistical significance recommendations
@@ -361,7 +361,7 @@ def _generate_markdown_report(report: Dict[str, Any], output_file: Path):
         if 'overall_best' in report['performance_summary']:
             best = report['performance_summary']['overall_best']
             f.write(f"- **Best Performance:** {best['exploitability']['algorithm']} "
-                   f"({best['exploitability']['performance']:.4f} mbb/h)\n")
+                   f"({best['exploitability']['performance']:.4f} game units)\n")
             f.write(f"- **Fastest Training:** {best['training_time']['algorithm']} "
                    f"({best['training_time']['time']:.2f}s)\n\n")
 

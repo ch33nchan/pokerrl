@@ -3,7 +3,7 @@
 import torch
 import torch.nn as nn
 from typing import Dict, Any
-from .base import BaseNetwork, PolicyHead, AdvantageHead, StandardMLP
+from .base import BaseNetwork, PolicyHead, AdvantageHead, StandardMLP, CriticHead
 
 
 class MLPNetwork(BaseNetwork):

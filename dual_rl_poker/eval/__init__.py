@@ -1,9 +1,16 @@
 """Evaluation utilities for poker agents."""
 
-from .evaluator import OpenSpielEvaluator
-from .openspiel_evaluator import OpenSpielExactEvaluator
+from .openspiel_evaluator import EvaluationResult, create_evaluator
+from .openspiel_exact_evaluator import OpenSpielExactEvaluator
+from .policy_adaptor import create_policy_adaptor, evaluate_algorithm_policy
+from .policy_adapter import PolicyMetadata, PolicyAdapter
 
 __all__ = [
-    "OpenSpielEvaluator",
-    "OpenSpielExactEvaluator"
+    "OpenSpielExactEvaluator", 
+    "EvaluationResult",
+    "create_evaluator",
+    "create_policy_adaptor",
+    "evaluate_algorithm_policy",
+    "PolicyMetadata",
+    "PolicyAdapter",
 ]

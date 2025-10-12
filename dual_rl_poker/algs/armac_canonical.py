@@ -273,8 +273,8 @@ class CanonicalARMACAlgorithm(BaseAlgorithm):
         new_state = state.child(action)
         self._collect_trajectory(new_state, trajectories, states_list, actions_list, rewards_list)
 
-    def _process_terminal_trajectory(self, states_list: List, actions_list: List],
-                                   rewards_list: List], final_reward: float,
+    def _process_terminal_trajectory(self, states_list: List, actions_list: List,
+                                   rewards_list: List, final_reward: float,
                                    trajectories: List[Dict[str, Any]]):
         """Process terminal trajectory and compute returns.
 
@@ -363,7 +363,7 @@ class CanonicalARMACAlgorithm(BaseAlgorithm):
             'loss': total_loss.item(),
             'gradient_norm': total_norm,
             'advantage_mean': selected_advantages.mean().item(),
-            'advantage_std': selected_advantages.std().item()
+            'advantage_std': selected_advantages.std(unbiased=False).item()
         }
 
     def _update_critic_network(self, trajectories: List[Dict[str, Any]]) -> Dict[str, float]:

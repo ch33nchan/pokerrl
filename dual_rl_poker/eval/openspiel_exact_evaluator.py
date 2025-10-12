@@ -7,6 +7,7 @@ replacing all Monte Carlo approximation methods with precise computation.
 
 import pyspiel
 import numpy as np
+import torch
 from typing import Dict, List, Tuple, Any, Optional
 import logging
 from dataclasses import dataclass
@@ -50,15 +51,41 @@ class OpenSpielExactEvaluator:
             raise ValueError(f"Expected 2-player game, got {self.num_players}")
 
         # Precompute game information
-        self.num_info_states = self.game.num_distinct_histories()
-        self.num_info_states_per_player = [
-            self.game.num_distinct_histories(player)
-            for player in range(self.num_players)
-        ]
+        # OpenSpiel doesn't have num_distinct_histories, use max_game_length as approximation
+        self.max_game_length = self.game.max_game_length()
+        self.num_info_states_per_player = []
+        
+        # Count information states by traversing the game tree
+        self._count_info_states()
 
         self.logger = logging.getLogger(__name__)
         self.logger.info(f"Initialized exact evaluator for {game_name}")
-        self.logger.info(f"Game has {self.num_info_states} total information states")
+        self.logger.info(f"Game has {self.max_game_length} max game length")
+
+    def _count_info_states(self):
+        """Count information states by traversing the game tree."""
+        info_states_by_player = {player: set() for player in range(self.num_players)}
+        
+        def traverse(state):
+            if state.is_terminal() or state.is_chance_node():
+                return
+            
+            player = state.current_player()
+            info_state_str = state.information_state_string(player)
+            info_states_by_player[player].add(info_state_str)
+            
+            for action in state.legal_actions():
+                child = state.clone()
+                child.apply_action(action)
+                traverse(child)
+        
+        traverse(self.game.new_initial_state())
+        
+        self.num_info_states_per_player = [
+            len(info_states_by_player[player]) 
+            for player in range(self.num_players)
+        ]
+        self.num_info_states = sum(self.num_info_states_per_player)
 
     def evaluate_policy(self, policy_dict: Dict[str, np.ndarray]) -> EvaluationResult:
         """
@@ -73,24 +100,38 @@ class OpenSpielExactEvaluator:
         # Create OpenSpiel policy from the policy dictionary
         openspiel_policy = self._create_openspiel_policy(policy_dict)
 
-        # Compute exact NashConv
-        nash_conv = pyspiel.nash_conv(self.game, [openspiel_policy])
+        # Compute exact NashConv using OpenSpiel's nash_conv function
+        nash_conv = pyspiel.nash_conv(self.game, openspiel_policy)
 
         # Compute exploitability (NashConv / 2 for two-player zero-sum)
         exploitability = nash_conv / 2.0
 
-        # Compute mean value against uniform random opponent
-        mean_value = self._compute_mean_value(openspiel_policy)
-
-        # Compute per-player values
-        player_values = self._compute_per_player_values(openspiel_policy)
+        # Compute values using expected_returns with correct API
+        try:
+            # Use root state and proper depth limit
+            root_state = self.game.new_initial_state()
+            values = pyspiel.expected_returns(
+                root_state, 
+                openspiel_policy, 
+                depth_limit=-1,  # No limit
+                use_infostate_get_policy=True
+            )
+            player_0_value = values[0]
+            player_1_value = values[1]
+            mean_value = (player_0_value + player_1_value) / 2.0
+        except Exception as e:
+            # Fallback if expected_returns fails
+            self.logger.warning(f"Expected returns failed: {e}")
+            player_0_value = 0.0
+            player_1_value = 0.0
+            mean_value = 0.0
 
         return EvaluationResult(
             nash_conv=nash_conv,
             exploitability=exploitability,
             mean_value=mean_value,
-            player_0_value=player_values[0],
-            player_1_value=player_values[1],
+            player_0_value=player_0_value,
+            player_1_value=player_1_value,
             game_name=self.game_name,
             num_info_states=self.num_info_states,
             num_info_states_per_player=self.num_info_states_per_player
@@ -102,47 +143,59 @@ class OpenSpielExactEvaluator:
 
         Uses proper information state handling and legal action filtering.
         """
-        tabular_policy = pyspiel.TabularPolicy(self.game)
-
-        # Iterate through all information states in the game
-        for state in self.game.new_initial_state().history():
-            if not state.is_chance_node() and state.is_simultaneous_node():
-                continue  # Skip simultaneous nodes for now
-
-            if state.is_terminal():
-                continue
-
-            # Get current player and information state
-            if state.is_chance_node():
-                continue
-
-            player = state.current_player()
-            info_state = state.information_state_string(player)
-
-            # Get legal actions for this state
-            legal_actions = state.legal_actions()
-            num_actions = self.game.num_distinct_actions()
-
-            if info_state in policy_dict:
-                # Use provided policy probabilities
-                policy_probs = policy_dict[info_state]
-
-                # Ensure correct size
-                if len(policy_probs) != num_actions:
-                    raise ValueError(
-                        f"Policy size mismatch for info state {info_state}: "
-                        f"expected {num_actions}, got {len(policy_probs)}"
-                    )
-
-                # Filter to legal actions and renormalize
-                legal_probs = np.array([policy_probs[a] for a in legal_actions])
-                legal_probs = legal_probs / legal_probs.sum()
-
-                # Set probabilities in TabularPolicy
-                for i, action in enumerate(legal_actions):
-                    tabular_policy.set_probabilities(state, player, action, legal_probs[i])
-
+        # Convert policy_dict to the format expected by TabularPolicy
+        # TabularPolicy expects: {info_state_str: [(action, prob), ...]}
+        tabular_policy_dict = {}
+        
+        for info_state_str, policy_probs in policy_dict.items():
+            # Convert to list of (action, probability) tuples
+            action_probs = []
+            
+            if isinstance(policy_probs, dict):
+                # Handle dictionary format: {action_idx: prob}
+                for action, prob in policy_probs.items():
+                    if prob > 0:  # Only include actions with positive probability
+                        action_probs.append((action, float(prob)))
+            else:
+                # Handle numpy array format: [prob_0, prob_1, ...]
+                for action, prob in enumerate(policy_probs):
+                    if prob > 0:  # Only include actions with positive probability
+                        action_probs.append((action, float(prob)))
+            
+            if action_probs:  # Only add if there are valid actions
+                tabular_policy_dict[info_state_str] = action_probs
+        
+        # Create TabularPolicy from dictionary
+        tabular_policy = pyspiel.TabularPolicy(tabular_policy_dict)
         return tabular_policy
+
+    def _get_all_info_states(self) -> Dict[int, Dict[str, Any]]:
+        """Get all information states for each player through systematic traversal."""
+        info_states_by_player = {player: {} for player in range(self.num_players)}
+        
+        def traverse(state):
+            if state.is_terminal():
+                return
+            
+            if state.is_chance_node():
+                for action, _ in state.chance_outcomes():
+                    child = state.clone()
+                    child.apply_action(action)
+                    traverse(child)
+            else:
+                player = state.current_player()
+                info_state_str = state.information_state_string(player)
+                
+                if info_state_str not in info_states_by_player[player]:
+                    info_states_by_player[player][info_state_str] = state.clone()
+                
+                for action in state.legal_actions():
+                    child = state.clone()
+                    child.apply_action(action)
+                    traverse(child)
+        
+        traverse(self.game.new_initial_state())
+        return info_states_by_player
 
     def _compute_mean_value(self, policy: pyspiel.TabularPolicy) -> float:
         """

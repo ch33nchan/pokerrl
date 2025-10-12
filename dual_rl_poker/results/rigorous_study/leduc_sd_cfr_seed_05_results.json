@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "run_id": "leduc_sd_cfr_seed_05",
+    "game": "leduc_poker",
+    "algorithm": "sd_cfr",
+    "seed": 5,
+    "iterations": 200,
+    "eval_every": 20,
+    "traversal": "external_sampling",
+    "hidden_dims": [
+      64,
+      64
+    ],
+    "learning_rate": 0.001,
+    "batch_size": 64,
+    "armac_lambda": null
+  },
+  "performance": {
+    "params_count": 20998,
+    "flops_est": 41996,
+    "final_exploitability": 2.8978122080507687,
+    "final_nashconv": 5.795624416101537,
+    "final_player_0_value": -0.19250744118644628,
+    "final_player_1_value": 0.19250744118644628,
+    "steps_to_threshold": -1,
+    "time_to_threshold": -1.0,
+    "wall_clock_s": 78.88860583305359
+  },
+  "system_info": {
+    "openspiel_version": "1.6.4",
+    "python_version": "3.11.13",
+    "pytorch_version": "2.2.0",
+    "commit_hash": "b63cc0514913b217946114fb7112b33bd3943ba3",
+    "timestamp": "2025-10-12T13:46:20.961158"
+  },
+  "evaluation_history": [
+    {
+      "iteration": 20,
+      "nash_conv": 5.250618705861212,
+      "exploitability": 2.625309352930606,
+      "mean_value": -0.6014646707964006,
+      "player_0_value": -0.7294472333688692,
+      "player_1_value": 0.7294472333688692,
+      "wall_time": 2.9505372047424316,
+      "total_wall_time": 5.835437774658203
+    },
+    {
+      "iteration": 40,
+      "nash_conv": 5.315627615968115,
+      "exploitability": 2.6578138079840574,
+      "mean_value": -0.371644970791704,
+      "player_0_value": -0.5771073368329467,
+      "player_1_value": 0.5771073368329467,
+      "wall_time": 4.296032190322876,
+      "total_wall_time": 13.45425796508789
+    },
+    {
+      "iteration": 60,
+      "nash_conv": 5.17361365104429,
+      "exploitability": 2.586806825522145,
+      "mean_value": -0.41173056948713954,
+      "player_0_value": -0.4731669454097121,
+      "player_1_value": 0.4731669454097121,
+      "wall_time": 4.416717052459717,
+      "total_wall_time": 21.184962034225464
+    },
+    {
+      "iteration": 80,
+      "nash_conv": 5.1535947473164905,
+      "exploitability": 2.5767973736582452,
+      "mean_value": -0.3942551879483582,
+      "player_0_value": -0.4154463923460922,
+      "player_1_value": 0.4154463923460922,
+      "wall_time": 4.61913800239563,
+      "total_wall_time": 29.09606385231018
+    },
+    {
+      "iteration": 100,
+      "nash_conv": 5.353789084622769,
+      "exploitability": 2.6768945423113846,
+      "mean_value": -0.37752909399317874,
+      "player_0_value": -0.3885690993318447,
+      "player_1_value": 0.3885690993318447,
+      "wall_time": 4.544171571731567,
+      "total_wall_time": 37.014936685562134
+    },
+    {
+      "iteration": 120,
+      "nash_conv": 5.672137749744562,
+      "exploitability": 2.836068874872281,
+      "mean_value": -0.35263531204515125,
+      "player_0_value": -0.3578084448804005,
+      "player_1_value": 0.3578084448804005,
+      "wall_time": 4.622013092041016,
+      "total_wall_time": 45.28175091743469
+    },
+    {
+      "iteration": 140,
+      "nash_conv": 5.840847342837307,
+      "exploitability": 2.9204236714186536,
+      "mean_value": -0.31596297120922645,
+      "player_0_value": -0.3080074492921335,
+      "player_1_value": 0.3080074492921335,
+      "wall_time": 4.667099237442017,
+      "total_wall_time": 53.67496705055237
+    },
+    {
+      "iteration": 160,
+      "nash_conv": 5.8473292904741365,
+      "exploitability": 2.9236646452370683,
+      "mean_value": -0.2721515007465835,
+      "player_0_value": -0.2582033117152416,
+      "player_1_value": 0.2582033117152416,
+      "wall_time": 4.644844055175781,
+      "total_wall_time": 62.46360397338867
+    },
+    {
+      "iteration": 180,
+      "nash_conv": 5.8317880125619705,
+      "exploitability": 2.9158940062809853,
+      "mean_value": -0.2397249377430915,
+      "player_0_value": -0.22267695442819105,
+      "player_1_value": 0.22267695442819105,
+      "wall_time": 4.562479019165039,
+      "total_wall_time": 70.7061698436737
+    },
+    {
+      "iteration": 200,
+      "nash_conv": 5.795624416101537,
+      "exploitability": 2.8978122080507687,
+      "mean_value": -0.21681401204066023,
+      "player_0_value": -0.19250744118644628,
+      "player_1_value": 0.19250744118644628,
+      "wall_time": 4.5850911140441895,
+      "total_wall_time": 78.88659000396729
+    }
+  ],
+  "ev_results": {}
+}

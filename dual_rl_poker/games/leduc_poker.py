@@ -15,9 +15,9 @@ class LeducPokerWrapper(GameWrapper):
 
     def __init__(self):
         """Initialize Leduc Hold'em wrapper."""
-        super().__init__("leduc_holdem")
+        super().__init__("leduc_poker")
         self.num_cards = 6  # Pairs: JJ, QQ, KK
-        self.num_actions = 2  # Check/Call, Bet/Fold
+        self.num_actions = self.game.num_distinct_actions()
         self.card_rank_to_string = {0: "J", 1: "Q", 2: "K"}
 
     def get_initial_state(self) -> Any:
@@ -34,7 +34,10 @@ class LeducPokerWrapper(GameWrapper):
             Encoded state vector
         """
         # Use OpenSpiel's information state tensor
-        tensor = state.information_state_tensor()
+        player = state.current_player()
+        if player < 0:
+            player = 0
+        tensor = state.information_state_tensor(player)
         return np.array(tensor, dtype=np.float32)
 
     def decode_state(self, encoding: np.ndarray) -> dict:

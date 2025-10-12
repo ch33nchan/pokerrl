@@ -14,6 +14,7 @@ from collections import defaultdict, deque
 
 from algs.base import BaseAlgorithm, TrainingState, ExperienceBuffer
 from utils.logging import get_experiment_logger
+from eval.openspiel_evaluator import create_evaluator, PolicyMetadata
 
 
 class SDCFRAlgorithm(BaseAlgorithm):
@@ -35,24 +36,32 @@ class SDCFRAlgorithm(BaseAlgorithm):
         """
         super().__init__(game_wrapper, config)
 
-        self.logger = get_experiment_logger("sd_cfr")
+        self.experiment_logger = get_experiment_logger("sd_cfr")
+        self.logger = self.experiment_logger.get_logger()
 
-        # SD-CFR specific parameters
+        # SD-CFR specific parameters (canonical version)
         self.regret_buffer_size = config.get('regret_buffer_size', 10000)
         self.regret_learning_rate = config.get('regret_learning_rate', 1e-3)
         self.regret_update_frequency = config.get('regret_update_frequency', 1)
-        self.regret_decay = config.get('regret_decay', 0.99)
-        self.strategy_smoothing = config.get('strategy_smoothing', 0.1)
+        
+        # Remove noncanonical tweaks for main comparison:
+        # - No regret decay (canonical CFR maintains full regret history)  
+        # - No exploration schedules (use sampling from current strategy)
+        # But keep minimal epsilon for numerical stability
+        self.initial_epsilon = config.get('initial_epsilon', 0.1)
+        self.final_epsilon = config.get('final_epsilon', 0.01)
+        self.epsilon_decay_steps = config.get('epsilon_decay_steps', 1000)
 
         # Initialize neural networks
         from nets.mlp import DeepCFRNetwork
         encoding_size = game_wrapper.get_encoding_size()
         num_actions = game_wrapper.num_actions
 
+        hidden_dims = config.get('hidden_dims', [64, 64])
         self.regret_network = DeepCFRNetwork(
             encoding_size,
             num_actions,
-            config['network']['hidden_dims']
+            hidden_dims
         )
         # SD-CFR reconstructs strategy from regret network (no separate strategy network)
         # This ensures fair comparison with Deep CFR
@@ -61,7 +70,7 @@ class SDCFRAlgorithm(BaseAlgorithm):
         self.regret_optimizer = torch.optim.Adam(
             self.regret_network.parameters(),
             lr=self.regret_learning_rate,
-            weight_decay=config['training'].get('weight_decay', 0.0)
+            weight_decay=config.get('weight_decay', 0.0)
         )
 
         # Experience replay buffer (only regret buffer needed)
@@ -76,14 +85,33 @@ class SDCFRAlgorithm(BaseAlgorithm):
         self.iteration_count = 0
         self.total_trajectories = 0
 
-        # Exploration parameters
-        self.initial_epsilon = config.get('initial_epsilon', 0.5)
-        self.final_epsilon = config.get('final_epsilon', 0.01)
-        self.epsilon_decay_steps = config.get('epsilon_decay_steps', 1000)
+        # Canonical SD-CFR: no exploration schedules, sample from current strategy
 
         self.logger.info("Initialized SD-CFR algorithm with regret reconstruction")
         self.logger.info(f"Regret network parameters: {sum(p.numel() for p in self.regret_network.parameters())}")
         self.logger.info("Strategy reconstruction from regret network (no separate strategy network)")
+
+    def _legal_actions_mask(self, legal_actions: List[int]) -> np.ndarray:
+        mask = np.zeros(self.game_wrapper.num_actions, dtype=np.float32)
+        mask[legal_actions] = 1.0
+        return mask
+
+    def _full_policy_from_action_probs(self, legal_actions: List[int], action_probs: np.ndarray) -> np.ndarray:
+        policy = np.zeros(self.game_wrapper.num_actions, dtype=np.float32)
+        policy[legal_actions] = action_probs
+        return policy
+
+    def _create_network(self):
+        """SD-CFR manages its own networks; base network unused."""
+        return None
+
+    def train_step(self) -> Dict[str, float]:
+        state = self.train_iteration()
+        return {
+            "loss": state.loss,
+            "gradient_norm": state.gradient_norm,
+            "wall_time": state.wall_time,
+        }
 
     def train_iteration(self) -> TrainingState:
         """Perform one SD-CFR training iteration.
@@ -102,8 +130,8 @@ class SDCFRAlgorithm(BaseAlgorithm):
         # Step 3: Update cumulative strategies with smoothing
         self._update_cumulative_strategies_sd(trajectories)
 
-        # Step 4: Apply regret decay for stability
-        self._apply_regret_decay()
+        # Step 4: Canonical SD-CFR maintains full regret history (no decay)
+        # self._apply_regret_decay()  # Removed for canonical comparison
 
         # Calculate training statistics
         iteration_time = time.time() - start_time
@@ -111,16 +139,20 @@ class SDCFRAlgorithm(BaseAlgorithm):
         training_state = TrainingState(
             iteration=self.iteration_count,
             loss=regret_metrics['loss'],
-            regret_loss=regret_metrics['loss'],
-            strategy_loss=0.0,  # No separate strategy network
             buffer_size=len(self.regret_buffer),
             wall_time=iteration_time,
             gradient_norm=regret_metrics['gradient_norm'],
             extra_metrics={
+                'regret_loss': regret_metrics['loss'],
+                'strategy_loss': 0.0,  # No separate strategy network
                 'num_trajectories': len(trajectories),
                 'regret_buffer_size': len(self.regret_buffer),
                 'epsilon': self._get_current_epsilon(),
-                'avg_regret_norm': np.mean([np.linalg.norm(r) for r in self.cumulative_regrets.values() if len(r) > 0]),
+                'avg_regret_norm': np.mean([
+                    np.linalg.norm(r)
+                    for r in self.cumulative_regrets.values()
+                    if len(r) > 0
+                ]),
                 'algorithm': 'SD-CFR'
             }
         )
@@ -135,7 +167,7 @@ class SDCFRAlgorithm(BaseAlgorithm):
             List of trajectory data
         """
         trajectories = []
-        batch_size = self.config['training']['batch_size']
+        batch_size = self.config.get('batch_size', 512)
 
         for _ in range(batch_size):
             trajectory = self._generate_self_play_trajectory()
@@ -177,6 +209,9 @@ class SDCFRAlgorithm(BaseAlgorithm):
             # Sample action according to strategy
             action = np.random.choice(legal_actions, p=action_probs)
 
+            legal_actions_mask = self._legal_actions_mask(legal_actions)
+            behavior_policy = self._full_policy_from_action_probs(legal_actions, action_probs)
+
             # Store transition for training
             transition = {
                 'info_state': info_state,
@@ -184,6 +219,8 @@ class SDCFRAlgorithm(BaseAlgorithm):
                 'legal_actions': legal_actions,
                 'action': action,
                 'action_probs': action_probs,
+                'behavior_policy': behavior_policy,
+                'legal_actions_mask': legal_actions_mask,
                 'player': current_player,
                 'iteration': self.iteration_count
             }
@@ -212,13 +249,16 @@ class SDCFRAlgorithm(BaseAlgorithm):
         epsilon = self._get_current_epsilon()
 
         # Get base strategy from regret network using reconstruction
-        base_probs = self._reconstruct_strategy_from_regrets(info_state, legal_actions)
+        base_probs_full = self._reconstruct_strategy_from_regrets(info_state, legal_actions)
+        legal_base = base_probs_full[legal_actions]
 
-        # Apply epsilon-exploration
-        legal_mask = np.zeros(len(base_probs))
-        legal_mask[legal_actions] = 1.0
+        if legal_base.sum() <= 0 or np.isnan(legal_base).any():
+            legal_base = np.ones(len(legal_actions), dtype=np.float64)
+        legal_base = legal_base / legal_base.sum()
 
-        action_probs = (1 - epsilon) * base_probs + epsilon * (legal_mask / legal_mask.sum())
+        uniform = np.ones(len(legal_actions), dtype=np.float64) / len(legal_actions)
+        action_probs = (1 - epsilon) * legal_base + epsilon * uniform
+        action_probs = action_probs / action_probs.sum()
 
         return action_probs
 
@@ -235,7 +275,7 @@ class SDCFRAlgorithm(BaseAlgorithm):
         with torch.no_grad():
             info_tensor = torch.FloatTensor(info_state).unsqueeze(0)
             network_output = self.regret_network(info_tensor)
-            predicted_regrets = network_output['action_values'].squeeze().cpu().numpy()
+            predicted_regrets = network_output['advantages'].squeeze().cpu().numpy()
 
         # Apply positive regret transformation
         positive_regrets = np.maximum(predicted_regrets, 0)
@@ -295,11 +335,11 @@ class SDCFRAlgorithm(BaseAlgorithm):
         Returns:
             Training metrics
         """
-        if len(self.regret_buffer) < self.config['training']['batch_size']:
+        if len(self.regret_buffer) < self.config.get('batch_size', 512):
             return {'loss': 0.0, 'gradient_norm': 0.0}
 
         # Sample regret training data with importance sampling
-        batch_size = min(self.config['training']['batch_size'], len(self.regret_buffer))
+        batch_size = min(self.config.get('batch_size', 512), len(self.regret_buffer))
         regret_batch = random.sample(list(self.regret_buffer), batch_size)
 
         # Prepare training data
@@ -310,7 +350,26 @@ class SDCFRAlgorithm(BaseAlgorithm):
         # Forward pass
         self.regret_optimizer.zero_grad()
         network_output = self.regret_network(info_states)
-        predicted_regrets = network_output['action_values']
+        predicted_regrets = network_output['advantages']
+
+        if self.diagnostics is not None and 'behavior_policy' in regret_batch[0]:
+            with torch.no_grad():
+                positive_regrets = torch.clamp(predicted_regrets.detach(), min=0.0)
+                masked_regrets = positive_regrets * legal_actions_mask
+                regret_sums = masked_regrets.sum(dim=-1, keepdim=True)
+                uniform_policy = legal_actions_mask / (legal_actions_mask.sum(dim=-1, keepdim=True) + 1e-8)
+                current_policy = torch.where(
+                    regret_sums > 1e-8,
+                    masked_regrets / (regret_sums + 1e-8),
+                    uniform_policy
+                )
+                behavior_policy = torch.FloatTensor([t['behavior_policy'] for t in regret_batch])
+                self.diagnostics.log_policy_kl(
+                    current_policy.cpu(),
+                    behavior_policy,
+                    legal_actions_mask.cpu(),
+                    iteration=self.iteration_count,
+                )
 
         # Apply legal actions mask
         masked_pred_regrets = predicted_regrets * legal_actions_mask
@@ -322,7 +381,7 @@ class SDCFRAlgorithm(BaseAlgorithm):
         regret_loss.backward()
         gradient_norm = torch.nn.utils.clip_grad_norm_(
             self.regret_network.parameters(),
-            self.config['training'].get('gradient_clip', 5.0)
+            self.config.get('gradient_clip', 5.0)
         )
 
         self.regret_optimizer.step()
@@ -411,17 +470,47 @@ class SDCFRAlgorithm(BaseAlgorithm):
             regrets: Positive regrets for each action
         """
         legal_actions = transition['legal_actions']
-        legal_actions_mask = np.zeros(self.game_wrapper.num_actions)
-        legal_actions_mask[legal_actions] = 1.0
+        legal_actions_mask = transition.get('legal_actions_mask')
+        if legal_actions_mask is None:
+            legal_actions_mask = self._legal_actions_mask(legal_actions)
+
+        behavior_policy = transition.get('behavior_policy')
+        if behavior_policy is None:
+            behavior_policy = self._full_policy_from_action_probs(legal_actions, transition['action_probs'])
 
         buffer_entry = {
             'info_state': transition['info_state'],
             'legal_actions_mask': legal_actions_mask,
             'target_regrets': regrets,
-            'player': transition['player']
+            'player': transition['player'],
+            'behavior_policy': behavior_policy
         }
 
         self.regret_buffer.append(buffer_entry)
+
+        if self.diagnostics is not None:
+            with torch.no_grad():
+                info_tensor = torch.FloatTensor(transition['info_state']).unsqueeze(0)
+                network_output = self.regret_network(info_tensor)
+                predicted_regrets = network_output['advantages']
+                mask_tensor = torch.FloatTensor(legal_actions_mask).unsqueeze(0)
+                positive_regrets = torch.clamp(predicted_regrets, min=0.0)
+                masked = positive_regrets * mask_tensor
+                mass = masked.sum(dim=-1, keepdim=True)
+                uniform = mask_tensor / (mask_tensor.sum(dim=-1, keepdim=True) + 1e-8)
+                current_policy = torch.where(
+                    mass > 1e-8,
+                    masked / (mass + 1e-8),
+                    uniform
+                )
+                behavior_tensor = torch.FloatTensor(behavior_policy).unsqueeze(0)
+                self.diagnostics.log_policy_kl(
+                    current_policy.cpu(),
+                    behavior_tensor.cpu(),
+                    mask_tensor.cpu(),
+                    iteration=self.iteration_count,
+                    infoset_key=transition.get('info_state_key')
+                )
 
     
     def _apply_regret_decay(self):
@@ -483,19 +572,24 @@ class SDCFRAlgorithm(BaseAlgorithm):
         Returns:
             Evaluation metrics
         """
-        from eval.evaluator import OpenSpielEvaluator
+        evaluator = create_evaluator(self.game_wrapper.game_name)
 
-        evaluator = OpenSpielEvaluator(self.game_wrapper)
+        avg_strategy = self.get_average_strategy()
+        metadata = PolicyMetadata(method="sd_cfr", iteration=self.iteration_count)
+        policy_adapter = evaluator.build_tabular_policy(avg_strategy, metadata=metadata)
 
-        # Get policies for all players
-        policies = {}
-        for player in range(self.game_wrapper.num_players):
-            policies[player] = self.get_policy(player)
+        result = evaluator.evaluate(policy_adapter, metadata=metadata)
 
-        # Run evaluation
-        eval_metrics = evaluator.evaluate_with_diagnostics(policies, num_episodes=100)
-
-        return eval_metrics
+        return {
+            "nash_conv": result.nash_conv,
+            "exploitability": result.exploitability,
+            "player_0_value": result.player_0_value,
+            "player_1_value": result.player_1_value,
+            "mean_value": result.mean_value,
+            "info_state_count": result.info_state_count,
+            "openspiel_version": result.openspiel_version,
+            "python_version": result.python_version,
+        }
 
     def save_checkpoint(self, path: str):
         """Save algorithm checkpoint.
@@ -534,3 +628,23 @@ class SDCFRAlgorithm(BaseAlgorithm):
         self.strategy_counts = defaultdict(int, checkpoint['strategy_counts'])
 
         self.logger.info(f"Loaded SD-CFR checkpoint from {path} (iteration {self.iteration_count})")
+
+    def get_policy_adapter(self):
+        """Return a PolicyAdapter instance for the current averaged strategy."""
+
+        def policy_fn(player: int, info_state: str, legal_actions: List[int]) -> np.ndarray:
+            del player
+            strategy = self.get_average_strategy().get(info_state)
+            if strategy is None or strategy.sum() <= 0:
+                return np.full(len(legal_actions), 1.0 / len(legal_actions), dtype=np.float64)
+            legal_strategy = strategy[legal_actions]
+            total = legal_strategy.sum()
+            if total <= 0:
+                return np.full(len(legal_actions), 1.0 / len(legal_actions), dtype=np.float64)
+            return (legal_strategy / total).astype(np.float64)
+
+        evaluator = create_evaluator(self.game_wrapper.game_name)
+        return evaluator.build_policy(
+            policy_fn,
+            metadata=PolicyMetadata(method="sd_cfr", iteration=self.iteration_count),
+        )

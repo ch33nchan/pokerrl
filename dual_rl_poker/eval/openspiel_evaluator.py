@@ -1,302 +1,254 @@
-"""OpenSpiel exact evaluator for two-player zero-sum games.
+"""Exact OpenSpiel evaluator for NashConv and exploitability computation."""
 
-Provides exact NashConv and exploitability computation using OpenSpiel's
-exact evaluators, replacing any Monte Carlo approximations.
-"""
+from __future__ import annotations
+
+import dataclasses
+import logging
+from typing import Callable, Dict, Iterable, Mapping, Sequence, Tuple
 
 import numpy as np
 import pyspiel
-from typing import Dict, List, Tuple, Any, Optional, Callable
-import logging
+
+from .policy_adapter import PolicyAdapter, PolicyMetadata, uniform_policy
 
 logger = logging.getLogger(__name__)
 
 
+@dataclasses.dataclass
+class EvaluationResult:
+    """Container for exact evaluation outputs."""
+
+    game_name: str
+    nash_conv: float
+    exploitability: float
+    player_0_value: float
+    player_1_value: float
+    mean_value: float
+    openspiel_version: str
+    python_version: str
+    info_state_count: int
+    metadata: PolicyMetadata | None = None
+
+
 class OpenSpielExactEvaluator:
-    """Exact evaluator using OpenSpiel's NashConv and exploitability functions.
+    """Exact evaluator using OpenSpiel's NashConv/exploitability utilities."""
 
-    This evaluator provides exact metrics for two-player zero-sum games,
-    eliminating any Monte Carlo estimation bias.
-    """
-
-    def __init__(self, game_name: str = "kuhn_poker"):
-        """Initialize evaluator with specified game.
-
-        Args:
-            game_name: Name of the OpenSpiel game to evaluate
-        """
+    def __init__(self, game_name: str) -> None:
         self.game_name = game_name
         self.game = pyspiel.load_game(game_name)
-        self.num_players = self.game.num_players()
-
-        if self.num_players != 2:
-            raise ValueError(f"OpenSpielExactEvaluator only supports 2-player games, got {self.num_players}")
-
-        # Validate game is zero-sum
+        if self.game.num_players() != 2:
+            raise ValueError(
+                f"OpenSpielExactEvaluator only supports 2-player games, got {self.game.num_players()}"
+            )
         game_type = self.game.get_type()
-        if not game_type.utility == pyspiel.GameType.Utility.ZERO_SUM:
-            logger.warning(f"Game {game_name} may not be zero-sum")
+        if game_type.utility != pyspiel.GameType.Utility.ZERO_SUM:
+            logger.warning("Game %s is not tagged as zero-sum; exploitability may be undefined.", game_name)
 
-        logger.info(f"Initialized OpenSpielExactEvaluator for {game_name}")
-        logger.info(f"OpenSpiel version: {pyspiel.__version__}")
+        logger.info(
+            "Initialized OpenSpielExactEvaluator for %s (OpenSpiel %s)",
+            game_name,
+            pyspiel.__version__,
+        )
 
-    def evaluate_nash_conv(self, policy_dict: Dict[int, Callable]) -> float:
-        """Compute exact NashConv using OpenSpiel's evaluator.
+    # ------------------------------------------------------------------
+    # Policy adaptation helpers
+    # ------------------------------------------------------------------
+    def build_policy(self, policy_fn: Callable[[int, str, Sequence[int]], Sequence[float]], *, metadata: PolicyMetadata | None = None) -> PolicyAdapter:
+        """Wrap a callable into an OpenSpiel ``Policy`` instance."""
 
-        Args:
-            policy_dict: Dictionary mapping player indices to policy functions.
-                         Policy functions should accept (info_state, legal_actions)
-                         and return action probabilities.
+        return PolicyAdapter(self.game, policy_fn, metadata=metadata)
 
-        Returns:
-            NashConv value in game units (exact, no sampling error)
-        """
-        # Build policy mapping for OpenSpiel
-        policy_mapping = self._build_policy_mapping(policy_dict)
+    def build_tabular_policy(
+        self,
+        policy_table: Mapping[str, Sequence[float]],
+        *,
+        metadata: PolicyMetadata | None = None,
+    ) -> PolicyAdapter:
+        def _lookup(_: int, info_state: str, legal_actions: Sequence[int]) -> Sequence[float]:
+            if info_state not in policy_table:
+                return np.full(len(legal_actions), 1.0 / len(legal_actions), dtype=np.float64)
+            full = np.asarray(policy_table[info_state], dtype=np.float64)
+            if full.size != self.game.num_distinct_actions():
+                raise ValueError(
+                    "Policy table for info_state %s has wrong length (expected %d, got %d)" % (
+                        info_state,
+                        self.game.num_distinct_actions(),
+                        full.size,
+                    )
+                )
+            return full.take(legal_actions)
 
-        # Use OpenSpiel's exact NashConv function
-        try:
-            nash_conv_value = pyspiel.nash_conv(self.game, policy_mapping)
-            return float(nash_conv_value)
-        except Exception as e:
-            logger.error(f"Error computing NashConv: {e}")
-            raise
+        return PolicyAdapter(self.game, _lookup, metadata=metadata)
 
-    def evaluate_exploitability(self, policy_dict: Dict[int, Callable]) -> float:
-        """Compute exact exploitability using OpenSpiel's evaluator.
+    # ------------------------------------------------------------------
+    # Exact metrics
+    # ------------------------------------------------------------------
+    def evaluate(self, policy: pyspiel.Policy, *, metadata: PolicyMetadata | None = None) -> EvaluationResult:
+        """Compute exact NashConv and exploitability for ``policy``."""
 
-        For two-player zero-sum games, exploitability = NashConv / 2.
+        tabular_mapping = self._policy_to_tabular_mapping(policy)
+        tabular_policy = pyspiel.TabularPolicy(tabular_mapping)
 
-        Args:
-            policy_dict: Dictionary mapping player indices to policy functions
+        nash_conv = float(pyspiel.nash_conv(self.game, tabular_mapping))
+        exploitability = float(pyspiel.exploitability(self.game, tabular_mapping))
 
-        Returns:
-            Exploitability value in game units (exact, no sampling error)
-        """
-        nash_conv = self.evaluate_nash_conv(policy_dict)
-        exploitability = nash_conv / 2.0
-        return float(exploitability)
+        values = pyspiel.expected_returns(
+            self.game.new_initial_state(),
+            [tabular_policy, tabular_policy],
+            -1,
+            True,
+        )
+        player_0_value = float(values[0])
+        player_1_value = float(values[1]) if len(values) > 1 else -player_0_value
 
-    def evaluate_with_diagnostics(self, policy_dict: Dict[int, Callable],
-                                 num_mc_episodes: int = 1000) -> Dict[str, Any]:
-        """Evaluate policy with exact metrics and Monte Carlo validation.
+        uniform = uniform_policy(self.game)
+        uniform_mapping = self._policy_to_tabular_mapping(uniform)
+        uniform_policy_tabular = pyspiel.TabularPolicy(uniform_mapping)
+        mean_value = float(
+            pyspiel.expected_returns(
+                self.game.new_initial_state(),
+                [tabular_policy, uniform_policy_tabular],
+                -1,
+                True,
+            )[0]
+        )
 
-        Args:
-            policy_dict: Dictionary mapping player indices to policy functions
-            num_mc_episodes: Number of Monte Carlo episodes for validation
+        return EvaluationResult(
+            game_name=self.game_name,
+            nash_conv=nash_conv,
+            exploitability=exploitability,
+            player_0_value=player_0_value,
+            player_1_value=player_1_value,
+            mean_value=mean_value,
+            openspiel_version=str(pyspiel.__version__),
+            python_version=self._python_version_string(),
+            info_state_count=self._count_information_states(),
+            metadata=metadata,
+        )
 
-        Returns:
-            Dictionary with exact and Monte Carlo metrics for validation
-        """
-        # Exact evaluation (primary metrics)
-        nash_conv_exact = self.evaluate_nash_conv(policy_dict)
-        exploitability_exact = self.evaluate_exploitability(policy_dict)
+    # ------------------------------------------------------------------
+    # Head-to-head evaluation
+    # ------------------------------------------------------------------
+    def head_to_head_evs(
+        self,
+        policy_a: pyspiel.Policy,
+        policy_b: pyspiel.Policy,
+        *,
+        num_matches: int,
+        seed: int | None = None,
+    ) -> Dict[str, float]:
+        """Simulate head-to-head scores between two policies."""
 
-        # Monte Carlo evaluation (for validation only)
-        mc_rewards = self._monte_carlo_evaluation(policy_dict, num_mc_episodes)
-
-        # Compute additional diagnostics
-        policy_entropy = self._compute_policy_entropy(policy_dict)
-
-        return {
-            "nash_conv_exact": nash_conv_exact,
-            "exploitability_exact": exploitability_exact,
-            "mc_mean_reward": float(np.mean(mc_rewards)),
-            "mc_std_reward": float(np.std(mc_rewards)),
-            "mc_min_reward": float(np.min(mc_rewards)),
-            "mc_max_reward": float(np.max(mc_rewards)),
-            "policy_entropy": policy_entropy,
-            "mc_validation_episodes": num_mc_episodes,
-            "game_name": self.game_name,
-            "openspiel_version": pyspiel.__version__
-        }
-
-    def _build_policy_mapping(self, policy_dict: Dict[int, Callable]) -> Dict[Any, Any]:
-        """Build policy mapping for OpenSpiel evaluator.
-
-        Args:
-            policy_dict: Dictionary mapping player indices to policy functions
-
-        Returns:
-            Policy mapping compatible with OpenSpiel evaluator
-        """
-        policy_mapping = {}
-
-        for player, policy_fn in policy_dict.items():
-            def create_bot(p, policy_func):
-                def bot(state):
-                    if state.is_chance_node():
-                        return pyspiel.SampleAction(state)
-                    elif state.current_player() == p:
-                        info_state = state.information_state_string(p)
-                        legal_actions = state.legal_actions()
-                        probs = policy_func(info_state, legal_actions)
-
-                        # Ensure probabilities are valid
-                        probs = np.array(probs)
-                        if len(probs) != len(legal_actions):
-                            # Handle mismatched dimensions
-                            adjusted_probs = np.zeros(len(legal_actions))
-                            for i, action in enumerate(legal_actions):
-                                if i < len(probs):
-                                    adjusted_probs[i] = probs[i]
-                            probs = adjusted_probs
-
-                        # Normalize probabilities
-                        if probs.sum() > 0:
-                            probs = probs / probs.sum()
-                        else:
-                            probs = np.ones(len(legal_actions)) / len(legal_actions)
-
-                        # Sample action according to policy
-                        return np.random.choice(legal_actions, p=probs)
-                    else:
-                        return pyspiel.SampleAction(state)
-                return bot
-
-            policy_mapping[player] = create_bot(player, policy_fn)
-
-        return policy_mapping
-
-    def _monte_carlo_evaluation(self, policy_dict: Dict[int, Callable],
-                              num_episodes: int) -> np.ndarray:
-        """Monte Carlo evaluation for validation purposes only.
-
-        Args:
-            policy_dict: Dictionary mapping player indices to policy functions
-            num_episodes: Number of episodes to simulate
-
-        Returns:
-            Array of rewards for player 0
-        """
-        rewards = []
-
-        for episode in range(num_episodes):
+        rng = np.random.default_rng(seed)
+        returns: list[Tuple[float, float]] = []
+        for match in range(num_matches):
             state = self.game.new_initial_state()
-
             while not state.is_terminal():
                 if state.is_chance_node():
-                    action = pyspiel.SampleAction(state)
-                else:
-                    player = state.current_player()
-                    policy_fn = policy_dict.get(player)
+                    outcomes = state.chance_outcomes()
+                    actions, probs = zip(*outcomes)
+                    action = rng.choice(actions, p=np.asarray(probs, dtype=np.float64))
+                    state.apply_action(action)
+                    continue
 
-                    if policy_fn:
-                        info_state = state.information_state_string(player)
-                        legal_actions = state.legal_actions()
-                        probs = policy_fn(info_state, legal_actions)
-                        action = np.random.choice(legal_actions, p=probs)
-                    else:
-                        # Uniform random if no policy
-                        action = np.random.choice(state.legal_actions())
-
+                player = state.current_player()
+                policy = policy_a if player == 0 else policy_b
+                probs_map = policy.action_probabilities(state, player)
+                actions, probs = zip(*probs_map.items())
+                action = rng.choice(actions, p=np.asarray(probs, dtype=np.float64))
                 state.apply_action(action)
 
-            # Get rewards for player 0
-            returns = state.returns()
-            rewards.append(returns[0])
+            payoff = state.returns()
+            returns.append((float(payoff[0]), float(payoff[1]) if len(payoff) > 1 else -float(payoff[0])))
 
-        return np.array(rewards)
-
-    def _compute_policy_entropy(self, policy_dict: Dict[int, Callable]) -> Dict[int, float]:
-        """Compute average policy entropy for diagnostics.
-
-        Args:
-            policy_dict: Dictionary mapping player indices to policy functions
-
-        Returns:
-            Dictionary mapping players to average entropy
-        """
-        entropies = {}
-
-        for player, policy_fn in policy_dict.items():
-            # Sample some information states to estimate entropy
-            sample_states = self._sample_information_states(player, 100)
-
-            total_entropy = 0.0
-            valid_states = 0
-
-            for info_state, legal_actions in sample_states:
-                probs = policy_fn(info_state, legal_actions)
-                probs = np.array(probs)
-
-                # Remove zero probabilities for log calculation
-                valid_probs = probs[probs > 0]
-                if len(valid_probs) > 0:
-                    entropy = -np.sum(valid_probs * np.log(valid_probs))
-                    total_entropy += entropy
-                    valid_states += 1
-
-            if valid_states > 0:
-                entropies[player] = total_entropy / valid_states
-            else:
-                entropies[player] = 0.0
-
-        return entropies
-
-    def _sample_information_states(self, player: int, num_samples: int) -> List[Tuple[str, List[int]]]:
-        """Sample information states for a player.
-
-        Args:
-            player: Player index
-            num_samples: Number of states to sample
-
-        Returns:
-            List of (info_state_string, legal_actions) tuples
-        """
-        states = []
-        visited_states = set()
-
-        for _ in range(num_samples):
-            state = self.game.new_initial_state()
-            info_state = None
-
-            # Traverse game tree to find player states
-            while not state.is_terminal():
-                if state.is_chance_node():
-                    action = pyspiel.SampleAction(state)
-                    state = state.child(action)
-                elif state.current_player() == player:
-                    info_state = state.information_state_string(player)
-                    legal_actions = state.legal_actions()
-
-                    # Avoid duplicate states
-                    state_key = (info_state, tuple(legal_actions))
-                    if state_key not in visited_states:
-                        visited_states.add(state_key)
-                        states.append((info_state, list(legal_actions)))
-
-                    # Take random action to continue
-                    action = np.random.choice(state.legal_actions())
-                    state = state.child(action)
-                else:
-                    # Other player's turn
-                    action = np.random.choice(state.legal_actions())
-                    state = state.child(action)
-
-            if len(states) >= num_samples:
-                break
-
-        return states[:num_samples]
-
-    def get_game_info(self) -> Dict[str, Any]:
-        """Get comprehensive information about the game.
-
-        Returns:
-            Dictionary with game metadata
-        """
-        game_type = self.game.get_type()
-
+        mean_0 = float(np.mean([r[0] for r in returns]))
+        mean_1 = float(np.mean([r[1] for r in returns]))
         return {
-            "name": self.game_name,
-            "num_players": self.num_players,
-            "utility_type": str(game_type.utility),
-            "chance_mode": str(game_type.chance_mode),
-            "information": str(game_type.information),
-            "dynamics": str(game_type.dynamics),
-            "max_game_length": game_type.max_game_length,
-            "num_distinct_actions": self.game.num_distinct_actions(),
-            "min_utility": game_type.min_utility(),
-            "max_utility": game_type.max_utility(),
-            "openspiel_version": pyspiel.__version__
+            "player_0_mean": mean_0,
+            "player_1_mean": mean_1,
         }
+
+    # ------------------------------------------------------------------
+    # Utilities
+    # ------------------------------------------------------------------
+    def _count_information_states(self) -> int:
+        counter = 0
+        to_visit = [self.game.new_initial_state()]
+        seen: set[str] = set()
+        while to_visit:
+            state = to_visit.pop()
+            if state.is_terminal():
+                continue
+            if state.is_chance_node():
+                for action, _ in state.chance_outcomes():
+                    to_visit.append(state.child(action))
+                continue
+            player = state.current_player()
+            info_state = state.information_state_string(player)
+            if info_state not in seen:
+                seen.add(info_state)
+                counter += 1
+            legal_actions = state.legal_actions()
+            for action in legal_actions:
+                to_visit.append(state.child(action))
+        return counter
+
+    def _policy_to_tabular_mapping(self, policy: pyspiel.Policy) -> Dict[str, Tuple[Tuple[int, float], ...]]:
+        mapping: Dict[str, Tuple[Tuple[int, float], ...]] = {}
+        stack = [self.game.new_initial_state()]
+        visited: set[str] = set()
+
+        while stack:
+            state = stack.pop()
+            state_key = state.history_str()
+            if state_key in visited:
+                continue
+            visited.add(state_key)
+
+            if state.is_terminal():
+                continue
+
+            if state.is_chance_node():
+                for action, _ in state.chance_outcomes():
+                    stack.append(state.child(action))
+                continue
+
+            player = state.current_player()
+            info_state = state.information_state_string(player)
+            probs_map = policy.action_probabilities(state, player)
+
+            if not probs_map:
+                legal_actions = state.legal_actions()
+                if legal_actions:
+                    prob = 1.0 / len(legal_actions)
+                    mapping[info_state] = tuple((action, prob) for action in legal_actions)
+                else:
+                    mapping[info_state] = tuple()
+            else:
+                normalized: list[Tuple[int, float]] = []
+                total = sum(max(0.0, float(prob)) for prob in probs_map.values())
+                if total <= 0.0:
+                    legal_actions = state.legal_actions()
+                    prob = 1.0 / len(legal_actions) if legal_actions else 0.0
+                    normalized = [(action, prob) for action in legal_actions]
+                else:
+                    normalized = [
+                        (action, float(max(0.0, prob) / total))
+                        for action, prob in probs_map.items()
+                    ]
+                mapping[info_state] = tuple(normalized)
+
+            for action in state.legal_actions():
+                stack.append(state.child(action))
+
+        return mapping
+
+    @staticmethod
+    def _python_version_string() -> str:
+        import platform
+
+        return platform.python_version()
+
+
+def create_evaluator(game_name: str) -> OpenSpielExactEvaluator:
+    return OpenSpielExactEvaluator(game_name)

@@ -16,8 +16,9 @@ pyyaml==6.0.1
 
 # Data handling and analysis
 pyarrow==15.0.0
-tqdm==4.66.2
-scikit-learn==1.4.1
+tqdm>=4.64.0
+tqdm==4.66.1
+scikit-learn==1.4.1.post1
 
 # LaTeX compilation (for paper generation)
 # latexmk needs to be installed via MacTeX or similar
