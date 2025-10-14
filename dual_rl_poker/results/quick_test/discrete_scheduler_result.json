@@ -1,0 +1,14 @@
+{
+  "config_name": "discrete_scheduler",
+  "iterations": [],
+  "exploitabilities": [],
+  "nash_convs": [],
+  "losses": [],
+  "scheduler_stats": [],
+  "final_exploitability": Infinity,
+  "final_nash_conv": Infinity,
+  "best_exploitability": Infinity,
+  "training_time": 0.024653196334838867,
+  "success": false,
+  "error": "tensors used as indices must be long, int, byte or bool tensors"
+}

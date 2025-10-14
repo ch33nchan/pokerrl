@@ -1,0 +1,183 @@
+config:
+  game: kuhn_poker
+  meta_regret:
+    K: 5
+    decay: 0.995
+    max_states: 1000
+    regret_clip: 10.0
+    util_clip: 5.0
+  network:
+    hidden_dims:
+    - 64
+    - 32
+  policy_mixer:
+    discrete: true
+    lambda_bins:
+    - 0.0
+    - 0.25
+    - 0.5
+    - 0.75
+    - 1.0
+    min_temperature: 0.1
+    temperature_decay: 0.995
+  scheduler:
+    gumbel_anneal_iters: 1000
+    gumbel_tau_end: 0.1
+    gumbel_tau_start: 1.0
+    hidden:
+    - 32
+    - 16
+    init_lambda: 0.5
+    k_bins:
+    - 0.0
+    - 0.25
+    - 0.5
+    - 0.75
+    - 1.0
+    lam_clamp_eps: 0.001
+    regularization:
+      beta_ent: 0.001
+      beta_l2: 0.0001
+    scheduler_lr: 0.0001
+    scheduler_warmup_iters: 200
+    temperature: 1.0
+    use_gumbel: true
+  training:
+    actor_lr: 0.0002
+    batch_size: 32
+    buffer_size: 5000
+    critic_lr: 0.001
+    gamma: 0.99
+    gradient_clip: 5.0
+    num_iterations: 2000
+    regret_lr: 0.001
+    tau: 0.005
+  use_scheduler: true
+final_exploitability: !!python/object/apply:numpy.core.multiarray.scalar
+- &id001 !!python/object/apply:numpy.dtype
+  args:
+  - f8
+  - false
+  - true
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  AAAAAAAAEEA=
+final_reward: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  AAAAAAAAEMA=
+name: discrete_scheduler
+total_time: 84.18808388710022
+training_stats:
+  eval_rewards:
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEMA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEMA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEMA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEMA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEMA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEMA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEMA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEMA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEMA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEMA=
+  exploitability:
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEEA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEEA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEEA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEEA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEEA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEEA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEEA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEEA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEEA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAEEA=
+  iterations:
+  - 0
+  - 200
+  - 400
+  - 600
+  - 800
+  - 1000
+  - 1200
+  - 1400
+  - 1600
+  - 1800
+  lambda_stats:
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 0.0
+  - 1.0

@@ -2,6 +2,7 @@
 
 ARMAC (Actor-Critic with Regret Matching) combines policy gradient methods
 with regret-based learning for improved performance in sequential games.
+Enhanced with scheduler components for per-instance lambda adaptation.
 """
 
 import time
@@ -17,6 +18,9 @@ from algs.base import BaseAlgorithm, TrainingState, ExperienceBuffer
 from utils.logging import get_experiment_logger
 from eval.policy_adapter import PolicyMetadata
 from algs.armac_dual_rl import ARMACDualRL
+from algs.scheduler.scheduler import create_scheduler, compute_scheduler_input
+from algs.scheduler.policy_mixer import create_policy_mixer
+from algs.scheduler.meta_regret import create_meta_regret_manager
 
 
 class ARMACAlgorithm(BaseAlgorithm):
@@ -58,6 +62,10 @@ class ARMACAlgorithm(BaseAlgorithm):
             "gradient_clip", config.get("training", {}).get("gradient_clip", 5.0)
         )
 
+        # Scheduler components
+        self.use_scheduler = config.get("use_scheduler", False)
+        self.scheduler_components = None
+
         # Initialize networks
         from nets.mlp import ARMACNetwork
 
@@ -94,6 +102,10 @@ class ARMACAlgorithm(BaseAlgorithm):
             encoding_size, num_actions, hidden_dims, network_type="regret"
         )
 
+        # Initialize scheduler components if enabled
+        if self.use_scheduler:
+            self._initialize_scheduler_components(encoding_size, config)
+
         # Initialize target networks
         self._update_target_networks(tau=1.0)
 
@@ -108,30 +120,83 @@ class ARMACAlgorithm(BaseAlgorithm):
             self.regret_network.parameters(), lr=self.regret_lr
         )
 
+        # Scheduler optimizers
+        if self.use_scheduler and self.scheduler_components:
+            if self.scheduler_components["scheduler"] is not None:
+                self.scheduler_optimizer = torch.optim.Adam(
+                    self.scheduler_components["scheduler"].parameters(),
+                    lr=config.get("scheduler_lr", 1e-4),
+                )
+
         # Experience replay buffer
         self.replay_buffer = deque(maxlen=self.buffer_size)
-
-        # Regret tracking
-        self.cumulative_regrets = defaultdict(lambda: np.zeros(num_actions))
-        self.regret_counts = defaultdict(int)
 
         # Training statistics
         self.iteration_count = 0
         self.total_steps = 0
 
+        # Initialize ARMAC dual RL with scheduler components
+        if self.use_scheduler and self.scheduler_components:
+            self.armac_dual_rl = ARMACDualRL(
+                num_actions=num_actions,
+                config=config,
+                scheduler=self.scheduler_components["scheduler"],
+                policy_mixer=self.scheduler_components["policy_mixer"],
+                meta_regret=self.scheduler_components["meta_regret"],
+            )
+        else:
+            # Legacy ARMAC dual RL initialization
+            from algs.armac_dual_rl import create_armac_dual_rl
+
+            self.armac_dual_rl = create_armac_dual_rl(num_actions, config)
+
+        # Regret tracking
+        self.cumulative_regrets = defaultdict(lambda: np.zeros(num_actions))
+        self.regret_counts = defaultdict(int)
+
         # Exploration parameters
         self.initial_noise_scale = config.get("initial_noise_scale", 0.5)
         self.final_noise_scale = config.get("final_noise_scale", 0.01)
-        self.noise_decay_steps = config.get("noise_decay_steps", 1000)
+        self.noise_decay_steps = config.get("noise_decay_steps", 10000)
 
-        # ARMAC dual RL module with adaptive lambda support
-        self.armac_dual_rl = ARMACDualRL(
-            num_actions=num_actions,
-            mixture_weight=self.regret_weight,
-            lambda_mode=self.lambda_mode,
-            lambda_alpha=self.lambda_alpha,
+    def _initialize_scheduler_components(
+        self, encoding_size: int, config: Dict[str, Any]
+    ):
+        """Initialize scheduler components for ARMAC algorithm.
+
+        Args:
+            encoding_size: Size of state encoding
+            config: Configuration dictionary
+        """
+        # Get number of actions from game wrapper
+        num_actions = self.game_wrapper.num_actions
+
+        # Create scheduler network
+        # scheduler input = state_encoding + KL_div + actor_entropy + regret_entropy + iteration = encoding_size + 4
+        scheduler_input_dim = encoding_size + 4
+
+        scheduler = create_scheduler(config, scheduler_input_dim)
+
+        # Create policy mixer
+        policy_mixer = create_policy_mixer(config)
+
+        # Create meta-regret manager (only for discrete mode)
+        meta_regret = None
+        if scheduler.discrete:
+            meta_regret = create_meta_regret_manager(config)
+
+        self.scheduler_components = {
+            "scheduler": scheduler,
+            "policy_mixer": policy_mixer,
+            "meta_regret": meta_regret,
+        }
+
+        self.logger.info(
+            f"Initialized scheduler components: {'discrete' if scheduler.discrete else 'continuous'} mode"
         )
 
+        # Training statistics already initialized in main __init__
+        # ARMAC dual RL already initialized in main __init__
         self.logger.info("Initialized ARMAC algorithm")
         self.logger.info(
             f"Actor parameters: {sum(p.numel() for p in self.actor.parameters())}"
@@ -172,7 +237,7 @@ class ARMACAlgorithm(BaseAlgorithm):
             target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
     def train_iteration(self) -> TrainingState:
-        """Perform one ARMAC training iteration.
+        """Perform one ARMAC training iteration with enhanced adaptive lambda tracking.
 
         Returns:
             Training state with loss and buffer information
@@ -183,35 +248,117 @@ class ARMACAlgorithm(BaseAlgorithm):
         trajectories = self._collect_armac_trajectories()
 
         # Step 2: Update regret network
-        regret_metrics = self._update_regret_network()
+        # Ablation flags
+        disable_regret = bool(self.config.get("disable_regret", False))
+        disable_critic = bool(self.config.get("disable_critic", False))
+        disable_actor = bool(self.config.get("disable_actor", False))
+
+        # Step 2: Update regret network (skip if ablated)
+        if disable_regret:
+            regret_metrics = {"loss": 0.0, "gradient_norm": 0.0}
+        else:
+            regret_metrics = self._update_regret_network()
 
         # Step 3: Update critic network
-        critic_metrics = self._update_critic_network()
+        # Step 3: Update critic network (skip if ablated)
+        if disable_critic:
+            critic_metrics = {"loss": 0.0, "gradient_norm": 0.0}
+        else:
+            critic_metrics = self._update_critic_network()
 
         # Step 4: Update actor network with regret guidance
-        actor_metrics = self._update_actor_network()
+        # Step 4: Update actor network with regret guidance (skip if ablated)
+        if disable_actor:
+            actor_metrics = {
+                "loss": 0.0,
+                "gradient_norm": 0.0,
+                "policy_gradient_loss": 0.0,
+                "entropy_bonus": 0.0,
+                "regret_loss": 0.0,
+            }
+        else:
+            actor_metrics = self._update_actor_network()
 
-        # Step 5: Update adaptive lambda if enabled
-        current_lambda = self.regret_weight
-        if self.lambda_mode == "adaptive":
-            # Update loss averages for adaptive lambda
-            self.armac_dual_rl.update_loss_averages(
-                regret_metrics["loss"], actor_metrics["policy_gradient_loss"]
+        # Step 5: Enhanced adaptive lambda computation with better loss tracking
+        regret_loss_val = (
+            regret_metrics.get("loss", 0.0) if isinstance(regret_metrics, dict) else 0.0
+        )
+        policy_grad_loss_val = 0.0
+        if isinstance(actor_metrics, dict):
+            policy_grad_loss_val = actor_metrics.get(
+                "policy_gradient_loss", actor_metrics.get("loss", 0.0)
             )
-            current_lambda = self.armac_dual_rl.compute_lambda_t(
-                self.armac_dual_rl.avg_regret_loss,
-                self.armac_dual_rl.avg_policy_loss,
-                self.lambda_alpha,
-            )
+
+        # Track loss history for adaptive lambda improvement
+        if not hasattr(self, "loss_history"):
+            self.loss_history = {"regret": [], "policy": [], "lambda": []}
+
+        self.loss_history["regret"].append(regret_loss_val)
+        self.loss_history["policy"].append(policy_grad_loss_val)
+
+        # Keep only recent history
+        max_history = 50
+        for key in self.loss_history:
+            if len(self.loss_history[key]) > max_history:
+                self.loss_history[key] = self.loss_history[key][-max_history:]
+
+        current_lambda = self._compute_current_lambda(
+            regret_loss_val, policy_grad_loss_val
+        )
+        self.loss_history["lambda"].append(current_lambda)
 
         # Step 6: Soft update target networks
         self._update_target_networks(self.tau)
 
-        # Calculate training statistics
+        # Calculate training statistics with enhanced metrics
         iteration_time = time.time() - start_time
         total_loss = (
             actor_metrics["loss"] + critic_metrics["loss"] + regret_metrics["loss"]
         )
+
+        # Enhanced metrics for adaptive lambda analysis
+        extra_metrics = {
+            "strategy_loss": actor_metrics["loss"],
+            "value_loss": critic_metrics["loss"],
+            "regret_loss": regret_metrics["loss"],
+            "policy_gradient_loss": actor_metrics.get("policy_gradient_loss", 0.0),
+            "num_trajectories": len(trajectories),
+            "noise_scale": self._get_current_noise_scale(),
+            "avg_regret_norm": np.mean(
+                [np.linalg.norm(r) for r in self.cumulative_regrets.values()]
+            )
+            if self.cumulative_regrets
+            else 0.0,
+            "current_lambda": current_lambda,
+            "avg_regret_loss": self.armac_dual_rl.avg_regret_loss,
+            "avg_policy_loss": self.armac_dual_rl.avg_policy_loss,
+            "ablation_disable_actor": bool(self.config.get("disable_actor", False)),
+            "ablation_disable_critic": bool(self.config.get("disable_critic", False)),
+            "ablation_disable_regret": bool(self.config.get("disable_regret", False)),
+        }
+
+        # Add adaptive lambda specific metrics
+        if self.lambda_mode == "adaptive":
+            extra_metrics.update(
+                {
+                    "lambda_trend": np.mean(np.diff(self.loss_history["lambda"][-5:]))
+                    if len(self.loss_history["lambda"]) >= 5
+                    else 0.0,
+                    "regret_loss_trend": np.mean(
+                        np.diff(self.loss_history["regret"][-5:])
+                    )
+                    if len(self.loss_history["regret"]) >= 5
+                    else 0.0,
+                    "policy_loss_trend": np.mean(
+                        np.diff(self.loss_history["policy"][-5:])
+                    )
+                    if len(self.loss_history["policy"]) >= 5
+                    else 0.0,
+                    "lambda_variance": np.var(self.loss_history["lambda"][-10:])
+                    if len(self.loss_history["lambda"]) >= 10
+                    else 0.0,
+                }
+            )
 
         training_state = TrainingState(
             iteration=self.iteration_count,
@@ -223,22 +370,7 @@ class ARMACAlgorithm(BaseAlgorithm):
                 + critic_metrics["gradient_norm"]
                 + regret_metrics["gradient_norm"]
             ),
-            extra_metrics={
-                "strategy_loss": actor_metrics["loss"],
-                "value_loss": critic_metrics["loss"],
-                "regret_loss": regret_metrics["loss"],
-                "policy_gradient_loss": actor_metrics["policy_gradient_loss"],
-                "num_trajectories": len(trajectories),
-                "noise_scale": self._get_current_noise_scale(),
-                "avg_regret_norm": np.mean(
-                    [np.linalg.norm(r) for r in self.cumulative_regrets.values()]
-                )
-                if self.cumulative_regrets
-                else 0.0,
-                "current_lambda": current_lambda,
-                "avg_regret_loss": self.armac_dual_rl.avg_regret_loss,
-                "avg_policy_loss": self.armac_dual_rl.avg_policy_loss,
-            },
+            extra_metrics=extra_metrics,
         )
 
         self.iteration_count += 1
@@ -331,7 +463,7 @@ class ARMACAlgorithm(BaseAlgorithm):
     def _get_armac_strategy(
         self, info_state: np.ndarray, legal_actions: List[int], info_state_key: str
     ) -> np.ndarray:
-        """Get ARMAC action probabilities with improved regret matching integration.
+        """Get ARMAC action probabilities with scheduler-based per-instance lambda.
 
         Args:
             info_state: Encoded information state
@@ -341,49 +473,81 @@ class ARMACAlgorithm(BaseAlgorithm):
         Returns:
             Action probabilities
         """
-        # Get policy from actor network
+        # Get action probabilities using scheduler if available
         with torch.no_grad():
             info_tensor = torch.FloatTensor(info_state).unsqueeze(0)
-            actor_output = self.actor(info_tensor)
-            policy_probs = actor_output["action_probs"].squeeze().cpu().numpy()
+            legal_mask_tensor = torch.zeros(len(legal_actions))
+            legal_mask_tensor[:] = 1.0  # All legal actions are valid
 
-        # Apply legal action mask to policy
-        legal_mask = np.zeros(len(policy_probs))
-        legal_mask[legal_actions] = 1.0
-        masked_policy = policy_probs * legal_mask
-        if masked_policy.sum() > 0:
-            policy_probs = masked_policy / masked_policy.sum()
-        else:
-            policy_probs = legal_mask / legal_mask.sum()
+            if self.use_scheduler and self.scheduler_components:
+                # Use scheduler for per-instance lambda
+                actor_output = self.actor(info_tensor)
+                regret_output = self.regret_network(info_tensor)
 
-        # Get regret matching strategy
-        if info_state_key in self.cumulative_regrets:
-            regrets = self.cumulative_regrets[info_state_key]
-            # Regret matching: σ(a) = max(r(a), 0) / Σ_b max(r(b), 0)
-            positive_regrets = np.maximum(regrets[legal_actions], 0)
-            if np.sum(positive_regrets) > 0:
-                regret_probs = np.zeros(len(policy_probs))
-                regret_probs[legal_actions] = positive_regrets / np.sum(
-                    positive_regrets
+                # Create legal actions mask for all actions
+                full_legal_mask = torch.zeros(self.game_wrapper.num_actions)
+                full_legal_mask[legal_actions] = 1.0
+
+                mixed_policy, metadata = self.armac_dual_rl.mixed_policy_with_scheduler(
+                    state_encoding=info_tensor,
+                    actor_logits=actor_output["logits"],
+                    regret_logits=regret_output["logits"],
+                    legal_actions_masks=full_legal_mask.unsqueeze(0),
+                    iteration=self.iteration_count,
                 )
+                combined_probs = mixed_policy.squeeze().cpu().numpy()
+
+                # Store metadata for meta-regret updates
+                if "lambda_values" in metadata:
+                    lambda_val = metadata["lambda_values"].item()
+                    self.current_lambda = lambda_val
+
+                # Create legal mask for final normalization
+                legal_mask = np.zeros(len(combined_probs))
+                legal_mask[legal_actions] = 1.0
+
             else:
-                # If no positive regrets, use uniform distribution over legal actions
-                regret_probs = np.zeros(len(policy_probs))
-                regret_probs[legal_actions] = 1.0 / len(legal_actions)
-        else:
-            # No regrets yet, use uniform distribution
-            regret_probs = np.zeros(len(policy_probs))
-            regret_probs[legal_actions] = 1.0 / len(legal_actions)
+                # Use standard ARMAC mixing
+                actor_output = self.actor(info_tensor)
+                policy_probs = actor_output["action_probs"].squeeze().cpu().numpy()
 
-        # Adaptive regret weight based on training progress
-        adaptive_regret_weight = self.regret_weight * min(
-            1.0, self.iteration_count / 1000.0
-        )
+                # Apply legal action mask to policy
+                legal_mask = np.zeros(len(policy_probs))
+                legal_mask[legal_actions] = 1.0
+                masked_policy = policy_probs * legal_mask
+                if masked_policy.sum() > 0:
+                    policy_probs = masked_policy / masked_policy.sum()
+                else:
+                    policy_probs = legal_mask / legal_mask.sum()
 
-        # Combine policy and regret matching using adaptive weighting
-        combined_probs = (
-            1 - adaptive_regret_weight
-        ) * policy_probs + adaptive_regret_weight * regret_probs
+                # Get regret matching strategy
+                if info_state_key in self.cumulative_regrets:
+                    regrets = self.cumulative_regrets[info_state_key]
+                    # Regret matching: σ(a) = max(r(a), 0) / Σ_b max(r(b), 0)
+                    positive_regrets = np.maximum(regrets[legal_actions], 0)
+                    if np.sum(positive_regrets) > 0:
+                        regret_probs = np.zeros(len(policy_probs))
+                        regret_probs[legal_actions] = positive_regrets / np.sum(
+                            positive_regrets
+                        )
+                    else:
+                        # If no positive regrets, use uniform distribution over legal actions
+                        regret_probs = np.zeros(len(policy_probs))
+                        regret_probs[legal_actions] = 1.0 / len(legal_actions)
+                else:
+                    # No regrets yet, use uniform distribution
+                    regret_probs = np.zeros(len(policy_probs))
+                    regret_probs[legal_actions] = 1.0 / len(legal_actions)
+
+                # Mix actor and regret policies using current lambda (adaptive or fixed)
+                mix_weight = float(
+                    np.clip(
+                        getattr(self, "current_lambda", self.regret_weight), 0.0, 1.0
+                    )
+                )
+                combined_probs = (
+                    1 - mix_weight
+                ) * policy_probs + mix_weight * regret_probs
 
         # Apply exploration noise (decreasing over time)
         noise_scale = self._get_current_noise_scale()
@@ -419,6 +583,35 @@ class ARMACAlgorithm(BaseAlgorithm):
         return self.initial_noise_scale * (
             self.final_noise_scale / self.initial_noise_scale
         ) ** (decay_progress / self.noise_decay_steps)
+
+    def _compute_current_lambda(
+        self, regret_loss_val: float, policy_grad_loss_val: float
+    ) -> float:
+        """Compute and update the current lambda based on adaptive or fixed mode.
+
+        Args:
+            regret_loss_val: Latest regret loss value
+            policy_grad_loss_val: Latest policy gradient loss value
+
+        Returns:
+            Current lambda value in [0, 1]
+        """
+        if self.lambda_mode == "adaptive":
+            # Update EMAs and compute adaptive lambda
+            self.armac_dual_rl.update_loss_averages(
+                regret_loss_val, policy_grad_loss_val
+            )
+            lam = self.armac_dual_rl.compute_lambda_t(
+                self.armac_dual_rl.avg_regret_loss,
+                self.armac_dual_rl.avg_policy_loss,
+                self.lambda_alpha,
+            )
+        else:
+            lam = float(self.regret_weight)
+
+        # Persist on self for use during sampling
+        self.current_lambda = float(np.clip(lam, 0.0, 1.0))
+        return self.current_lambda
 
     def _assign_armac_returns(
         self, trajectory: List[Dict[str, Any]], final_rewards: Dict[int, float]
@@ -635,7 +828,14 @@ class ARMACAlgorithm(BaseAlgorithm):
             Training metrics
         """
         if len(self.replay_buffer) < self.batch_size:
-            return {"loss": 0.0, "gradient_norm": 0.0}
+            # Not enough data yet; return default metrics to avoid KeyError upstream
+            return {
+                "loss": 0.0,
+                "gradient_norm": 0.0,
+                "policy_gradient_loss": 0.0,
+                "entropy_bonus": 0.0,
+                "regret_loss": 0.0,
+            }
 
         # Sample batch
         batch = random.sample(
@@ -683,8 +883,27 @@ class ARMACAlgorithm(BaseAlgorithm):
         regret_loss = F.mse_loss(normalized_probs, regret_policy.detach())
         regret_loss *= 0.1  # Scale down regret loss
 
+        # Mix actor and regret policies to build a target distribution
+        current_lambda = float(getattr(self, "current_lambda", self.regret_weight))
+        mixed_target = self.armac_dual_rl.mixed_policy_update(
+            normalized_probs.detach(),
+            regret_policy.detach(),
+            legal_actions_mask,
+            mixture_weight=current_lambda,
+        )
+        # Cross-entropy from mixed target to actor policy
+        ce_to_mixed = (
+            -(mixed_target * torch.log(normalized_probs + 1e-8)).sum(dim=1).mean()
+        )
+        mix_ce_weight = float(self.config.get("mix_ce_weight", 0.1))
+
         # Total actor loss
-        actor_loss = policy_gradient_loss - entropy_bonus + regret_loss
+        actor_loss = (
+            policy_gradient_loss
+            - entropy_bonus
+            + regret_loss
+            + mix_ce_weight * ce_to_mixed
+        )
 
         # Backward pass
         actor_loss.backward()
@@ -701,6 +920,8 @@ class ARMACAlgorithm(BaseAlgorithm):
             "policy_gradient_loss": policy_gradient_loss.item(),
             "entropy_bonus": entropy_bonus.item(),
             "regret_loss": regret_loss.item(),
+            "mix_ce_loss": ce_to_mixed.item(),
+            "current_lambda": current_lambda,
         }
 
     def get_policy(self, player: int) -> callable:
@@ -717,24 +938,46 @@ class ARMACAlgorithm(BaseAlgorithm):
             # Get information state encoding
             info_state = self.game_wrapper.encode_info_state_key(info_state_key, player)
 
-            # Get action probabilities from actor (no exploration during evaluation)
+            # Get action probabilities using scheduler if available
             with torch.no_grad():
                 info_tensor = torch.FloatTensor(info_state).unsqueeze(0)
-                actor_output = self.actor(info_tensor)
-                action_probs = actor_output["action_probs"].squeeze().cpu().numpy()
+
+                if self.use_scheduler and self.scheduler_components:
+                    # Use scheduler for per-instance lambda
+                    actor_output = self.actor(info_tensor)
+                    regret_output = self.regret_network(info_tensor)
+
+                    mixed_policy, _ = self.armac_dual_rl.mixed_policy_with_scheduler(
+                        state_encoding=info_tensor,
+                        actor_logits=actor_output["logits"],
+                        regret_logits=regret_output["logits"],
+                        legal_actions_masks=torch.tensor(
+                            [legal_actions], dtype=torch.float
+                        ).unsqueeze(0),
+                        iteration=self.iteration_count,
+                    )
+                    action_probs = mixed_policy.squeeze().cpu().numpy()
+                else:
+                    # Use standard actor policy
+                    actor_output = self.actor(info_tensor)
+                    action_probs = actor_output["action_probs"].squeeze().cpu().numpy()
 
             # Apply legal action mask
             legal_mask = np.zeros(len(action_probs))
             legal_mask[legal_actions] = 1.0
 
-            # Normalize for legal actions
+            # Normalize for legal actions and return only legal action probabilities
             masked_probs = action_probs * legal_mask
             if masked_probs.sum() > 0:
                 masked_probs = masked_probs / masked_probs.sum()
+                return masked_probs[legal_actions]
             else:
-                masked_probs = legal_mask / legal_mask.sum()
-
-            return masked_probs
+                # Uniform over legal actions if model assigns zero mass
+                if len(legal_actions) == 0:
+                    return np.array([], dtype=np.float32)
+                return np.full(
+                    len(legal_actions), 1.0 / len(legal_actions), dtype=np.float32
+                )
 
         return policy
 

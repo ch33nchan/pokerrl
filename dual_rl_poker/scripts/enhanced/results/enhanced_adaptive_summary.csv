@@ -1,0 +1,4 @@
+experiment_id,game,algorithm,seed,final_exploitability,convergence_iteration,stability_score,total_time,final_lambda,lambda_variance,adaptation_rate
+kuhn_poker_deep_cfr_seed_0_20251014_113609,kuhn_poker,deep_cfr,0,0.45833333333333326,20,1.2111523640750286e-16,10.944477081298828,None,0.0,0.0
+kuhn_poker_deep_cfr_seed_1_20251014_113621,kuhn_poker,deep_cfr,1,0.45833333333333326,20,1.2111523640750286e-16,10.799211978912354,None,0.0,0.0
+kuhn_poker_deep_cfr_seed_2_20251014_113632,kuhn_poker,deep_cfr,2,0.45833333333333326,20,1.2111523640750286e-16,10.966541051864624,None,0.0,0.0

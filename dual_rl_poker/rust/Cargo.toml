@@ -1,0 +1,38 @@
+[package]
+name = "dual_rl_poker_rust"
+version = "0.1.0"
+edition = "2021"
+description = "Rust environment implementation for ARMAC dual RL poker"
+authors = ["ARMAC Research Team"]
+
+[lib]
+name = "dual_rl_poker_rust"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.18", features = ["extension-module"], optional = true }
+numpy = { version = "0.18", optional = true }
+ndarray = "0.15"
+rand = "0.8"
+rand_pcg = "0.3"
+rayon = "1.6"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+parking_lot = "0.12"
+crossbeam = "0.8"
+structopt = "0.3"
+pyo3-build-config = { version = "0.18", optional = true }
+
+[features]
+default = ["python"]
+python = ["pyo3", "numpy", "pyo3-build-config"]
+
+[[bin]]
+name = "benchmark_rust_env"
+path = "src/bin/benchmark.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3

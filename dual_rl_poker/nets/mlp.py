@@ -2,6 +2,7 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from typing import Dict, Any
 from .base import BaseNetwork, PolicyHead, AdvantageHead, StandardMLP, CriticHead
 
@@ -27,7 +28,9 @@ class MLPNetwork(BaseNetwork):
         self.policy_head = PolicyHead(self.hidden_dims[-1], num_actions)
         self.advantage_head = AdvantageHead(self.hidden_dims[-1], num_actions)
 
-    def forward(self, x: torch.Tensor, legal_actions_mask: torch.Tensor = None) -> Dict[str, torch.Tensor]:
+    def forward(
+        self, x: torch.Tensor, legal_actions_mask: torch.Tensor = None
+    ) -> Dict[str, torch.Tensor]:
         """Forward pass.
 
         Args:
@@ -46,11 +49,7 @@ class MLPNetwork(BaseNetwork):
         # Advantage output (values)
         advantages = self.advantage_head(features)
 
-        return {
-            'policy': policy,
-            'advantages': advantages,
-            'features': features
-        }
+        return {"policy": policy, "advantages": advantages, "features": features}
 
 
 class DeepCFRNetwork(BaseNetwork):
@@ -75,8 +74,12 @@ class DeepCFRNetwork(BaseNetwork):
         self.strategy_body = StandardMLP(input_dim, self.hidden_dims, dropout=0.0)
         self.strategy_head = PolicyHead(self.hidden_dims[-1], num_actions)
 
-    def forward(self, x: torch.Tensor, network_type: str = 'regret',
-                legal_actions_mask: torch.Tensor = None) -> Dict[str, torch.Tensor]:
+    def forward(
+        self,
+        x: torch.Tensor,
+        network_type: str = "regret",
+        legal_actions_mask: torch.Tensor = None,
+    ) -> Dict[str, torch.Tensor]:
         """Forward pass.
 
         Args:
@@ -87,22 +90,18 @@ class DeepCFRNetwork(BaseNetwork):
         Returns:
             Dictionary with appropriate network outputs
         """
-        if network_type == 'regret':
+        if network_type == "regret":
             features = self.regret_body(x)
             advantages = self.regret_head(features)
             return {
-                'advantages': advantages,
-                'features': features,
-                'network_type': 'regret'
+                "advantages": advantages,
+                "features": features,
+                "network_type": "regret",
             }
-        elif network_type == 'strategy':
+        elif network_type == "strategy":
             features = self.strategy_body(x)
             policy = self.strategy_head(features, legal_actions_mask)
-            return {
-                'policy': policy,
-                'features': features,
-                'network_type': 'strategy'
-            }
+            return {"policy": policy, "features": features, "network_type": "strategy"}
         else:
             raise ValueError(f"Invalid network_type: {network_type}")
 
@@ -128,9 +127,12 @@ class SDCFRNetwork(BaseNetwork):
 
         # Additional head for value estimation
         from .base import CriticHead
+
         self.value_head = CriticHead(self.hidden_dims[-1])
 
-    def forward(self, x: torch.Tensor, legal_actions_mask: torch.Tensor = None) -> Dict[str, torch.Tensor]:
+    def forward(
+        self, x: torch.Tensor, legal_actions_mask: torch.Tensor = None
+    ) -> Dict[str, torch.Tensor]:
         """Forward pass.
 
         Args:
@@ -143,10 +145,10 @@ class SDCFRNetwork(BaseNetwork):
         features = self.body(x)
 
         return {
-            'policy': self.policy_head(features, legal_actions_mask),
-            'advantages': self.advantage_head(features),
-            'value': self.value_head(features),
-            'features': features
+            "policy": self.policy_head(features, legal_actions_mask),
+            "advantages": self.advantage_head(features),
+            "value": self.value_head(features),
+            "features": features,
         }
 
 
@@ -166,11 +168,15 @@ class TabularNetwork(BaseNetwork):
         self.table_size = table_size or 10000
 
         # Initialize tables
-        self.register_buffer('policy_table', torch.zeros(self.table_size, num_actions))
-        self.register_buffer('advantage_table', torch.zeros(self.table_size, num_actions))
-        self.register_buffer('count_table', torch.zeros(self.table_size))
+        self.register_buffer("policy_table", torch.zeros(self.table_size, num_actions))
+        self.register_buffer(
+            "advantage_table", torch.zeros(self.table_size, num_actions)
+        )
+        self.register_buffer("count_table", torch.zeros(self.table_size))
 
-    def forward(self, x: torch.Tensor, legal_actions_mask: torch.Tensor = None) -> Dict[str, torch.Tensor]:
+    def forward(
+        self, x: torch.Tensor, legal_actions_mask: torch.Tensor = None
+    ) -> Dict[str, torch.Tensor]:
         """Forward pass.
 
         Args:
@@ -195,11 +201,7 @@ class TabularNetwork(BaseNetwork):
         policy_sums = policy.sum(dim=-1, keepdim=True)
         policy = policy / (policy_sums + 1e-8)
 
-        return {
-            'policy': policy,
-            'advantages': advantages,
-            'indices': indices
-        }
+        return {"policy": policy, "advantages": advantages, "indices": indices}
 
     def _hash_inputs(self, x: torch.Tensor) -> torch.Tensor:
         """Simple hash function for inputs.
@@ -212,11 +214,17 @@ class TabularNetwork(BaseNetwork):
         """
         # Simple sum-based hashing (for demonstration)
         # In practice, you'd want a better hashing scheme
-        hash_values = torch.sum(x * torch.arange(1, x.shape[-1] + 1, device=x.device), dim=-1)
+        hash_values = torch.sum(
+            x * torch.arange(1, x.shape[-1] + 1, device=x.device), dim=-1
+        )
         return hash_values.long()
 
-    def update_table(self, indices: torch.Tensor, policy_updates: torch.Tensor,
-                    advantage_updates: torch.Tensor):
+    def update_table(
+        self,
+        indices: torch.Tensor,
+        policy_updates: torch.Tensor,
+        advantage_updates: torch.Tensor,
+    ):
         """Update table entries.
 
         Args:
@@ -232,7 +240,13 @@ class TabularNetwork(BaseNetwork):
 class ARMACNetwork(BaseNetwork):
     """ARMAC network for Actor-Critic with Regret Matching."""
 
-    def __init__(self, input_dim: int, num_actions: int, hidden_dims: list = None, network_type: str = 'actor'):
+    def __init__(
+        self,
+        input_dim: int,
+        num_actions: int,
+        hidden_dims: list = None,
+        network_type: str = "actor",
+    ):
         """Initialize ARMAC network.
 
         Args:
@@ -249,16 +263,18 @@ class ARMACNetwork(BaseNetwork):
         self.body = StandardMLP(input_dim, self.hidden_dims, dropout=0.0)
 
         # Network-specific heads
-        if network_type == 'actor':
+        if network_type == "actor":
             self.policy_head = PolicyHead(self.hidden_dims[-1], num_actions)
-        elif network_type == 'critic':
+        elif network_type == "critic":
             self.value_head = CriticHead(self.hidden_dims[-1])
-        elif network_type == 'regret':
+        elif network_type == "regret":
             self.regret_head = AdvantageHead(self.hidden_dims[-1], num_actions)
         else:
             raise ValueError(f"Invalid network_type: {network_type}")
 
-    def forward(self, x: torch.Tensor, legal_actions_mask: torch.Tensor = None) -> Dict[str, torch.Tensor]:
+    def forward(
+        self, x: torch.Tensor, legal_actions_mask: torch.Tensor = None
+    ) -> Dict[str, torch.Tensor]:
         """Forward pass.
 
         Args:
@@ -270,25 +286,37 @@ class ARMACNetwork(BaseNetwork):
         """
         features = self.body(x)
 
-        if self.network_type == 'actor':
-            action_probs = self.policy_head(features, legal_actions_mask)
+        if self.network_type == "actor":
+            # Get logits from the policy head layers
+            logits = self.policy_head.layers(features)
+            action_probs = F.softmax(logits, dim=-1)
+
+            # Apply legal actions mask if provided
+            if legal_actions_mask is not None:
+                logits = logits.masked_fill(~legal_actions_mask, -1e9)
+                action_probs = F.softmax(logits, dim=-1)
+
             return {
-                'action_probs': action_probs,
-                'features': features
+                "action_probs": action_probs,
+                "logits": logits,
+                "features": features,
             }
-        elif self.network_type == 'critic':
+        elif self.network_type == "critic":
             value = self.value_head(features)
             return {
-                'value': value.unsqueeze(-1),  # Add dimension for consistency
-                'features': features
+                "value": value.unsqueeze(-1),  # Add dimension for consistency
+                "features": features,
             }
-        elif self.network_type == 'regret':
+        elif self.network_type == "regret":
             regrets = self.regret_head(features)
             # Apply legal actions mask if provided
             if legal_actions_mask is not None:
                 regrets = regrets.masked_fill(~legal_actions_mask, 0)
             return {
-                'action_probs': torch.softmax(regrets, dim=-1),  # Return as probabilities
-                'regrets': regrets,
-                'features': features
+                "action_probs": torch.softmax(
+                    regrets, dim=-1
+                ),  # Return as probabilities
+                "logits": regrets,  # Return raw logits for scheduler compatibility
+                "regrets": regrets,
+                "features": features,
             }

@@ -1,0 +1,99 @@
+{
+  "config_name": "fixed_lambda",
+  "iterations": [
+    0,
+    25,
+    50,
+    75,
+    100,
+    125,
+    150,
+    175
+  ],
+  "exploitabilities": [
+    0.4897131549955266,
+    0.49281835717587963,
+    0.47981945516714547,
+    0.4697733422620028,
+    0.4636763747020882,
+    0.4612754018980799,
+    0.46081681541059055,
+    0.4606378569588889
+  ],
+  "nash_convs": [
+    0.9794263099910532,
+    0.9856367143517593,
+    0.9596389103342908,
+    0.9395466845240056,
+    0.9273527494041763,
+    0.9225508037961598,
+    0.9216336308211812,
+    0.921275713917778
+  ],
+  "losses": [
+    0.0,
+    8.889039784669876,
+    7.075930077582598,
+    5.206268539652228,
+    5.042162508703768,
+    6.596354046370834,
+    6.834583387360908,
+    5.933151582954451
+  ],
+  "scheduler_stats": [
+    {
+      "iteration": 0,
+      "lambda_mode": "fixed",
+      "avg_regret_loss": 0.0,
+      "avg_policy_loss": 0.0
+    },
+    {
+      "iteration": 0,
+      "lambda_mode": "fixed",
+      "avg_regret_loss": 0.0,
+      "avg_policy_loss": 0.0
+    },
+    {
+      "iteration": 0,
+      "lambda_mode": "fixed",
+      "avg_regret_loss": 0.0,
+      "avg_policy_loss": 0.0
+    },
+    {
+      "iteration": 0,
+      "lambda_mode": "fixed",
+      "avg_regret_loss": 0.0,
+      "avg_policy_loss": 0.0
+    },
+    {
+      "iteration": 0,
+      "lambda_mode": "fixed",
+      "avg_regret_loss": 0.0,
+      "avg_policy_loss": 0.0
+    },
+    {
+      "iteration": 0,
+      "lambda_mode": "fixed",
+      "avg_regret_loss": 0.0,
+      "avg_policy_loss": 0.0
+    },
+    {
+      "iteration": 0,
+      "lambda_mode": "fixed",
+      "avg_regret_loss": 0.0,
+      "avg_policy_loss": 0.0
+    },
+    {
+      "iteration": 0,
+      "lambda_mode": "fixed",
+      "avg_regret_loss": 0.0,
+      "avg_policy_loss": 0.0
+    }
+  ],
+  "final_exploitability": 0.4605992938620358,
+  "final_nash_conv": 0.9211985877240716,
+  "best_exploitability": 0.4606378569588889,
+  "training_time": 1.216536045074463,
+  "success": true,
+  "error": null
+}

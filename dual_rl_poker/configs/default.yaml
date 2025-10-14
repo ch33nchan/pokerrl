@@ -14,7 +14,7 @@ game:
 
 # Training protocol
 training:
-  iterations: 500
+  iterations: 1000
   eval_every: 25
   save_every: 100
   batch_size: 2048
@@ -55,7 +55,7 @@ algorithms:
     gamma: 0.99
     regret_weight: 0.1
     lambda_mode: "adaptive" # "fixed" or "adaptive"
-    lambda_alpha: 0.5
+    lambda_alpha: 2.0
     actor_lr: 1e-4
     critic_lr: 1e-3
     regret_lr: 1e-3

@@ -1,0 +1,114 @@
+# Enhanced configuration for demonstrating adaptive lambda improvements
+
+# Experiment settings
+experiment:
+  name: "enhanced_adaptive_demo"
+  seed: 42
+  device: "cpu"
+  log_level: "INFO"
+
+# Game settings
+game:
+  name: "kuhn_poker" # kuhn_poker or leduc_poker
+  num_players: 2
+
+# Enhanced training protocol for adaptive lambda demonstration
+training:
+  iterations: 800  # Increased iterations for better convergence
+  eval_every: 20   # More frequent evaluation
+  save_every: 100
+  batch_size: 1024  # Moderate batch size
+  replay_window: 10
+  buffer_size: 15000  # Larger buffer for better experience diversity
+  learning_rate: 2e-4  # Slightly lower learning rate for stability
+  weight_decay: 1e-5
+  gradient_clip: 3.0
+
+# Enhanced network architecture
+network:
+  type: "mlp"
+  hidden_dims: [128, 128, 64]  # Deeper network for better representation
+  dropout: 0.1
+  activation: "relu"
+  layer_norm: true
+
+# Enhanced evaluation settings
+evaluation:
+  num_episodes: 2000  # More episodes for reliable evaluation
+  head_to_head_episodes: 5000
+  bootstrap_samples: 2000  # More bootstrap samples for tighter confidence intervals
+  confidence_level: 0.95
+
+# Enhanced ARMAC settings for adaptive lambda demonstration
+algorithms:
+  armac:
+    buffer_size: 15000
+    policy_replay_size: 8
+    update_frequency: 1
+    gamma: 0.99
+    regret_weight: 0.15  # Slightly higher initial regret weight
+    lambda_mode: "adaptive"
+    lambda_alpha: 3.0  # More aggressive adaptation
+    actor_lr: 8e-5     # Lower actor learning rate for stability
+    critic_lr: 5e-4    # Lower critic learning rate
+    regret_lr: 8e-4    # Balanced regret learning rate
+    tau: 0.01          # Higher tau for faster target network updates
+    initial_noise_scale: 0.6
+    final_noise_scale: 0.02
+    noise_decay_steps: 200
+
+    # Enhanced adaptive lambda settings
+    adaptive_lambda:
+      ema_beta: 0.6          # More responsive EMA
+      trend_window: 5        # Window for trend analysis
+      exploration_decay: 100 # Iterations for exploration decay
+      diversity_threshold: 0.3
+      min_lambda: 0.05       # Allow wider lambda range
+      max_lambda: 0.95
+
+    # Enhanced regularization
+    regularization:
+      entropy_weight: 0.02
+      l2_reg: 1e-4
+      gradient_penalty: 0.1
+
+# Optimizer settings
+optimizer:
+  type: "adam"
+  lr: 2e-4
+  betas: [0.9, 0.999]
+  eps: 1e-8
+  weight_decay: 1e-5
+
+# Enhanced logging and saving
+logging:
+  log_dir: "scripts/enhanced/logs"
+  save_dir: "scripts/enhanced/results"
+  tensorboard: true
+  print_frequency: 20
+  save_frequency: 100
+  save_lambda_history: true
+  save_loss_curves: true
+
+# Enhanced reproducibility
+reproducibility:
+  deterministic: true
+  torch_deterministic: true
+  benchmark: false
+  save_random_state: true
+
+# Experimental comparison settings
+comparison:
+  compare_fixed_lambda: true
+  fixed_lambda_values: [0.1, 0.25, 0.5, 0.75]
+  compare_baseline_algorithms: ["deep_cfr"]
+  additional_metrics: ["lambda_variance", "convergence_rate", "stability_score"]
+
+# Performance optimization
+optimization:
+  mixed_precision: false  # Keep false for reproducibility
+  gradient_accumulation: 1
+  early_stopping:
+    enabled: false  # Let algorithm run full course for demonstration
+    patience: 50
+    min_delta: 1e-4
