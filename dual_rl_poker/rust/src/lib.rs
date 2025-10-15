@@ -4,28 +4,15 @@
 //! for poker games with deterministic replay support and efficient
 //! batch processing capabilities.
 
-use ndarray::{Array1, Array2, ArrayView1, ArrayViewMut1, Axis};
-use numpy::{IntoPyArray, PyArray1, PyArray2};
-use parking_lot::RwLock;
+use ndarray::Array1;
 use pyo3::prelude::*;
-use rand::{Rng, SeedableRng};
-use rand_pcg::Pcg64Mcg;
-use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::sync::{Arc, Mutex};
 use thiserror::Error;
 
-pub mod env_batch;
 pub mod kuhn_poker;
 pub mod leduc_poker;
-pub mod replay_buffer;
-pub mod utils;
-
-pub use env_batch::EnvBatch;
 pub use kuhn_poker::KuhnPokerEnv;
 pub use leduc_poker::LeducPokerEnv;
-pub use replay_buffer::ReplayBuffer;
-pub use utils::{DeterministicRng, RngState};
 
 #[derive(Error, Debug)]
 pub enum EnvError {
@@ -72,11 +59,6 @@ pub trait Environment: Send + Sync {
     /// Get game-specific information
     fn game_info(&self) -> GameInfo;
 
-    /// Clone the environment state
-    fn clone_state(&self) -> Box<dyn Environment>;
-
-    /// Restore environment from cloned state
-    fn restore_state(&mut self, state: &Box<dyn Environment>) -> EnvResult<()>;
 }
 
 /// Game information structure
@@ -114,155 +96,12 @@ impl Default for EnvConfig {
     }
 }
 
-/// Step result for environment interaction
-#[derive(Debug, Clone)]
-pub struct StepResult {
-    pub observations: Array2<f32>,
-    pub rewards: Array1<f32>,
-    pub dones: Array1<bool>,
-    pub infos: Vec<EnvInfo>,
-}
-
-/// Environment information for each step
-#[derive(Debug, Clone)]
-pub struct EnvInfo {
-    pub legal_actions: Array1<i32>,
-    pub current_player: i32,
-    pub is_terminal: bool,
-    pub rewards: Array1<f32>,
-    pub info_state: Array1<f32>,
-}
-
 /// Python bindings for the Rust environment
 #[pymodule]
 fn dual_rl_poker_rust(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<EnvBatch>()?;
-    m.add_class::<ReplayBuffer>()?;
     m.add_class::<KuhnPokerEnv>()?;
     m.add_class::<LeducPokerEnv>()?;
-    m.add_function(wrap_pyfunction!(create_environment, m)?)?;
-    m.add_function(wrap_pyfunction!(benchmark_environment, m)?)?;
     Ok(())
-}
-
-/// Create environment by name
-#[pyfunction]
-fn create_environment(
-    game_name: &str,
-    config: Option<EnvConfig>,
-) -> PyResult<Box<dyn Environment>> {
-    let config = config.unwrap_or_default();
-
-    match game_name {
-        "kuhn_poker" => {
-            let mut env = KuhnPokerEnv::new(config);
-            env.reset(config.seed)?;
-            Ok(Box::new(env))
-        }
-        "leduc_poker" => {
-            let mut env = LeducPokerEnv::new(config);
-            env.reset(config.seed)?;
-            Ok(Box::new(env))
-        }
-        _ => Err(pyo3::exceptions::PyValueError::new_err(format!(
-            "Unknown game: {}",
-            game_name
-        ))),
-    }
-}
-
-/// Benchmark environment performance
-#[pyfunction]
-fn benchmark_environment(
-    game_name: &str,
-    batch_size: usize,
-    num_steps: usize,
-) -> PyResult<BenchmarkResult> {
-    let config = EnvConfig {
-        batch_size,
-        ..Default::default()
-    };
-
-    let start = std::time::Instant::now();
-
-    match game_name {
-        "kuhn_poker" => {
-            let mut env = EnvBatch::<KuhnPokerEnv>::new(batch_size, config);
-            env.reset(Some(42))?;
-
-            let mut total_steps = 0;
-            let mut total_episodes = 0;
-
-            for _ in 0..num_steps {
-                let actions = env.sample_legal_actions()?;
-                let _results = env.step(&actions)?;
-                total_steps += batch_size;
-
-                // Count completed episodes
-                let dones = env.dones();
-                total_episodes += dones.iter().filter(|&&done| done).count();
-            }
-
-            let elapsed = start.elapsed();
-
-            Ok(BenchmarkResult {
-                game_name: game_name.to_string(),
-                batch_size,
-                num_steps: total_steps,
-                num_episodes: total_episodes,
-                elapsed_seconds: elapsed.as_secs_f64(),
-                steps_per_second: total_steps as f64 / elapsed.as_secs_f64(),
-                episodes_per_second: total_episodes as f64 / elapsed.as_secs_f64(),
-            })
-        }
-        _ => Err(pyo3::exceptions::PyValueError::new_err(format!(
-            "Unknown game for benchmark: {}",
-            game_name
-        ))),
-    }
-}
-
-/// Benchmark results
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BenchmarkResult {
-    pub game_name: String,
-    pub batch_size: usize,
-    pub num_steps: usize,
-    pub num_episodes: usize,
-    pub elapsed_seconds: f64,
-    pub steps_per_second: f64,
-    pub episodes_per_second: f64,
-}
-
-impl BenchmarkResult {
-    pub fn to_dict(&self) -> pyo3::PyObject {
-        Python::with_gil(|py| {
-            py.eval(
-                &format!(
-                    r#"{{
-                    "game_name": "{}",
-                    "batch_size": {},
-                    "num_steps": {},
-                    "num_episodes": {},
-                    "elapsed_seconds": {:.6},
-                    "steps_per_second": {:.2},
-                    "episodes_per_second": {:.2}
-                }}"#,
-                    self.game_name,
-                    self.batch_size,
-                    self.num_steps,
-                    self.num_episodes,
-                    self.elapsed_seconds,
-                    self.steps_per_second,
-                    self.episodes_per_second
-                ),
-                None,
-                None,
-            )
-            .unwrap()
-            .to_object(py)
-        })
-    }
 }
 
 #[cfg(test)]
@@ -291,26 +130,4 @@ mod tests {
         assert_eq!(done, false);
     }
 
-    #[test]
-    fn test_env_batch() {
-        let config = EnvConfig {
-            batch_size: 4,
-            seed: Some(42),
-            ..Default::default()
-        };
-
-        let mut batch = EnvBatch::<KuhnPokerEnv>::new(4, config);
-        batch.reset(Some(42)).unwrap();
-
-        assert_eq!(batch.batch_size(), 4);
-        assert_eq!(batch.observations().nrows(), 4);
-
-        let actions = batch.sample_legal_actions().unwrap();
-        assert_eq!(actions.len(), 4);
-
-        let results = batch.step(&actions).unwrap();
-        assert_eq!(results.observations.nrows(), 4);
-        assert_eq!(results.rewards.len(), 4);
-        assert_eq!(results.dones.len(), 4);
-    }
 }

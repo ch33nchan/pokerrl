@@ -28,10 +28,6 @@ pyo3-build-config = { version = "0.18", optional = true }
 default = ["python"]
 python = ["pyo3", "numpy", "pyo3-build-config"]
 
-[[bin]]
-name = "benchmark_rust_env"
-path = "src/bin/benchmark.rs"
-
 [profile.release]
 lto = true
 codegen-units = 1

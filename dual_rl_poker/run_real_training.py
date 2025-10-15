@@ -1,699 +1,539 @@
-"""Real training script using Rust environment implementation.
+"""Neural-style ARMAC training loop using pure Python data structures.
 
-This script implements actual ARMAC training with the Rust environment
-integration, demonstrating the complete pipeline with real performance
-measurements and no placeholder or ghost runs.
+This script trains actor/critic/regret tables with adaptive λ on Kuhn or Leduc
+Poker. It produces real trajectories, adapts λ with a logistic scheduler, and
+computes exploitability via OpenSpiel's tabular utilities. The implementation
+avoids third-party numeric libraries so it remains portable in restricted
+environments.
 """
 
-import os
-import sys
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import pathlib
+import random
+import statistics
 import time
-import torch
-import numpy as np
-import yaml
-from typing import Dict, List, Any, Optional
-import matplotlib.pyplot as plt
-from collections import defaultdict
+from collections import deque
+from dataclasses import dataclass
+from typing import Deque, Dict, List, Sequence, Tuple
 
-# Add project root to path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-# Try to import Rust components
-try:
-    import dual_rl_poker_rust
-
-    RUST_AVAILABLE = True
-    print("✓ Rust environment integration available")
-except ImportError as e:
-    print(f"⚠ Rust integration not available: {e}")
-    print("  Falling back to Python environment implementation")
-    RUST_AVAILABLE = False
-
-from algs.armac import ARMACAlgorithm
-from games.game_factory import GameFactory
-from utils.logging import get_experiment_logger
+import pyspiel
 
 
-def create_training_config(
-    game: str = "kuhn_poker",
-    use_scheduler: bool = True,
-    scheduler_mode: str = "discrete",
-    num_iterations: int = 5000,
-    batch_size: int = 64,
-    use_rust: bool = True,
-) -> Dict[str, Any]:
-    """Create comprehensive training configuration."""
-
-    base_config = {
-        "game": game,
-        "use_rust_env": use_rust and RUST_AVAILABLE,
-        "training": {
-            "num_iterations": num_iterations,
-            "batch_size": batch_size,
-            "buffer_size": 10000,
-            "actor_lr": 2e-4,
-            "critic_lr": 1e-3,
-            "regret_lr": 1e-3,
-            "gamma": 0.99,
-            "tau": 0.005,
-            "gradient_clip": 5.0,
-            "policy_update_frequency": 1,
-            "value_update_frequency": 1,
-        },
-        "network": {
-            "hidden_dims": [128, 64],
-        },
-        "use_scheduler": use_scheduler,
-    }
-
-    if use_scheduler:
-        base_config.update(
-            {
-                "scheduler": {
-                    "hidden": [64, 32],
-                    "k_bins": [0.0, 0.25, 0.5, 0.75, 1.0]
-                    if scheduler_mode == "discrete"
-                    else None,
-                    "temperature": 1.0,
-                    "use_gumbel": scheduler_mode == "discrete",
-                    "scheduler_lr": 1e-4,
-                    "gumbel_tau_start": 1.0,
-                    "gumbel_tau_end": 0.1,
-                    "gumbel_anneal_iters": min(3000, num_iterations // 2),
-                    "scheduler_warmup_iters": num_iterations // 10,
-                    "init_lambda": 0.5,
-                    "lam_clamp_eps": 1e-3,
-                    "regularization": {
-                        "beta_l2": 1e-4,
-                        "beta_ent": 1e-3,
-                    },
-                },
-                "policy_mixer": {
-                    "discrete": scheduler_mode == "discrete",
-                    "lambda_bins": [0.0, 0.25, 0.5, 0.75, 1.0]
-                    if scheduler_mode == "discrete"
-                    else None,
-                    "temperature_decay": 0.995,
-                    "min_temperature": 0.1,
-                },
-                "meta_regret": {
-                    "K": 5,
-                    "decay": 0.995,
-                    "initial_regret": 0.0,
-                    "regret_min": 0.0,
-                    "smoothing_factor": 1e-6,
-                    "max_states": 5000,
-                    "util_clip": 5.0,
-                    "regret_clip": 10.0,
-                    "lru_evict_batch": 100,
-                },
-                "state_keying": {
-                    "level": 1,
-                    "n_clusters": 50,
-                    "cluster_file": f"experiments/{game}_clusters.pkl",
-                    "update_clusters": True,
-                },
-                "utility_computation": {
-                    "utility_type": "advantage_based",
-                    "gamma": 0.99,
-                    "baseline_window": 100,
-                    "advantage_window": 10,
-                    "min_samples": 5,
-                },
-                "deterministic_replay": {
-                    "replay_dir": f"experiments/{game}_replays",
-                    "tolerance": 1e-6,
-                },
-            }
-        )
-
-    return base_config
+@dataclass
+class EpisodeStep:
+    info_state: str
+    legal_actions: Tuple[int, ...]
+    action: int
+    player: int
 
 
-def benchmark_environments(
-    game: str, num_steps: int = 10000, batch_sizes: List[int] = [32, 64, 128, 256]
-):
-    """Benchmark Python vs Rust environments."""
+@dataclass
+class Episode:
+    steps: List[EpisodeStep]
+    returns: Tuple[float, float]
+    lambdas: List[float]
 
-    print(f"\n{'=' * 60}")
-    print(f"ENVIRONMENT BENCHMARK: {game}")
-    print(f"{'=' * 60}")
 
-    if RUST_AVAILABLE:
-        results = {}
+@dataclass
+class IterationMetrics:
+    iteration: int
+    exploitability: float
+    nash_conv: float
+    actor_loss: float
+    average_lambda: float
+    mean_episode_length: float
+    mean_return_player0: float
+    mean_return_player1: float
+    wall_time_sec: float
 
-        for batch_size in batch_sizes:
-            print(f"\nTesting batch size: {batch_size}")
+    def as_dict(self) -> Dict[str, float]:
+        return {
+            "iteration": self.iteration,
+            "exploitability": self.exploitability,
+            "nash_conv": self.nash_conv,
+            "actor_loss": self.actor_loss,
+            "average_lambda": self.average_lambda,
+            "mean_episode_length": self.mean_episode_length,
+            "mean_return_player0": self.mean_return_player0,
+            "mean_return_player1": self.mean_return_player1,
+            "wall_time_sec": self.wall_time_sec,
+        }
 
-            # Benchmark Rust environment
-            try:
-                rust_result = dual_rl_poker_rust.benchmark_environment(
-                    game.replace("_poker", "_poker"),
-                    batch_size,
-                    num_steps // batch_size,
-                )
-                rust_dict = rust_result.to_dict()
-                print(
-                    f"  Rust: {rust_dict['steps_per_second']:.0f} steps/sec, {rust_dict['episodes_per_second']:.0f} episodes/sec"
-                )
-                results[f"rust_{batch_size}"] = rust_dict
-            except Exception as e:
-                print(f"  Rust benchmark failed: {e}")
-                results[f"rust_{batch_size}"] = None
 
-            # Benchmark Python environment (simplified)
-            try:
-                from games.game_factory import GameFactory
-
-                factory = GameFactory()
-                game_wrapper = factory.create_game(game)
-
-                start_time = time.time()
-                episodes_completed = 0
-                steps_completed = 0
-
-                for _ in range(num_steps // batch_size):
-                    # Simulate batch processing
-                    for _ in range(batch_size):
-                        state = game_wrapper.get_initial_state()
-                        while not game_wrapper.is_terminal(state):
-                            legal_actions = game_wrapper.get_legal_actions(state)
-                            action = np.random.choice(legal_actions)
-                            state = game_wrapper.make_action(
-                                state, state.current_player(), action
-                            )
-
-                        episodes_completed += 1
-                        steps_completed += 1
-
-                elapsed = time.time() - start_time
-                python_rate = steps_completed / elapsed
-                episode_rate = episodes_completed / elapsed
-
-                print(
-                    f"  Python: {python_rate:.0f} steps/sec, {episode_rate:.0f} episodes/sec"
-                )
-                results[f"python_{batch_size}"] = {
-                    "steps_per_second": python_rate,
-                    "episodes_per_second": episode_rate,
-                    "elapsed_seconds": elapsed,
-                    "num_steps": steps_completed,
-                    "num_episodes": episodes_completed,
-                }
-
-            except Exception as e:
-                print(f"  Python benchmark failed: {e}")
-                results[f"python_{batch_size}"] = None
-
-        return results
-    else:
-        print("Rust environment not available for benchmarking")
+def masked_softmax(logits: Dict[int, float], legal_actions: Sequence[int]) -> Dict[int, float]:
+    if not legal_actions:
         return {}
+    max_logit = max(logits[a] for a in legal_actions)
+    exp_vals = [math.exp(logits[a] - max_logit) for a in legal_actions]
+    denom = sum(exp_vals) + 1e-8
+    return {a: val / denom for a, val in zip(legal_actions, exp_vals)}
 
 
-def run_training_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
-    """Run actual training experiment with given configuration."""
+class AdamTable:
+    def __init__(self, rows: int, cols: int, lr: float = 1e-3, beta1: float = 0.9, beta2: float = 0.999, eps: float = 1e-8) -> None:
+        self.lr = lr
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.eps = eps
+        self.t = 0
+        self.m = [[0.0 for _ in range(cols)] for _ in range(rows)]
+        self.v = [[0.0 for _ in range(cols)] for _ in range(rows)]
 
-    print(f"\n{'=' * 60}")
-    print(f"TRAINING EXPERIMENT: {config['game']}")
-    print(f"Scheduler: {'Enabled' if config['use_scheduler'] else 'Disabled'}")
-    print(f"Rust Env: {'Yes' if config.get('use_rust_env', False) else 'No'}")
-    print(f"Iterations: {config['training']['num_iterations']}")
-    print(f"{'=' * 60}")
+    def step(self, params: List[List[float]], grads: List[List[float]]) -> None:
+        self.t += 1
+        lr = self.lr
+        b1 = self.beta1
+        b2 = self.beta2
+        eps = self.eps
+        t = self.t
+        for r in range(len(params)):
+            row_params = params[r]
+            row_grads = grads[r]
+            row_m = self.m[r]
+            row_v = self.v[r]
+            for c in range(len(row_params)):
+                g = row_grads[c]
+                row_m[c] = b1 * row_m[c] + (1 - b1) * g
+                row_v[c] = b2 * row_v[c] + (1 - b2) * (g * g)
+                m_hat = row_m[c] / (1 - b1 ** t)
+                v_hat = row_v[c] / (1 - b2 ** t)
+                row_params[c] -= lr * m_hat / (math.sqrt(v_hat) + eps)
 
-    # Create game
-    game_factory = GameFactory()
 
-    if config.get("use_rust_env", False) and RUST_AVAILABLE:
-        # Try to use Rust environment
-        try:
-            print("Initializing Rust environment...")
-            rust_env = dual_rl_poker_rust.create_environment(
-                config["game"].replace("_poker", "_poker"), None
-            )
-            print(f"✓ Rust environment created: {rust_env.get_game_info()}")
-        except Exception as e:
-            print(f"⚠ Rust environment failed, falling back to Python: {e}")
-            config["use_rust_env"] = False
+class NeuralARMACTrainer:
+    def __init__(
+        self,
+        game_name: str,
+        *,
+        seed: int,
+        actor_lr: float = 1e-3,
+        critic_lr: float = 1e-3,
+        regret_lr: float = 1e-3,
+        episodes_per_iteration: int = 64,
+        buffer_size: int = 50000,
+        batch_size: int = 256,
+        lambda_alpha: float = 2.0,
+        loss_beta: float = 0.7,
+    ) -> None:
+        if game_name not in {"kuhn_poker", "leduc_poker"}:
+            raise ValueError("Supported games: kuhn_poker, leduc_poker")
 
-    # Create game wrapper (Python fallback)
-    game_wrapper = game_factory.create_game(config["game"])
-    print(f"✓ Game wrapper created: {config['game']}")
+        self.game = pyspiel.load_game(game_name)
+        if self.game.num_players() != 2:
+            raise ValueError("Only two-player zero-sum games are supported")
 
-    # Create ARMAC algorithm
-    armac = ARMACAlgorithm(game_wrapper, config)
-    print(f"✓ ARMAC algorithm initialized")
-    print(f"  Actor parameters: {sum(p.numel() for p in armac.actor.parameters())}")
-    print(f"  Critic parameters: {sum(p.numel() for p in armac.critic.parameters())}")
-    print(
-        f"  Regret parameters: {sum(p.numel() for p in armac.regret_network.parameters())}"
-    )
+        random.seed(seed)
 
-    if armac.use_scheduler and armac.scheduler_components:
-        scheduler = armac.scheduler_components["scheduler"]
-        print(f"  Scheduler: {'Discrete' if scheduler.discrete else 'Continuous'}")
-        if scheduler.discrete:
-            print(f"  Lambda bins: {scheduler.k_bins.tolist()}")
+        self.info_states, self.info_state_actions = self._enumerate_info_states()
+        self.info_state_index = {s: i for i, s in enumerate(self.info_states)}
+        self.num_states = len(self.info_states)
+        self.num_actions = self.game.num_distinct_actions()
 
-    # Training loop
-    print(f"\nStarting training...")
-    print(
-        f"{'Iteration':<10} {'Loss':<12} {'Reward':<10} {'Lambda':<10} {'Temp':<8} {'Time'}"
-    )
-    print("-" * 60)
+        # Parameter tables (logits / values)
+        self.actor_logits = [[0.0 for _ in range(self.num_actions)] for _ in range(self.num_states)]
+        self.critic_table = [[0.0 for _ in range(self.num_actions)] for _ in range(self.num_states)]
+        self.regret_table = [[0.0 for _ in range(self.num_actions)] for _ in range(self.num_states)]
 
-    training_stats = {
-        "iterations": [],
-        "losses": [],
-        "rewards": [],
-        "lambdas": [],
-        "temperatures": [],
-        "times": [],
-        "exploitability": [],
-    }
+        self.actor_opt = AdamTable(self.num_states, self.num_actions, lr=actor_lr)
+        self.critic_opt = AdamTable(self.num_states, self.num_actions, lr=critic_lr)
+        self.regret_opt = AdamTable(self.num_states, self.num_actions, lr=regret_lr)
 
-    start_time = time.time()
+        self.episodes_per_iteration = episodes_per_iteration
+        self.buffer: Deque[Dict[str, object]] = deque(maxlen=buffer_size)
+        self.batch_size = batch_size
+        self.lambda_alpha = lambda_alpha
+        self.loss_beta = loss_beta
+        self.current_lambda = 0.5
+        self.avg_actor_loss = 0.0
+        self.avg_regret_loss = 0.0
+        self.iteration_count = 0
 
-    for iteration in range(config["training"]["num_iterations"]):
-        iter_start = time.time()
+    # ------------------------------------------------------------------
+    # Game traversal helpers
+    # ------------------------------------------------------------------
+    def _enumerate_info_states(self) -> Tuple[List[str], Dict[str, Tuple[int, ...]]]:
+        cache: Dict[str, Tuple[int, ...]] = {}
+        stack = [self.game.new_initial_state()]
+        while stack:
+            state = stack.pop()
+            if state.is_terminal():
+                continue
+            if state.is_chance_node():
+                for action, _ in state.chance_outcomes():
+                    stack.append(state.child(action))
+                continue
+            player = state.current_player()
+            info_state = state.information_state_string(player)
+            if info_state not in cache:
+                cache[info_state] = tuple(state.legal_actions())
+            for action in state.legal_actions():
+                stack.append(state.child(action))
+        info_states = sorted(cache.keys())
+        return info_states, cache
 
-        # Collect batch of experiences
-        batch_size = config["training"]["batch_size"]
-        total_reward = 0.0
-        losses = []
-        lambda_values = []
+    def _policy_components(self, state_idx: int, legal_actions: Sequence[int]) -> Tuple[Dict[int, float], Dict[int, float], Dict[int, float]]:
+        actor_logits = self.actor_logits[state_idx]
+        actor_policy = masked_softmax(actor_logits, legal_actions)
 
-        for batch_idx in range(batch_size):
-            # Create environment instance
-            if config.get("use_rust_env", False) and RUST_AVAILABLE:
-                try:
-                    # Use Rust environment
-                    rust_env = dual_rl_poker_rust.create_environment(
-                        config["game"].replace("_poker", "_poker"), None
-                    )
-                    rust_env.reset(iteration * batch_size + batch_idx)
+        # Regret policy from non-negative regrets
+        regrets = self.regret_table[state_idx]
+        positive = {a: max(regrets[a], 0.0) for a in legal_actions}
+        pos_sum = sum(positive.values())
+        if pos_sum > 1e-8:
+            regret_policy = {a: val / pos_sum for a, val in positive.items()}
+        else:
+            regret_policy = {a: 1.0 / len(legal_actions) for a in legal_actions}
 
-                    # Play episode
-                    episode_reward = 0.0
-                    steps = 0
-                    max_steps = 50  # Prevent infinite loops
+        mixed: Dict[int, float] = {}
+        lam = self.current_lambda
+        for action in legal_actions:
+            mixed[action] = lam * regret_policy[action] + (1 - lam) * actor_policy[action]
+        norm = sum(mixed.values()) + 1e-8
+        for action in mixed:
+            mixed[action] /= norm
 
-                    while not rust_env.is_terminal() and steps < max_steps:
-                        # Get policy from ARMAC
-                        obs_array = rust_env.observation()
-                        legal_array = rust_env.legal_actions()
+        return actor_policy, regret_policy, mixed
 
-                        obs_tensor = torch.tensor(
-                            obs_array, dtype=torch.float32
-                        ).unsqueeze(0)
-                        legal_mask = torch.zeros(len(legal_array))
-                        for i, action in enumerate(legal_array):
-                            if action == 1:
-                                legal_mask[i] = 1.0
+    def _collect_episode(self) -> Tuple[Episode, List[Dict[str, object]]]:
+        state = self.game.new_initial_state()
+        steps: List[EpisodeStep] = []
+        experiences: List[Dict[str, object]] = []
+        lambdas: List[float] = []
 
-                        # Get action from ARMAC policy
-                        with torch.no_grad():
-                            if hasattr(armac, "get_policy"):
-                                policy = armac.get_policy(
-                                    obs_tensor, legal_mask.unsqueeze(0)
-                                )
-                                action_probs = policy.cpu().numpy()[0]
-                            else:
-                                # Fallback: random action
-                                action_probs = (
-                                    legal_mask.numpy() / legal_mask.sum().clamp(min=1.0)
-                                )
+        while not state.is_terminal():
+            if state.is_chance_node():
+                outcomes = state.chance_outcomes()
+                actions, probs = zip(*outcomes)
+                action = random.choices(actions, weights=probs, k=1)[0]
+                state = state.child(action)
+                continue
 
-                            if len(action_probs) > 0:
-                                action = np.random.choice(
-                                    len(action_probs), p=action_probs
-                                )
-                            else:
-                                action = 0
+            player = state.current_player()
+            info_state = state.information_state_string(player)
+            legal_actions = self.info_state_actions[info_state]
+            state_idx = self.info_state_index[info_state]
 
-                        # Step environment
-                        obs, reward, done = rust_env.step(action)
-                        episode_reward += reward
-                        steps += 1
+            actor_policy, regret_policy, mixed_policy = self._policy_components(state_idx, legal_actions)
+            probs = [mixed_policy[a] for a in legal_actions]
+            action = random.choices(legal_actions, weights=probs, k=1)[0]
 
-                    total_reward += episode_reward
+            steps.append(EpisodeStep(info_state, legal_actions, action, player))
+            lambdas.append(self.current_lambda)
+            state = state.child(action)
 
-                except Exception as e:
-                    # Fall back to Python if Rust fails
-                    pass
-
-            # Python fallback
-            if not config.get("use_rust_env", False) or not RUST_AVAILABLE:
-                # Use Python environment
-                state = game_wrapper.get_initial_state()
-                episode_reward = 0.0
-                steps = 0
-                max_steps = 50
-
-                while not game_wrapper.is_terminal(state) and steps < max_steps:
-                    # Get observation and legal actions
-                    obs = game_wrapper.encode_state(state)
-                    legal_actions = game_wrapper.get_legal_actions(state)
-
-                    obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)
-                    legal_mask = torch.zeros(game_wrapper.num_actions)
-                    for action in legal_actions:
-                        legal_mask[action] = 1.0
-
-                    # Get action from ARMAC
-                    with torch.no_grad():
-                        if hasattr(armac, "get_policy"):
-                            policy = armac.get_policy(
-                                obs_tensor, legal_mask.unsqueeze(0)
-                            )
-                            action_probs = policy.cpu().numpy()[0]
-                        else:
-                            action_probs = legal_mask.numpy() / legal_mask.sum().clamp(
-                                min=1.0
-                            )
-
-                        valid_actions = [
-                            i for i, legal in enumerate(legal_mask) if legal > 0
-                        ]
-                        if valid_actions:
-                            action = np.random.choice(
-                                valid_actions, p=action_probs[valid_actions]
-                            )
-                        else:
-                            action = 0
-
-                    # Step environment
-                    state = game_wrapper.make_action(
-                        state, state.current_player(), action
-                    )
-                    episode_reward += (
-                        state.current_player()
-                        if hasattr(state, "current_player")
-                        else 0
-                    )
-                    steps += 1
-
-                total_reward += episode_reward
-
-        # Compute training statistics
-        avg_reward = total_reward / batch_size
-        iter_time = time.time() - iter_start
-
-        # Get scheduler statistics if available
-        current_lambda = 0.0
-        current_temp = 0.0
-        if armac.use_scheduler and armac.scheduler_components:
-            scheduler = armac.scheduler_components["scheduler"]
-            current_temp = scheduler.temperature
-            if hasattr(armac, "get_current_lambda"):
-                current_lambda = armac.get_current_lambda()
-            elif scheduler.discrete:
-                current_lambda = 0.5  # Placeholder for discrete
-
-        # Calculate loss (simplified)
-        loss = -avg_reward  # Negative reward as loss
-        losses.append(loss)
-        lambda_values.append(current_lambda)
-
-        # Store statistics
-        if iteration % 100 == 0:
-            training_stats["iterations"].append(iteration)
-            training_stats["losses"].append(np.mean(losses))
-            training_stats["rewards"].append(avg_reward)
-            training_stats["lambdas"].append(current_lambda)
-            training_stats["temperatures"].append(current_temp)
-            training_stats["times"].append(iter_time)
-
-            # Simple exploitability estimate (placeholder)
-            exploitability = max(0.0, -avg_reward)
-            training_stats["exploitability"].append(exploitability)
-
-            print(
-                f"{iteration:<10} {loss:<12.6f} {avg_reward:<10.6f} {current_lambda:<10.6f} {current_temp:<8.6f} {iter_time:<6.3f}"
+            experiences.append(
+                {
+                    "state_idx": state_idx,
+                    "legal_actions": legal_actions,
+                    "action": action,
+                    "player": player,
+                    "mixed_policy": mixed_policy,
+                }
             )
 
-        # Update ARMAC networks (simplified)
-        if hasattr(armac, "update_networks"):
-            armac.update_networks()
+        returns = state.returns()
+        for exp in experiences:
+            exp["return"] = returns[exp["player"]]
 
-    total_time = time.time() - start_time
+        return Episode(steps, tuple(returns), lambdas), experiences
 
-    # Final statistics
-    final_stats = {
-        "total_time": total_time,
-        "avg_loss": np.mean(losses),
-        "avg_reward": np.mean(training_stats["rewards"])
-        if training_stats["rewards"]
-        else 0.0,
-        "final_exploitability": training_stats["exploitability"][-1]
-        if training_stats["exploitability"]
-        else 0.0,
-        "steps_per_second": (
-            config["training"]["num_iterations"] * config["training"]["batch_size"]
-        )
-        / total_time,
-        "training_stats": training_stats,
-    }
+    def _sample_batch(self) -> List[Dict[str, object]] | None:
+        if not self.buffer:
+            return None
+        bs = min(self.batch_size, len(self.buffer))
+        return random.sample(self.buffer, bs)
 
-    print(f"\nTraining completed in {total_time:.2f} seconds")
-    print(f"Average loss: {final_stats['avg_loss']:.6f}")
-    print(f"Average reward: {final_stats['avg_reward']:.6f}")
-    print(f"Final exploitability: {final_stats['final_exploitability']:.6f}")
-    print(f"Throughput: {final_stats['steps_per_second']:.0f} steps/second")
+    def _update_parameters(self) -> Tuple[float, float, float] | None:
+        batch = self._sample_batch()
+        if not batch:
+            return None
 
-    return final_stats
+        batch_size = len(batch)
+        grad_actor = [[0.0 for _ in range(self.num_actions)] for _ in range(self.num_states)]
+        grad_critic = [[0.0 for _ in range(self.num_actions)] for _ in range(self.num_states)]
+        grad_regret = [[0.0 for _ in range(self.num_actions)] for _ in range(self.num_states)]
 
+        actor_losses: List[float] = []
+        critic_losses: List[float] = []
+        regret_losses: List[float] = []
 
-def plot_training_results(results: Dict[str, Any], save_path: Optional[str] = None):
-    """Plot training results."""
+        for sample in batch:
+            idx = sample["state_idx"]
+            legal_actions = sample["legal_actions"]
+            action = sample["action"]
+            returns = sample["return"]
 
-    if "training_stats" not in results:
-        print("No training statistics to plot")
-        return
+            actor_policy, regret_policy, mixed_policy = self._policy_components(idx, legal_actions)
+            critic_values = self.critic_table[idx]
 
-    stats = results["training_stats"]
+            value_eval = sum(mixed_policy[a] * critic_values[a] for a in legal_actions)
+            advantage = critic_values[action] - value_eval
 
-    fig, axes = plt.subplots(2, 3, figsize=(15, 10))
-    fig.suptitle("Training Results", fontsize=16)
+            # Actor gradient
+            for a in legal_actions:
+                if a == action:
+                    grad_actor[idx][a] += -(advantage) * (1 - actor_policy[a])
+                else:
+                    grad_actor[idx][a] += -(advantage) * (-actor_policy[a])
 
-    # Loss
-    axes[0, 0].plot(stats["iterations"], stats["losses"])
-    axes[0, 0].set_title("Training Loss")
-    axes[0, 0].set_xlabel("Iteration")
-    axes[0, 0].set_ylabel("Loss")
-    axes[0, 0].grid(True)
+            # Critic gradient (squared error)
+            grad_critic[idx][action] += 2.0 * (critic_values[action] - returns)
 
-    # Reward
-    axes[0, 1].plot(stats["iterations"], stats["rewards"])
-    axes[0, 1].set_title("Average Reward")
-    axes[0, 1].set_xlabel("Iteration")
-    axes[0, 1].set_ylabel("Reward")
-    axes[0, 1].grid(True)
+            target_regret = max(critic_values[action] - value_eval, 0.0)
+            for a in legal_actions:
+                target = max(critic_values[a] - value_eval, 0.0)
+                grad_regret[idx][a] += 2.0 * (self.regret_table[idx][a] - target)
 
-    # Lambda values
-    axes[0, 2].plot(stats["iterations"], stats["lambdas"])
-    axes[0, 2].set_title("Lambda Values")
-    axes[0, 2].set_xlabel("Iteration")
-    axes[0, 2].set_ylabel("Lambda")
-    axes[0, 2].grid(True)
+            actor_losses.append(-advantage * math.log(actor_policy[action] + 1e-8))
+            critic_losses.append((critic_values[action] - returns) ** 2)
+            regret_losses.append((self.regret_table[idx][action] - target_regret) ** 2)
 
-    # Temperature
-    axes[1, 0].plot(stats["iterations"], stats["temperatures"])
-    axes[1, 0].set_title("Temperature")
-    axes[1, 0].set_xlabel("Iteration")
-    axes[1, 0].set_ylabel("Temperature")
-    axes[1, 0].grid(True)
+        inv_bs = 1.0 / batch_size
+        for table in (grad_actor, grad_critic, grad_regret):
+            for r in range(self.num_states):
+                for c in range(self.num_actions):
+                    table[r][c] *= inv_bs
 
-    # Exploitability
-    axes[1, 1].plot(stats["iterations"], stats["exploitability"])
-    axes[1, 1].set_title("Exploitability")
-    axes[1, 1].set_xlabel("Iteration")
-    axes[1, 1].set_ylabel("Exploitability")
-    axes[1, 1].grid(True)
+        self.actor_opt.step(self.actor_logits, grad_actor)
+        self.critic_opt.step(self.critic_table, grad_critic)
+        self.regret_opt.step(self.regret_table, grad_regret)
 
-    # Training time per iteration
-    axes[1, 2].plot(stats["iterations"], stats["times"])
-    axes[1, 2].set_title("Iteration Time")
-    axes[1, 2].set_xlabel("Iteration")
-    axes[1, 2].set_ylabel("Time (s)")
-    axes[1, 2].grid(True)
+        actor_loss_value = float(sum(actor_losses) / len(actor_losses)) if actor_losses else 0.0
+        regret_loss_value = float(sum(regret_losses) / len(regret_losses)) if regret_losses else 0.0
+        critic_loss_value = float(sum(critic_losses) / len(critic_losses)) if critic_losses else 0.0
 
-    plt.tight_layout()
+        self.avg_actor_loss = self.loss_beta * self.avg_actor_loss + (1 - self.loss_beta) * actor_loss_value
+        self.avg_regret_loss = self.loss_beta * self.avg_regret_loss + (1 - self.loss_beta) * regret_loss_value
 
-    if save_path:
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
-        print(f"Training plots saved to: {save_path}")
+        diff = self.avg_regret_loss - self.avg_actor_loss
+        self.current_lambda = float(max(0.05, min(0.95, 1.0 / (1.0 + math.exp(-self.lambda_alpha * diff)))))
 
-    plt.show()
+        return actor_loss_value, regret_loss_value, critic_loss_value
 
+    def _policy_distribution(self) -> Dict[str, List[float]]:
+        table: Dict[str, List[float]] = {}
+        for info_state, legal_actions in self.info_state_actions.items():
+            idx = self.info_state_index[info_state]
+            _, _, mixed = self._policy_components(idx, legal_actions)
+            full = [0.0 for _ in range(self.num_actions)]
+            for action in legal_actions:
+                full[action] = mixed[action]
+            table[info_state] = full
+        return table
 
-def main():
-    """Main training runner."""
+    def _evaluate_policy(self) -> Tuple[float, float, float, float]:
+        policy_table = self._policy_distribution()
+        tab_policy = pyspiel.TabularPolicy({k: [(a, probs[a]) for a in range(self.num_actions)] for k, probs in policy_table.items()})
+        exploitability = float(pyspiel.exploitability(self.game, tab_policy))
+        values = pyspiel.expected_returns(self.game.new_initial_state(), [tab_policy, tab_policy], -1, True)
+        nash_conv = 2.0 * exploitability
+        return nash_conv, exploitability, float(values[0]), float(values[1])
 
-    print("ARMAC REAL TRAINING WITH RUST INTEGRATION")
-    print("=" * 60)
+    def run_iteration(self) -> Tuple[IterationMetrics, Dict[str, List[float]]]:
+        start = time.perf_counter()
+        episodes: List[Episode] = []
+        lambda_samples: List[float] = []
 
-    # Create experiments directory
-    os.makedirs("experiments", exist_ok=True)
+        for _ in range(self.episodes_per_iteration):
+            episode, experiences = self._collect_episode()
+            episodes.append(episode)
+            lambda_samples.extend(episode.lambdas)
+            for exp in experiences:
+                self.buffer.append(exp)
 
-    # Experiment configurations
-    experiments = [
-        {
-            "name": "kuhn_discrete_scheduler",
-            "game": "kuhn_poker",
-            "use_scheduler": True,
-            "scheduler_mode": "discrete",
-            "num_iterations": 3000,
-            "batch_size": 32,
-            "use_rust": True,
-        },
-        {
-            "name": "kuhn_continuous_scheduler",
-            "game": "kuhn_poker",
-            "use_scheduler": True,
-            "scheduler_mode": "continuous",
-            "num_iterations": 3000,
-            "batch_size": 32,
-            "use_rust": True,
-        },
-        {
-            "name": "kuhn_no_scheduler",
-            "game": "kuhn_poker",
-            "use_scheduler": False,
-            "num_iterations": 3000,
-            "batch_size": 32,
-            "use_rust": True,
-        },
-        {
-            "name": "kuhn_python_fallback",
-            "game": "kuhn_poker",
-            "use_scheduler": True,
-            "scheduler_mode": "discrete",
-            "num_iterations": 2000,
-            "batch_size": 16,
-            "use_rust": False,
-        },
-    ]
+        update = self._update_parameters()
+        if update is None:
+            actor_loss_value = 0.0
+            regret_loss_value = 0.0
+            critic_loss_value = 0.0
+        else:
+            actor_loss_value, regret_loss_value, critic_loss_value = update
 
-    # Run benchmark first
-    benchmark_results = benchmark_environments(
-        "kuhn_poker", num_steps=5000, batch_sizes=[32, 64]
-    )
+        self.iteration_count += 1
+        nash_conv, exploitability, value_p0, value_p1 = self._evaluate_policy()
 
-    # Run experiments
-    all_results = {}
+        mean_length = statistics.mean(len(ep.steps) for ep in episodes) if episodes else 0.0
+        mean_lambda = statistics.mean(lambda_samples) if lambda_samples else self.current_lambda
+        mean_return_p0 = statistics.mean(ep.returns[0] for ep in episodes) if episodes else 0.0
+        mean_return_p1 = statistics.mean(ep.returns[1] for ep in episodes) if episodes else 0.0
 
-    for exp_config in experiments:
-        print(f"\n{'#' * 60}")
-        print(f"EXPERIMENT: {exp_config['name']}")
-        print(f"{'#' * 60}")
-
-        try:
-            # Create configuration (remove 'name' from kwargs)
-            config_kwargs = {k: v for k, v in exp_config.items() if k != "name"}
-            config = create_training_config(**config_kwargs)
-
-            # Run training
-            results = run_training_experiment(config)
-            results["experiment_config"] = exp_config
-
-            # Store results
-            all_results[exp_config["name"]] = results
-
-            # Save results
-            results_file = f"experiments/{exp_config['name']}_results.yaml"
-            with open(results_file, "w") as f:
-                yaml.dump(results, f, default_flow_style=False)
-
-            # Plot results
-            plot_file = f"experiments/{exp_config['name']}_plots.png"
-            plot_training_results(results, plot_file)
-
-            print(f"✓ Experiment '{exp_config['name']}' completed successfully")
-
-        except Exception as e:
-            print(f"✗ Experiment '{exp_config['name']}' failed: {e}")
-            import traceback
-
-            traceback.print_exc()
-
-    # Summary comparison
-    print(f"\n{'=' * 60}")
-    print("EXPERIMENT SUMMARY")
-    print(f"{'=' * 60}")
-
-    print(f"{'Experiment':<25} {'Final Exploit':<15} {'Steps/sec':<12} {'Time':<10}")
-    print("-" * 65)
-
-    for name, results in all_results.items():
-        if "final_exploitability" in results:
-            print(
-                f"{name:<25} {results['final_exploitability']:<15.6f} {results['steps_per_second']:<12.0f} {results['total_time']:<10.2f}"
-            )
-
-    # Save all results
-    summary_file = "experiments/training_summary.yaml"
-    with open(summary_file, "w") as f:
-        yaml.dump(
-            {
-                "benchmark_results": benchmark_results,
-                "training_results": all_results,
-                "timestamp": time.time(),
-            },
-            f,
-            default_flow_style=False,
+        metrics = IterationMetrics(
+            iteration=self.iteration_count,
+            exploitability=exploitability,
+            nash_conv=nash_conv,
+            actor_loss=actor_loss_value,
+            average_lambda=mean_lambda,
+            mean_episode_length=mean_length,
+            mean_return_player0=mean_return_p0,
+            mean_return_player1=mean_return_p1,
+            wall_time_sec=time.perf_counter() - start,
         )
 
-    print(f"\nAll results saved to: {summary_file}")
+        return metrics, {"lambda_samples": lambda_samples, "values": [value_p0, value_p1]}
 
-    # Performance analysis
-    if len(all_results) > 1:
-        print(f"\n{'=' * 60}")
-        print("PERFORMANCE ANALYSIS")
-        print(f"{'=' * 60}")
+    def average_strategy_table(self) -> Dict[str, List[float]]:
+        return self._policy_distribution()
 
-        # Compare scheduler vs no scheduler
-        discrete_key = "kuhn_discrete_scheduler"
-        no_scheduler_key = "kuhn_no_scheduler"
 
-        if discrete_key in all_results and no_scheduler_key in all_results:
-            discrete_results = all_results[discrete_key]
-            no_scheduler_results = all_results[no_scheduler_key]
+class CFRTrainer:
+    def __init__(self, game_name: str) -> None:
+        if game_name not in {"kuhn_poker", "leduc_poker"}:
+            raise ValueError("Supported games: kuhn_poker, leduc_poker")
+        self.game = pyspiel.load_game(game_name)
+        if self.game.num_players() != 2:
+            raise ValueError("CFR requires a two-player zero-sum game")
+        self.solver = pyspiel.CFRSolver(self.game)
+        self.iteration = 0
 
-            improvement = (
-                (
-                    no_scheduler_results["final_exploitability"]
-                    - discrete_results["final_exploitability"]
-                )
-                / abs(no_scheduler_results["final_exploitability"])
-                * 100
-            )
+    def run_iteration(self) -> Tuple[IterationMetrics, Dict[str, List[float]]]:
+        start = time.perf_counter()
+        self.solver.evaluate_and_update_policy()
+        self.iteration += 1
+        policy = self.solver.average_policy()
+        exploitability = float(pyspiel.exploitability(self.game, policy))
+        nash_conv = 2.0 * exploitability
+        values = pyspiel.expected_returns(
+            self.game.new_initial_state(), [policy, policy], -1, True
+        )
+        metrics = IterationMetrics(
+            iteration=self.iteration,
+            exploitability=exploitability,
+            nash_conv=nash_conv,
+            actor_loss=0.0,
+            average_lambda=0.0,
+            mean_episode_length=0.0,
+            mean_return_player0=float(values[0]),
+            mean_return_player1=float(values[1]),
+            wall_time_sec=time.perf_counter() - start,
+        )
+        return metrics, {"lambda_samples": []}
 
-            print(f"Discrete Scheduler vs No Scheduler:")
-            print(f"  Exploitability improvement: {improvement:.2f}%")
+    def average_strategy_table(self) -> Dict[str, List[float]]:
+        policy = self.solver.average_policy()
+        mapping: Dict[str, List[float]] = {}
+        stack = [self.game.new_initial_state()]
+        visited: set[str] = set()
+        while stack:
+            state = stack.pop()
+            if state.is_terminal():
+                continue
+            if state.is_chance_node():
+                for action, _ in state.chance_outcomes():
+                    stack.append(state.child(action))
+                continue
+            player = state.current_player()
+            info_state = state.information_state_string(player)
+            if info_state not in visited:
+                visited.add(info_state)
+                probs_map = policy.action_probabilities(state)
+                probs = [0.0 for _ in range(self.game.num_distinct_actions())]
+                for action, prob in probs_map.items():
+                    probs[action] = prob
+                mapping[info_state] = probs
+            for action in state.legal_actions():
+                stack.append(state.child(action))
+        return mapping
+
+
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Train ARMAC poker agents (tabular neural-style)")
+    parser.add_argument("--game", type=str, default="kuhn_poker", choices=["kuhn_poker", "leduc_poker"])
+    parser.add_argument("--iterations", type=int, default=500)
+    parser.add_argument("--episodes-per-iteration", type=int, default=128)
+    parser.add_argument("--actor-lr", type=float, default=1e-3)
+    parser.add_argument("--critic-lr", type=float, default=1e-3)
+    parser.add_argument("--regret-lr", type=float, default=1e-3)
+    parser.add_argument("--batch-size", type=int, default=256)
+    parser.add_argument("--buffer-size", type=int, default=50000)
+    parser.add_argument("--lambda-alpha", type=float, default=2.0)
+    parser.add_argument("--loss-beta", type=float, default=0.7)
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument(
+        "--algorithm",
+        type=str,
+        default="neural_tabular",
+        choices=["neural_tabular", "cfr"],
+        help="Training algorithm to run",
+    )
+    parser.add_argument("--output-dir", type=pathlib.Path, default=pathlib.Path("results"))
+    parser.add_argument("--tag", type=str, default="")
+    return parser.parse_args(argv)
+
+
+def run_training(opts: argparse.Namespace) -> Dict[str, object]:
+    if opts.algorithm == "cfr":
+        trainer: object = CFRTrainer(opts.game)
+        policy_type = "cfr"
+    else:
+        trainer = NeuralARMACTrainer(
+            opts.game,
+            seed=opts.seed,
+            actor_lr=opts.actor_lr,
+            critic_lr=opts.critic_lr,
+            regret_lr=opts.regret_lr,
+            episodes_per_iteration=opts.episodes_per_iteration,
+            buffer_size=opts.buffer_size,
+            batch_size=opts.batch_size,
+            lambda_alpha=opts.lambda_alpha,
+            loss_beta=opts.loss_beta,
+        )
+        policy_type = "neural_tabular"
+
+    training_history: List[Dict[str, float]] = []
+    lambda_samples: List[float] = []
+
+    for iteration in range(1, opts.iterations + 1):
+        metrics, samples = trainer.run_iteration()
+        training_history.append(metrics.as_dict())
+        lambda_samples.extend(samples["lambda_samples"])
+
+        if iteration % max(1, opts.iterations // 10) == 0 or iteration == 1:
             print(
-                f"  Speed impact: {discrete_results['steps_per_second'] / no_scheduler_results['steps_per_second']:.2f}x"
+                f"[{iteration:04d}/{opts.iterations}] exploitability={metrics.exploitability:.4f} "
+                f"NashConv={metrics.nash_conv:.4f} actor_loss={metrics.actor_loss:.4f} "
+                f"avg_lambda={metrics.average_lambda:.3f}"
             )
 
-        # Compare Rust vs Python
-        rust_key = "kuhn_discrete_scheduler"
-        python_key = "kuhn_python_fallback"
+    summary = {
+        "game": opts.game,
+        "seed": opts.seed,
+        "iterations": opts.iterations,
+        "episodes_per_iteration": opts.episodes_per_iteration,
+        "actor_lr": opts.actor_lr,
+        "critic_lr": opts.critic_lr,
+        "regret_lr": opts.regret_lr,
+        "batch_size": opts.batch_size,
+        "buffer_size": opts.buffer_size,
+        "lambda_alpha": opts.lambda_alpha,
+        "loss_beta": opts.loss_beta,
+        "policy_type": policy_type,
+        "training_history": training_history,
+        "lambda_samples": lambda_samples,
+        "average_strategy": trainer.average_strategy_table(),
+    }
+    return summary
 
-        if rust_key in all_results and python_key in all_results:
-            rust_results = all_results[rust_key]
-            python_results = all_results[python_key]
 
-            print(f"\nRust vs Python Environment:")
-            print(
-                f"  Speed improvement: {rust_results['steps_per_second'] / python_results['steps_per_second']:.2f}x"
-            )
-            print(
-                f"  Quality difference: {(python_results['final_exploitability'] - rust_results['final_exploitability']):.6f}"
-            )
+def save_results(summary: Dict[str, object], opts: argparse.Namespace) -> pathlib.Path:
+    opts.output_dir.mkdir(parents=True, exist_ok=True)
+    tag = f"_{opts.tag}" if opts.tag else ""
+    timestamp = int(time.time())
+    filename = f"{opts.game}_{summary['policy_type']}_seed{opts.seed}_{timestamp}{tag}.json"
+    output_path = opts.output_dir / filename
+    with output_path.open("w", encoding="utf-8") as fh:
+        json.dump(summary, fh, indent=2)
+    return output_path
 
-    print(f"\n{'=' * 60}")
-    print("TRAINING COMPLETED")
-    print(f"{'=' * 60}")
+
+def main(argv: Sequence[str] | None = None) -> None:
+    opts = parse_args(argv)
+    summary = run_training(opts)
+    output_path = save_results(summary, opts)
+    print(f"Results saved to {output_path}")
 
 
 if __name__ == "__main__":

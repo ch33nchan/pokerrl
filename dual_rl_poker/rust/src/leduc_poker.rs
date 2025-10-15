@@ -5,10 +5,12 @@
 //! Python bindings for integration with the ARMAC training system.
 
 use crate::{EnvConfig, EnvError, EnvResult, Environment, GameInfo};
-use ndarray::{Array1, Array2};
-use numpy::{IntoPyArray, PyArray1, PyArray2};
+use ndarray::Array1;
+use numpy::PyArray1;
+use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use rand::{Rng, SeedableRng};
+use rand::seq::SliceRandom;
 use rand_pcg::Pcg64Mcg;
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -146,7 +148,7 @@ impl LeducPokerEnv {
 
     /// Shuffle deck
     fn shuffle_deck(&mut self) {
-        self.rng.shuffle(&mut self.deck);
+        self.deck.shuffle(&mut self.rng);
     }
 
     /// Deal cards to players
@@ -500,77 +502,59 @@ impl Environment for LeducPokerEnv {
         self.game_info.clone()
     }
 
-    fn clone_state(&self) -> Box<dyn Environment> {
-        Box::new(LeducPokerEnv {
-            state: self.state.clone(),
-            rng: Pcg64Mcg::seed_from_u64(42),
-            config: self.config.clone(),
-            game_info: self.game_info.clone(),
-            deck: self.deck.clone(),
-        })
-    }
-
-    fn restore_state(&mut self, state: &Box<dyn Environment>) -> EnvResult<()> {
-        let other = state
-            .as_any()
-            .downcast_ref::<LeducPokerEnv>()
-            .ok_or_else(|| EnvError::EncodingError {
-                message: "Cannot restore from different environment type".to_string(),
-            })?;
-
-        self.state = other.state.clone();
-        self.deck = other.deck.clone();
-        Ok(())
-    }
 }
 
 #[pymethods]
 impl LeducPokerEnv {
     #[new]
-    fn py_new(config: Option<EnvConfig>) -> PyResult<Self> {
-        Ok(Self::new(config.unwrap_or_default()))
+    fn py_new(seed: Option<u64>) -> PyResult<Self> {
+        let mut config = EnvConfig::default();
+        config.seed = seed;
+        Ok(Self::new(config))
     }
 
     fn reset(&mut self, seed: Option<u64>) -> PyResult<()> {
-        self.reset(seed)
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(format!("Reset failed: {}", e)))
+        <Self as Environment>::reset(self, seed)
+            .map_err(|e| PyRuntimeError::new_err(format!("Reset failed: {}", e)))
     }
 
-    fn observation(&self) -> PyArray1<f32> {
-        self.observation()
-            .into_pyarray(Python::acquire_gil().asgil())
+    #[pyo3(name = "observation")]
+    fn py_observation<'py>(&self, py: Python<'py>) -> PyResult<&'py PyArray1<f32>> {
+        let obs = <Self as Environment>::observation(self);
+        Ok(PyArray1::from_vec(py, obs.to_vec()))
     }
 
-    fn legal_actions(&self) -> PyArray1<i32> {
-        self.legal_actions()
-            .into_pyarray(Python::acquire_gil().asgil())
+    #[pyo3(name = "legal_actions")]
+    fn py_legal_actions<'py>(&self, py: Python<'py>) -> PyResult<&'py PyArray1<i32>> {
+        let acts = <Self as Environment>::legal_actions(self);
+        Ok(PyArray1::from_vec(py, acts.to_vec()))
     }
 
     fn current_player(&self) -> i32 {
-        self.current_player()
+        <Self as Environment>::current_player(self)
     }
 
     fn is_terminal(&self) -> bool {
-        self.is_terminal()
+        <Self as Environment>::is_terminal(self)
     }
 
-    fn rewards(&self) -> PyArray1<f32> {
-        self.rewards().into_pyarray(Python::acquire_gil().asgil())
+    #[pyo3(name = "rewards")]
+    fn py_rewards<'py>(&self, py: Python<'py>) -> PyResult<&'py PyArray1<f32>> {
+        let rewards = <Self as Environment>::rewards(self);
+        Ok(PyArray1::from_vec(py, rewards.to_vec()))
     }
 
-    fn step(&mut self, action: i32) -> PyResult<(PyArray1<f32>, f32, bool)> {
-        let (obs, reward, done) = self.step(action).map_err(|e| {
-            pyo3::exceptions::PyRuntimeError::new_err(format!("Step failed: {}", e))
-        })?;
-
-        let py = Python::acquire_gil().asgil();
-        let obs_array = obs.into_pyarray(py);
-        Ok((obs_array, reward, done))
+    #[pyo3(name = "step")]
+    fn py_step<'py>(&mut self, py: Python<'py>, action: i32) -> PyResult<(&'py PyArray1<f32>, f32, bool)> {
+        let (obs, reward, done) = <Self as Environment>::step(self, action)
+            .map_err(|e| PyRuntimeError::new_err(format!("Step failed: {}", e)))?;
+        Ok((PyArray1::from_vec(py, obs.to_vec()), reward, done))
     }
 
-    fn info_state(&self, player: i32) -> PyArray1<f32> {
-        self.info_state(player)
-            .into_pyarray(Python::acquire_gil().asgil())
+    #[pyo3(name = "info_state")]
+    fn py_info_state<'py>(&self, py: Python<'py>, player: i32) -> PyResult<&'py PyArray1<f32>> {
+        let info = <Self as Environment>::info_state(self, player);
+        Ok(PyArray1::from_vec(py, info.to_vec()))
     }
 
     fn get_game_info(&self) -> PyResult<serde_json::Value> {
@@ -605,24 +589,6 @@ impl LeducPokerEnv {
             "last_bet": self.state.last_bet
         });
         Ok(state_json)
-    }
-
-    fn get_rng_state(&self) -> PyResult<Vec<u8>> {
-        let state = crate::utils::RngState::from_pcg64(&self.rng);
-        serde_json::to_vec(&state).map_err(|e| {
-            pyo3::exceptions::PyRuntimeError::new_err(format!("Serialization failed: {}", e))
-        })
-    }
-
-    fn set_rng_state(&mut self, state_bytes: Vec<u8>) -> PyResult<()> {
-        let state: crate::utils::RngState = serde_json::from_slice(&state_bytes).map_err(|e| {
-            pyo3::exceptions::PyRuntimeError::new_err(format!("Deserialization failed: {}", e))
-        })?;
-
-        self.rng = state
-            .to_pcg64()
-            .map_err(|_| pyo3::exceptions::PyRuntimeError::new_err("Invalid RNG state"))?;
-        Ok(())
     }
 
     fn __repr__(&self) -> String {

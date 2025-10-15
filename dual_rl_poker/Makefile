@@ -25,13 +25,20 @@ setup:
 	@echo "See https://github.com/deepmind/openSpiel for installation instructions"
 
 run_all:
-	@echo "Running comprehensive experiments..."
-	source .venv/bin/activate && python run_comprehensive_experiments.py
+	@echo "Running real dual-RL experiments..."
+	source .venv/bin/activate && \
+	for game in kuhn_poker leduc_poker; do \
+		for seed in 0 1 2; do \
+			echo "==> $$game (seed $$seed)"; \
+			python3 run_real_training.py --game $$game --seed $$seed --iterations 300 --episodes-per-iteration 128 --tag run_all; \
+		done; \
+	done
+	source .venv/bin/activate && python3 generate_results.py
 
 analysis:
 	@echo "Generating analysis and plots..."
-	source .venv/bin/activate && python create_plots.py
-	source .venv/bin/activate && python generate_results.py
+	source .venv/bin/activate && python3 generate_results.py
+	source .venv/bin/activate && python3 create_plots.py
 
 paper:
 	@echo "Compiling academic paper..."
@@ -56,11 +63,11 @@ clean:
 # Quick experiment targets
 quick_kuhn:
 	@echo "Quick Kuhn poker experiment..."
-	source .venv/bin/activate && python run_experiments.py --game kuhn_poker --seeds 0-2
+	source .venv/bin/activate && python run_real_training.py --game kuhn_poker --iterations 200 --seed 0 --tag quick
 
 quick_leduc:
 	@echo "Quick Leduc poker experiment..."
-	source .venv/bin/activate && python run_experiments.py --game leduc_poker --seeds 0-2
+	source .venv/bin/activate && python run_real_training.py --game leduc_poker --iterations 200 --seed 0 --tag quick
 
 # Results verification
 verify_results:
