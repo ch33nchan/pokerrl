@@ -6,10 +6,10 @@
 
 use crate::{EnvConfig, EnvError, EnvResult, Environment, GameInfo};
 use ndarray::Array1;
-use numpy::PyArray1;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
-use rand::{Rng, SeedableRng};
+use pyo3::types::PyDict;
+use rand::SeedableRng;
 use rand::seq::SliceRandom;
 use rand_pcg::Pcg64Mcg;
 use serde::{Deserialize, Serialize};
@@ -154,24 +154,27 @@ impl KuhnPokerEnv {
                 // First round, bet
                 self.state.contributions[self.state.current_player as usize] += 1;
                 self.state.pot += 1;
+                self.state.round = 1;
                 self.state.current_player = 1 - self.state.current_player;
             }
             (1, 0) => {
-                // Second round, check or call
+                // Second round, check or fold
                 let last_action = self.state.history[self.state.history.len() - 2];
                 if last_action == 0 {
                     // Check after check
                     self.state.current_player = 1 - self.state.current_player;
                     self.resolve_showdown()?;
                 } else {
-                    // Call bet
-                    self.state.contributions[self.state.current_player as usize] += 1;
-                    self.state.pot += 1;
-                    self.resolve_showdown()?;
+                    // Fold in response to a bet
+                    let winner = 1 - self.state.current_player;
+                    let payoff = self.state.contributions[self.state.current_player as usize] as f32;
+                    self.state.payoffs[winner as usize] = payoff;
+                    self.state.payoffs[self.state.current_player as usize] = -payoff;
+                    self.state.terminal = true;
                 }
             }
             (1, 1) => {
-                // Second round, bet or fold
+                // Second round, bet or call
                 let last_action = self.state.history[self.state.history.len() - 2];
                 if last_action == 0 {
                     // Bet after check
@@ -179,12 +182,10 @@ impl KuhnPokerEnv {
                     self.state.pot += 1;
                     self.state.current_player = 1 - self.state.current_player;
                 } else {
-                    // Fold
-                    let winner = 1 - self.state.current_player;
-                    self.state.payoffs[winner as usize] = self.state.pot as f32;
-                    self.state.payoffs[self.state.current_player as usize] =
-                        -(self.state.pot as f32);
-                    self.state.terminal = true;
+                    // Call bet
+                    self.state.contributions[self.state.current_player as usize] += 1;
+                    self.state.pot += 1;
+                    self.resolve_showdown()?;
                 }
             }
             _ => unreachable!(),
@@ -200,8 +201,9 @@ impl KuhnPokerEnv {
         } else {
             1
         };
-        self.state.payoffs[winner as usize] = self.state.pot as f32;
-        self.state.payoffs[1 - winner as usize] = -(self.state.pot as f32);
+        let payoff = self.state.contributions[1 - winner as usize] as f32;
+        self.state.payoffs[winner as usize] = payoff;
+        self.state.payoffs[1 - winner as usize] = -payoff;
         self.state.terminal = true;
         Ok(())
     }
@@ -356,15 +358,15 @@ impl KuhnPokerEnv {
     }
 
     #[pyo3(name = "observation")]
-    fn py_observation<'py>(&self, py: Python<'py>) -> PyResult<&'py PyArray1<f32>> {
+    fn py_observation(&self) -> PyResult<Vec<f32>> {
         let obs = <Self as Environment>::observation(self);
-        Ok(PyArray1::from_vec(py, obs.to_vec()))
+        Ok(obs.to_vec())
     }
 
     #[pyo3(name = "legal_actions")]
-    fn py_legal_actions<'py>(&self, py: Python<'py>) -> PyResult<&'py PyArray1<i32>> {
+    fn py_legal_actions(&self) -> PyResult<Vec<i32>> {
         let acts = <Self as Environment>::legal_actions(self);
-        Ok(PyArray1::from_vec(py, acts.to_vec()))
+        Ok(acts.to_vec())
     }
 
     fn current_player(&self) -> i32 {
@@ -376,48 +378,46 @@ impl KuhnPokerEnv {
     }
 
     #[pyo3(name = "rewards")]
-    fn py_rewards<'py>(&self, py: Python<'py>) -> PyResult<&'py PyArray1<f32>> {
+    fn py_rewards(&self) -> PyResult<Vec<f32>> {
         let rewards = <Self as Environment>::rewards(self);
-        Ok(PyArray1::from_vec(py, rewards.to_vec()))
+        Ok(rewards.to_vec())
     }
 
     #[pyo3(name = "step")]
-    fn py_step<'py>(&mut self, py: Python<'py>, action: i32) -> PyResult<(&'py PyArray1<f32>, f32, bool)> {
+    fn py_step(&mut self, action: i32) -> PyResult<(Vec<f32>, f32, bool)> {
         let (obs, reward, done) = <Self as Environment>::step(self, action)
             .map_err(|e| PyRuntimeError::new_err(format!("Step failed: {}", e)))?;
-        Ok((PyArray1::from_vec(py, obs.to_vec()), reward, done))
+        Ok((obs.to_vec(), reward, done))
     }
 
     #[pyo3(name = "info_state")]
-    fn py_info_state<'py>(&self, py: Python<'py>, player: i32) -> PyResult<&'py PyArray1<f32>> {
+    fn py_info_state(&self, player: i32) -> PyResult<Vec<f32>> {
         let info = <Self as Environment>::info_state(self, player);
-        Ok(PyArray1::from_vec(py, info.to_vec()))
+        Ok(info.to_vec())
     }
 
-    fn get_game_info(&self) -> PyResult<serde_json::Value> {
-        let info = serde_json::json!({
-            "name": self.game_info.name,
-            "num_players": self.game_info.num_players,
-            "num_actions": self.game_info.num_actions,
-            "max_game_length": self.game_info.max_game_length,
-            "observation_shape": self.game_info.observation_shape,
-            "action_shape": self.game_info.action_shape
-        });
+    fn get_game_info<'py>(&self, py: Python<'py>) -> PyResult<&'py PyDict> {
+        let info = PyDict::new(py);
+        info.set_item("name", &self.game_info.name)?;
+        info.set_item("num_players", self.game_info.num_players)?;
+        info.set_item("num_actions", self.game_info.num_actions)?;
+        info.set_item("max_game_length", self.game_info.max_game_length)?;
+        info.set_item("observation_shape", self.game_info.observation_shape.clone())?;
+        info.set_item("action_shape", self.game_info.action_shape.clone())?;
         Ok(info)
     }
 
-    fn get_state(&self) -> PyResult<serde_json::Value> {
-        let state_json = serde_json::json!({
-            "cards": self.state.cards,
-            "round": self.state.round,
-            "current_player": self.state.current_player,
-            "pot": self.state.pot,
-            "contributions": self.state.contributions,
-            "history": self.state.history,
-            "terminal": self.state.terminal,
-            "payoffs": self.state.payoffs
-        });
-        Ok(state_json)
+    fn get_state<'py>(&self, py: Python<'py>) -> PyResult<&'py PyDict> {
+        let state = PyDict::new(py);
+        state.set_item("cards", self.state.cards.to_vec())?;
+        state.set_item("round", self.state.round)?;
+        state.set_item("current_player", self.state.current_player)?;
+        state.set_item("pot", self.state.pot)?;
+        state.set_item("contributions", self.state.contributions.to_vec())?;
+        state.set_item("history", self.state.history.clone())?;
+        state.set_item("terminal", self.state.terminal)?;
+        state.set_item("payoffs", self.state.payoffs.to_vec())?;
+        Ok(state)
     }
 
     fn __repr__(&self) -> String {

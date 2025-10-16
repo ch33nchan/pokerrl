@@ -24,7 +24,10 @@ class DeepCFRAlgorithm(BaseAlgorithm):
             game_wrapper: Game wrapper instance
             config: Configuration dictionary
         """
-        super().__init__(game_wrapper, config)
+        raise NotImplementedError(
+            "DeepCFRAlgorithm is not yet fully implemented for this repository. "
+            "Use the tabular ARMAC or CFR pipelines for reproducible results."
+        )
 
         # Deep CFR specific parameters
         self.advantage_memory_size = config.get('advantage_memory_size', 10000)

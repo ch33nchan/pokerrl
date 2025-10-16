@@ -18,9 +18,19 @@ import statistics
 import time
 from collections import deque
 from dataclasses import dataclass
-from typing import Deque, Dict, List, Sequence, Tuple
+from typing import Deque, Dict, List, Optional, Sequence, Tuple
+
+import torch
+import torch.nn.functional as F
 
 import pyspiel
+
+try:
+    from tqdm import tqdm
+except ImportError:  # pragma: no cover - tqdm is optional
+    tqdm = None  # type: ignore
+
+from algs.scheduler.scheduler import Scheduler, compute_scheduler_input
 
 
 @dataclass
@@ -49,6 +59,7 @@ class IterationMetrics:
     mean_return_player0: float
     mean_return_player1: float
     wall_time_sec: float
+    scheduler_loss: float
 
     def as_dict(self) -> Dict[str, float]:
         return {
@@ -61,6 +72,7 @@ class IterationMetrics:
             "mean_return_player0": self.mean_return_player0,
             "mean_return_player1": self.mean_return_player1,
             "wall_time_sec": self.wall_time_sec,
+            "scheduler_loss": self.scheduler_loss,
         }
 
 
@@ -118,6 +130,7 @@ class NeuralARMACTrainer:
         batch_size: int = 256,
         lambda_alpha: float = 2.0,
         loss_beta: float = 0.7,
+        backend: str = "pyspiel",
     ) -> None:
         if game_name not in {"kuhn_poker", "leduc_poker"}:
             raise ValueError("Supported games: kuhn_poker, leduc_poker")
@@ -127,7 +140,24 @@ class NeuralARMACTrainer:
             raise ValueError("Only two-player zero-sum games are supported")
 
         random.seed(seed)
+        self.backend = backend
+        self.use_rust_backend = backend == "rust"
+        self.game_name = game_name
+        self._rust_utils = None
+        self._rust_env = None
+        self.device = torch.device("cpu")
+        if self.use_rust_backend:
+            try:
+                from utils import rust_env as rust_env_utils
+            except ImportError as exc:
+                raise ImportError(
+                    "Rust backend requested but utils.rust_env is unavailable. "
+                    "Build the Rust module before using --backend rust."
+                ) from exc
+            self._rust_utils = rust_env_utils
+            self._rust_env = rust_env_utils.RustEnvWrapper(game_name, seed=seed)
 
+        self.info_state_encoding_cache: Dict[str, List[float]] = {}
         self.info_states, self.info_state_actions = self._enumerate_info_states()
         self.info_state_index = {s: i for i, s in enumerate(self.info_states)}
         self.num_states = len(self.info_states)
@@ -150,6 +180,19 @@ class NeuralARMACTrainer:
         self.current_lambda = 0.5
         self.avg_actor_loss = 0.0
         self.avg_regret_loss = 0.0
+        self.avg_scheduler_loss = 0.0
+        self.scheduler_kappa = 5.0
+        self.scheduler_training_buffer: List[Tuple[torch.Tensor, float]] = []
+        # Scheduler (continuous)
+        state_dim = len(next(iter(self.info_state_encoding_cache.values())))
+        dummy_state = torch.zeros(1, state_dim, dtype=torch.float32, device=self.device)
+        dummy_actor = torch.zeros(1, self.num_actions, dtype=torch.float32, device=self.device)
+        dummy_regret = torch.zeros(1, self.num_actions, dtype=torch.float32, device=self.device)
+        dummy_input = compute_scheduler_input(dummy_state, dummy_actor, dummy_regret, iteration=0)
+        self.scheduler_input_dim = dummy_input.shape[-1]
+        self.scheduler = Scheduler(input_dim=self.scheduler_input_dim)
+        self.scheduler.train()
+        self.scheduler_optimizer = torch.optim.Adam(self.scheduler.parameters(), lr=1e-3)
         self.iteration_count = 0
 
     # ------------------------------------------------------------------
@@ -170,12 +213,15 @@ class NeuralARMACTrainer:
             info_state = state.information_state_string(player)
             if info_state not in cache:
                 cache[info_state] = tuple(state.legal_actions())
+                tensor = state.information_state_tensor(player)
+                self.info_state_encoding_cache[info_state] = list(tensor)
             for action in state.legal_actions():
                 stack.append(state.child(action))
         info_states = sorted(cache.keys())
         return info_states, cache
 
     def _policy_components(self, state_idx: int, legal_actions: Sequence[int]) -> Tuple[Dict[int, float], Dict[int, float], Dict[int, float]]:
+        info_state = self.info_states[state_idx]
         actor_logits = self.actor_logits[state_idx]
         actor_policy = masked_softmax(actor_logits, legal_actions)
 
@@ -188,17 +234,60 @@ class NeuralARMACTrainer:
         else:
             regret_policy = {a: 1.0 / len(legal_actions) for a in legal_actions}
 
-        mixed: Dict[int, float] = {}
+        critic_values = self.critic_table[state_idx]
+        actor_expected = sum(actor_policy[a] * critic_values[a] for a in legal_actions)
+        regret_expected = sum(regret_policy[a] * critic_values[a] for a in legal_actions)
+        advantage_delta = actor_expected - regret_expected
+        target_lambda = 1.0 / (1.0 + math.exp(-self.scheduler_kappa * advantage_delta))
+
         lam = self.current_lambda
+        if self.scheduler is not None:
+            state_encoding = torch.tensor(
+                self.info_state_encoding_cache[info_state],
+                dtype=torch.float32,
+                device=self.device,
+            ).unsqueeze(0)
+            actor_logits_tensor = torch.tensor(
+                self.actor_logits[state_idx], dtype=torch.float32, device=self.device
+            ).unsqueeze(0)
+            regret_logits_tensor = torch.tensor(
+                self.regret_table[state_idx], dtype=torch.float32, device=self.device
+            ).unsqueeze(0)
+            scheduler_input = compute_scheduler_input(
+                state_encoding,
+                actor_logits_tensor,
+                regret_logits_tensor,
+                self.iteration_count,
+            )
+            sched_out = self.scheduler.forward_with_warmup(
+                scheduler_input, iteration=self.iteration_count
+            )
+            if sched_out["mode"] == "continuous":
+                lam_tensor = sched_out["lambda"]
+            else:
+                probs = F.softmax(sched_out["logits"], dim=-1)
+                lam_tensor = probs @ self.scheduler.k_bins.to(self.device)
+            lam = float(lam_tensor.squeeze().cpu().item())
+            lam = max(0.0, min(1.0, lam))
+            self.scheduler_training_buffer.append(
+                (scheduler_input.detach().cpu(), float(target_lambda))
+            )
+
+        mixed: Dict[int, float] = {}
         for action in legal_actions:
             mixed[action] = lam * regret_policy[action] + (1 - lam) * actor_policy[action]
         norm = sum(mixed.values()) + 1e-8
         for action in mixed:
             mixed[action] /= norm
 
+        self.current_lambda = lam
+
         return actor_policy, regret_policy, mixed
 
     def _collect_episode(self) -> Tuple[Episode, List[Dict[str, object]]]:
+        if self.use_rust_backend:
+            return self._collect_episode_rust()
+
         state = self.game.new_initial_state()
         steps: List[EpisodeStep] = []
         experiences: List[Dict[str, object]] = []
@@ -241,13 +330,72 @@ class NeuralARMACTrainer:
 
         return Episode(steps, tuple(returns), lambdas), experiences
 
+    def _collect_episode_rust(self) -> Tuple[Episode, List[Dict[str, object]]]:
+        assert self._rust_env is not None and self._rust_utils is not None
+
+        rust_env = self._rust_env
+        episode_seed = random.randrange(0, 2**32)
+        rust_env.reset(seed=episode_seed)
+        rust_state = rust_env.get_state()
+
+        state = self.game.new_initial_state()
+        self._rust_utils._sync_initial_chance(state, self.game_name, rust_state)
+
+        steps: List[EpisodeStep] = []
+        experiences: List[Dict[str, object]] = []
+        lambdas: List[float] = []
+
+        while True:
+            while state.is_chance_node() and not state.is_terminal():
+                rust_state = rust_env.get_state()
+                self._rust_utils._sync_chance_from_rust(state, self.game_name, rust_state)
+
+            if state.is_terminal():
+                break
+
+            player = state.current_player()
+            info_state = state.information_state_string(player)
+            legal_actions = self.info_state_actions[info_state]
+            state_idx = self.info_state_index[info_state]
+
+            actor_policy, regret_policy, mixed_policy = self._policy_components(
+                state_idx, legal_actions
+            )
+            probs = [mixed_policy[a] for a in legal_actions]
+            action = random.choices(legal_actions, weights=probs, k=1)[0]
+
+            steps.append(EpisodeStep(info_state, legal_actions, action, player))
+            lambdas.append(self.current_lambda)
+
+            _, _, done = rust_env.step(action)
+            state = state.child(action)
+            experiences.append(
+                {
+                    "state_idx": state_idx,
+                    "legal_actions": legal_actions,
+                    "action": action,
+                    "player": player,
+                    "mixed_policy": mixed_policy,
+                }
+            )
+
+            if done:
+                break
+
+        returns_vec = rust_env.rewards()
+        returns = tuple(float(r) for r in returns_vec)
+        for exp in experiences:
+            exp["return"] = returns[exp["player"]]
+
+        return Episode(steps, returns, lambdas), experiences
+
     def _sample_batch(self) -> List[Dict[str, object]] | None:
         if not self.buffer:
             return None
         bs = min(self.batch_size, len(self.buffer))
         return random.sample(self.buffer, bs)
 
-    def _update_parameters(self) -> Tuple[float, float, float] | None:
+    def _update_parameters(self) -> Tuple[float, float, float, float] | None:
         batch = self._sample_batch()
         if not batch:
             return None
@@ -308,11 +456,35 @@ class NeuralARMACTrainer:
 
         self.avg_actor_loss = self.loss_beta * self.avg_actor_loss + (1 - self.loss_beta) * actor_loss_value
         self.avg_regret_loss = self.loss_beta * self.avg_regret_loss + (1 - self.loss_beta) * regret_loss_value
+        scheduler_loss_value = self._update_scheduler()
+        self.avg_scheduler_loss = self.loss_beta * self.avg_scheduler_loss + (1 - self.loss_beta) * scheduler_loss_value
 
         diff = self.avg_regret_loss - self.avg_actor_loss
         self.current_lambda = float(max(0.05, min(0.95, 1.0 / (1.0 + math.exp(-self.lambda_alpha * diff)))))
 
-        return actor_loss_value, regret_loss_value, critic_loss_value
+        return actor_loss_value, regret_loss_value, critic_loss_value, scheduler_loss_value
+
+    def _update_scheduler(self) -> float:
+        if not self.scheduler_training_buffer:
+            return 0.0
+        inputs = torch.cat([inp.to(self.device).float() for inp, _ in self.scheduler_training_buffer], dim=0)
+        targets = torch.tensor(
+            [target for _, target in self.scheduler_training_buffer],
+            dtype=torch.float32,
+            device=self.device,
+        ).unsqueeze(-1)
+        preds = self.scheduler(inputs)
+        if preds["mode"] == "continuous":
+            lam_pred = preds["lambda"]
+        else:
+            lam_pred = F.softmax(preds["logits"], dim=-1) @ self.scheduler.k_bins.to(self.device)
+        loss = F.mse_loss(lam_pred, targets)
+        self.scheduler_optimizer.zero_grad()
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.scheduler.parameters(), 5.0)
+        self.scheduler_optimizer.step()
+        self.scheduler_training_buffer.clear()
+        return float(loss.item())
 
     def _policy_distribution(self) -> Dict[str, List[float]]:
         table: Dict[str, List[float]] = {}
@@ -350,8 +522,9 @@ class NeuralARMACTrainer:
             actor_loss_value = 0.0
             regret_loss_value = 0.0
             critic_loss_value = 0.0
+            scheduler_loss_value = 0.0
         else:
-            actor_loss_value, regret_loss_value, critic_loss_value = update
+            actor_loss_value, regret_loss_value, critic_loss_value, scheduler_loss_value = update
 
         self.iteration_count += 1
         nash_conv, exploitability, value_p0, value_p1 = self._evaluate_policy()
@@ -371,6 +544,7 @@ class NeuralARMACTrainer:
             mean_return_player0=mean_return_p0,
             mean_return_player1=mean_return_p1,
             wall_time_sec=time.perf_counter() - start,
+            scheduler_loss=scheduler_loss_value,
         )
 
         return metrics, {"lambda_samples": lambda_samples, "values": [value_p0, value_p1]}
@@ -409,6 +583,7 @@ class CFRTrainer:
             mean_return_player0=float(values[0]),
             mean_return_player1=float(values[1]),
             wall_time_sec=time.perf_counter() - start,
+            scheduler_loss=0.0,
         )
         return metrics, {"lambda_samples": []}
 
@@ -461,6 +636,13 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--output-dir", type=pathlib.Path, default=pathlib.Path("results"))
     parser.add_argument("--tag", type=str, default="")
+    parser.add_argument(
+        "--backend",
+        type=str,
+        default="pyspiel",
+        choices=["pyspiel", "rust"],
+        help="State transition backend (default: pyspiel)",
+    )
     return parser.parse_args(argv)
 
 
@@ -480,23 +662,49 @@ def run_training(opts: argparse.Namespace) -> Dict[str, object]:
             batch_size=opts.batch_size,
             lambda_alpha=opts.lambda_alpha,
             loss_beta=opts.loss_beta,
+            backend=opts.backend,
         )
         policy_type = "neural_tabular"
 
     training_history: List[Dict[str, float]] = []
     lambda_samples: List[float] = []
 
-    for iteration in range(1, opts.iterations + 1):
+    iterable = range(1, opts.iterations + 1)
+    progress = (
+        tqdm(
+            iterable,
+            desc=f"{policy_type.upper()} {opts.game}",
+            unit="iter",
+            dynamic_ncols=True,
+        )
+        if tqdm is not None
+        else iterable
+    )
+
+    for iteration in progress:
         metrics, samples = trainer.run_iteration()
         training_history.append(metrics.as_dict())
         lambda_samples.extend(samples["lambda_samples"])
 
-        if iteration % max(1, opts.iterations // 10) == 0 or iteration == 1:
+        if tqdm is not None:
+            progress.set_postfix(
+                {
+                    "exploit": f"{metrics.exploitability:.4f}",
+                    "nash": f"{metrics.nash_conv:.4f}",
+                    "actor": f"{metrics.actor_loss:.4f}",
+                    "lambda": f"{metrics.average_lambda:.3f}",
+                },
+                refresh=False,
+            )
+        elif iteration % max(1, opts.iterations // 10) == 0 or iteration == 1:
             print(
                 f"[{iteration:04d}/{opts.iterations}] exploitability={metrics.exploitability:.4f} "
                 f"NashConv={metrics.nash_conv:.4f} actor_loss={metrics.actor_loss:.4f} "
                 f"avg_lambda={metrics.average_lambda:.3f}"
             )
+
+    if tqdm is not None:
+        progress.close()
 
     summary = {
         "game": opts.game,

@@ -36,7 +36,10 @@ class CanonicalSDCFRAlgorithm(BaseAlgorithm):
             game_wrapper: Game wrapper instance
             config: Configuration dictionary
         """
-        super().__init__(game_wrapper, config)
+        raise NotImplementedError(
+            "CanonicalSDCFRAlgorithm is not yet implemented in this repository. "
+            "Please use the tabular ARMAC/CFR pipelines for validated results."
+        )
 
         # Single regret network (no strategy network)
         self.regret_network = DeepCFRNetwork(

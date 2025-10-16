@@ -399,10 +399,7 @@ class BaseAlgorithm(ABC):
         Returns:
             Dictionary with evaluation metrics
         """
-        # This would be implemented using the OpenSpiel evaluator
-        # For now, return placeholder metrics
-        return {
-            'exploitability': 0.1,
-            'nash_conv': 0.2,
-            'sampled_return': 0.0
-        }
+        raise NotImplementedError(
+            "BaseAlgorithm.evaluate must be overridden by concrete implementations "
+            "that report real evaluation metrics."
+        )

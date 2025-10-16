@@ -34,7 +34,10 @@ class SDCFRAlgorithm(BaseAlgorithm):
             game_wrapper: Game wrapper instance
             config: Algorithm configuration
         """
-        super().__init__(game_wrapper, config)
+        raise NotImplementedError(
+            "SDCFRAlgorithm is a stub in this repository. "
+            "Please rely on `run_real_training.py` for supported experiments."
+        )
 
         self.experiment_logger = get_experiment_logger("sd_cfr")
         self.logger = self.experiment_logger.get_logger()
