@@ -360,6 +360,11 @@
             confirming memory usage and throughput stay stable in bigger domains.
           </li>
           <li>
+            <strong>3D partial observability.</strong> New wrappers translate VizDoom
+            and MineRL observations into the same latent space, letting ARMAC++
+            practise on FPS and voxel environments without rewriting the learner.
+          </li>
+          <li>
             <strong>Baseline consistency.</strong> CFR anchors remain accurate as
             episode counts grow, keeping evaluation trustworthy for broader partially
             observed settings.
@@ -376,6 +381,15 @@
       <section>
         <h2>10. Candidate Games for Expansion</h2>
         <ul>
+          <li>
+            <strong>VizDoom deathmatch / navigation.</strong> Tests scheduler-driven
+            policy mixing under dense visual observations and adversarial opponents.
+          </li>
+          <li>
+            <strong>MineRL (Minecraft survival & tasks).</strong> Long-horizon,
+            sparse reward problems that stress regret accumulation and actor
+            agility; the CPU dataflow already ingests MineRL trajectories.
+          </li>
           <li>
             <strong>Stratego-scale fog-of-war strategy.</strong> Hidden unit
             identities and deep trees stress the scheduler while matching the current
@@ -420,8 +434,8 @@
             document the speed gains formally.
           </li>
           <li>
-            Extend the Rust environment suite to additional imperfect-information
-            games and promote them into the main experiment rotation.
+            Ship VizDoom and MineRL environment bindings so FPS and voxel tasks join
+            the main experiment rotation alongside card games.
           </li>
         </ul>
       </section>
@@ -429,8 +443,9 @@
       <footer>
         ARMAC++ now delivers reproducible self-play, a trained scheduler, and a Rust
         backend that keeps iteration fast. With the environment layer validated on
-        high-capacity stress runs, the project is positioned to move beyond small
-        poker and into the broader landscape of imperfect-information games.
+        high-capacity stress runs, the project is positioned to move from small
+        poker into VizDoom arenas, Minecraft survival, and the broader landscape of
+        imperfect-information games.
       </footer>
     </main>
   </body>

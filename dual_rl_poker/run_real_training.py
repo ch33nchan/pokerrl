@@ -635,6 +635,18 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Training algorithm to run",
     )
     parser.add_argument("--output-dir", type=pathlib.Path, default=pathlib.Path("results"))
+    parser.add_argument(
+        "--experiment-name",
+        type=str,
+        default="default_experiment",
+        help="Logical experiment bucket used to organize result directories.",
+    )
+    parser.add_argument(
+        "--run-label",
+        type=str,
+        default="",
+        help="Optional free-form label appended to result filenames for easier filtering.",
+    )
     parser.add_argument("--tag", type=str, default="")
     parser.add_argument(
         "--backend",
@@ -693,6 +705,8 @@ def run_training(opts: argparse.Namespace) -> Dict[str, object]:
                     "nash": f"{metrics.nash_conv:.4f}",
                     "actor": f"{metrics.actor_loss:.4f}",
                     "lambda": f"{metrics.average_lambda:.3f}",
+                    "sched": f"{metrics.scheduler_loss:.2e}",
+                    "sec/it": f"{metrics.wall_time_sec:.2f}",
                 },
                 refresh=False,
             )
@@ -700,7 +714,8 @@ def run_training(opts: argparse.Namespace) -> Dict[str, object]:
             print(
                 f"[{iteration:04d}/{opts.iterations}] exploitability={metrics.exploitability:.4f} "
                 f"NashConv={metrics.nash_conv:.4f} actor_loss={metrics.actor_loss:.4f} "
-                f"avg_lambda={metrics.average_lambda:.3f}"
+                f"avg_lambda={metrics.average_lambda:.3f} scheduler_loss={metrics.scheduler_loss:.2e} "
+                f"sec/iter={metrics.wall_time_sec:.2f}"
             )
 
     if tqdm is not None:
@@ -727,11 +742,32 @@ def run_training(opts: argparse.Namespace) -> Dict[str, object]:
 
 
 def save_results(summary: Dict[str, object], opts: argparse.Namespace) -> pathlib.Path:
-    opts.output_dir.mkdir(parents=True, exist_ok=True)
-    tag = f"_{opts.tag}" if opts.tag else ""
-    timestamp = int(time.time())
-    filename = f"{opts.game}_{summary['policy_type']}_seed{opts.seed}_{timestamp}{tag}.json"
-    output_path = opts.output_dir / filename
+    experiment = opts.experiment_name or "default_experiment"
+    policy = summary["policy_type"]
+    target_dir = (
+        opts.output_dir
+        / experiment
+        / summary["game"]
+        / (policy if isinstance(policy, str) else str(policy))
+        / f"seed_{opts.seed}"
+    )
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    components = [
+        summary["game"],
+        policy,
+        f"seed{opts.seed}",
+        f"iter{summary['iterations']}",
+        f"epi{summary['episodes_per_iteration']}",
+        f"backend{opts.backend}",
+    ]
+    if opts.run_label:
+        components.append(opts.run_label)
+    if opts.tag:
+        components.append(opts.tag)
+    filename = "_".join(str(part) for part in components) + f"_{timestamp}.json"
+    output_path = target_dir / filename
     with output_path.open("w", encoding="utf-8") as fh:
         json.dump(summary, fh, indent=2)
     return output_path

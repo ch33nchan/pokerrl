@@ -10,8 +10,10 @@ ARMAC (actor + regret) paradigm. The repository currently ships:
   integration once higher-capacity experiments resume.
 
 Fresh submission runs (500 iterations, 128 episodes per iteration, seeds 0–4)
-live under `results/submission_runs/`, together with CFR baselines and a
-machine-generated manifest.
+now land under structured folders inside `results/`, grouped by experiment name,
+game, policy type, and seed. The canonical “submission” sweep is reproduced by
+the helper script described below; aggregate manifests and plots refresh
+automatically.
 
 ## Environment setup
 
@@ -29,55 +31,33 @@ enhance logging but are not mandatory.
 
 ## Reproducing the submission sweep
 
-The following commands re-create every result included in the submission
-package. They match the exact pipeline executed for the `results/submission_runs`
-manifest.
+The helper script below re-creates every result included in the submission
+package. Pass `--backend pyspiel` if you prefer the OpenSpiel environment; the
+default uses the Rust backend.
 
 ```bash
-# 1. Neural-tabular ARMAC (Kuhn & Leduc, seeds 0..4, 500 iterations)
-for game in kuhn_poker leduc_poker; do
-  for seed in 0 1 2 3 4; do
-    python3 run_real_training.py \
-      --game "$game" \
-      --iterations 500 \
-      --episodes-per-iteration 128 \
-      --seed "$seed" \
-      --output-dir results/submission_runs \
-      --tag submission
-  done
-done
-
-# 2. CFR anchors (Kuhn & Leduc, 1 000 iterations)
-python3 run_real_training.py \
-  --game kuhn_poker \
-  --iterations 1000 \
-  --algorithm cfr \
-  --seed 0 \
-  --output-dir results/submission_runs \
-  --tag submission
-
-python3 run_real_training.py \
-  --game leduc_poker \
-  --iterations 1000 \
-  --algorithm cfr \
-  --seed 0 \
-  --output-dir results/submission_runs \
-  --tag submission
-
-# 3. Summaries & plots
-python3 generate_results.py \
-  --results-dir results/submission_runs \
-  --output results/submission_summary.json
-python3 generate_results.py  # refresh global manifest (results/experiment_summary.json)
-python3 create_plots.py      # refresh plots in results/plots/ and tables/
+python3 scripts/run_poker_suite.py \
+  --output-dir results \
+  --backend rust \
+  --experiment-name submission_suite
 ```
 
-For convenience a `make submission` target performs the same sweep.
+This expands to:
+
+1. Neural ARMAC on Kuhn & Leduc (seeds 0–4, 500 iterations, 128 episodes/iter).
+2. CFR anchors on Kuhn & Leduc (1 000 iterations, seed 0).
+3. Aggregation via `generate_results.py` and plot refresh through
+   `create_plots.py`.
+
+All artefacts appear under
+`results/submission_suite/<game>/<policy>/seed_<n>/…timestamp….json`, and the
+suite summary sits inside `results/submission_suite/summary/`.
 
 ## Key artefacts
 
-- `results/submission_runs/` – raw JSON logs for each run.
-- `results/submission_summary.json` – aggregate stats for the submission sweep.
+- `results/<experiment>/<game>/<policy>/seed_*/…json` – raw logs per run.
+- `results/<experiment>/summary/experiment_summary.json` – aggregate stats for the
+  experiment suite executed via `run_poker_suite.py`.
 - `results/experiment_summary.json` – aggregate over the entire `results/`
   directory.
 - `results/plots/*.png`, `results/tables/performance_table.tex` – visualisations
