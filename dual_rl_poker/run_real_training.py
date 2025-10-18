@@ -10,18 +10,32 @@ environments.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import math
 import pathlib
 import random
 import statistics
+import sys
 import time
-from collections import deque
-from dataclasses import dataclass
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Deque, Dict, List, Optional, Sequence, Tuple
 
 import torch
 import torch.nn.functional as F
+
+# When executed as ``python run_real_training.py`` the package root (containing the
+# ``dual_rl_poker`` module) is not automatically placed on ``sys.path``.  Ensure the
+# parent directory is importable before attempting package imports so the script
+# works both as ``python -m dual_rl_poker.run_real_training`` and via a direct
+# file invocation.
+if __package__ in {None, ""}:
+    package_dir = Path(__file__).resolve().parent
+    parent_dir = package_dir.parent
+    if str(parent_dir) not in sys.path:
+        sys.path.insert(0, str(parent_dir))
 
 import pyspiel
 
@@ -30,7 +44,13 @@ try:
 except ImportError:  # pragma: no cover - tqdm is optional
     tqdm = None  # type: ignore
 
+from algs.cfr.cfr_head import TabularCFRHead
+from algs.meta.meta_objective import MetaBatchItem, MetaObjective
+from algs.scheduler.gate import ExpertGate, gate_context
+from algs.scheduler.gate_bandit import GateBandit
 from algs.scheduler.scheduler import Scheduler, compute_scheduler_input
+from dual_rl_poker.tools.approx_br import ApproxBestResponse
+from utils.manifest_manager import ManifestManager
 
 
 @dataclass
@@ -60,9 +80,10 @@ class IterationMetrics:
     mean_return_player1: float
     wall_time_sec: float
     scheduler_loss: float
+    extra: Dict[str, float] = field(default_factory=dict)
 
     def as_dict(self) -> Dict[str, float]:
-        return {
+        data = {
             "iteration": self.iteration,
             "exploitability": self.exploitability,
             "nash_conv": self.nash_conv,
@@ -74,6 +95,18 @@ class IterationMetrics:
             "wall_time_sec": self.wall_time_sec,
             "scheduler_loss": self.scheduler_loss,
         }
+        data.update(self.extra)
+        return data
+
+
+@dataclass
+class GateTrace:
+    state_idx: int
+    cluster: str
+    features: torch.Tensor
+    probs: torch.Tensor
+    expert_policies: List[Dict[int, float]]
+    legal_actions: Tuple[int, ...]
 
 
 def masked_softmax(logits: Dict[int, float], legal_actions: Sequence[int]) -> Dict[int, float]:
@@ -131,6 +164,14 @@ class NeuralARMACTrainer:
         lambda_alpha: float = 2.0,
         loss_beta: float = 0.7,
         backend: str = "pyspiel",
+        experts: Sequence[str] = ("actor", "regret", "ra", "explore", "cfr"),
+        meta_unroll: int = 16,
+        br_budget: int = 64,
+        gate_lr: float = 1e-3,
+        gate_kl_weight: float = 0.1,
+        handoff_tau: float = 0.15,
+        handoff_patience: int = 3,
+        state_cluster: str = "round+position+pot",
     ) -> None:
         if game_name not in {"kuhn_poker", "leduc_poker"}:
             raise ValueError("Supported games: kuhn_poker, leduc_poker")
@@ -183,7 +224,49 @@ class NeuralARMACTrainer:
         self.avg_scheduler_loss = 0.0
         self.scheduler_kappa = 5.0
         self.scheduler_training_buffer: List[Tuple[torch.Tensor, float]] = []
-        # Scheduler (continuous)
+        self.iteration_count = 0
+
+        # Expert gate configuration -------------------------------------------------
+        expert_list = [exp.strip() for exp in experts if exp and exp.strip()]
+        if not expert_list:
+            raise ValueError("At least one expert must be provided for MARM-K gate")
+        self.expert_names: Tuple[str, ...] = tuple(expert_list)
+        self.num_experts = len(self.expert_names)
+        self.actor_index = self.expert_names.index("actor") if "actor" in self.expert_names else None
+        self.regret_index = self.expert_names.index("regret") if "regret" in self.expert_names else None
+        self.cfr_index = self.expert_names.index("cfr") if "cfr" in self.expert_names else None
+        self.risk_temperature = 0.5
+        self.explore_epsilon = 0.2
+        self.meta_unroll = meta_unroll
+
+        dummy_features = self._build_gate_features(self.info_states[0])
+        self.gate = ExpertGate(
+            input_dim=dummy_features.numel(),
+            num_experts=self.num_experts,
+            temperature=1.0,
+            entropy_reg=1e-3,
+        )
+        self.gate_optimizer = torch.optim.Adam(self.gate.parameters(), lr=gate_lr)
+        self.gate_bandit = GateBandit(self.num_experts, device=self.device)
+        self.approx_br = ApproxBestResponse(self.game, budget=br_budget, seed=seed)
+        self.meta_objective = MetaObjective(self.approx_br, kl_weight=gate_kl_weight)
+        self.gate_traces: List[GateTrace] = []
+        self.state_cluster_spec = state_cluster
+        self.iteration_clusters: set[str] = set()
+        self.cluster_history: Dict[str, deque[float]] = defaultdict(lambda: deque(maxlen=handoff_patience))
+        self.handoff_tau = handoff_tau
+        self.handoff_patience = handoff_patience
+        self.frozen_clusters: Dict[str, int] = {}
+        self.cfr_head = TabularCFRHead(self.num_states, self.num_actions) if self.cfr_index is not None else None
+
+        # Diagnostics accumulated per iteration for publication-quality reporting
+        self._gate_entropy_trace: List[float] = []
+        self._gate_prob_sums: List[float] = [0.0 for _ in range(self.num_experts)]
+        self._gate_prob_count: int = 0
+        self._last_gate_regret_norm: float = 0.0
+        self._last_gate_avg_utility: float = 0.0
+
+        # Backwards compatibility scheduler (kept for lambda diagnostics) -----------
         state_dim = len(next(iter(self.info_state_encoding_cache.values())))
         dummy_state = torch.zeros(1, state_dim, dtype=torch.float32, device=self.device)
         dummy_actor = torch.zeros(1, self.num_actions, dtype=torch.float32, device=self.device)
@@ -193,7 +276,6 @@ class NeuralARMACTrainer:
         self.scheduler = Scheduler(input_dim=self.scheduler_input_dim)
         self.scheduler.train()
         self.scheduler_optimizer = torch.optim.Adam(self.scheduler.parameters(), lr=1e-3)
-        self.iteration_count = 0
 
     # ------------------------------------------------------------------
     # Game traversal helpers
@@ -220,12 +302,51 @@ class NeuralARMACTrainer:
         info_states = sorted(cache.keys())
         return info_states, cache
 
-    def _policy_components(self, state_idx: int, legal_actions: Sequence[int]) -> Tuple[Dict[int, float], Dict[int, float], Dict[int, float]]:
-        info_state = self.info_states[state_idx]
+    def _build_gate_features(self, info_state: str) -> torch.Tensor:
+        state_idx = self.info_state_index[info_state]
+        state_tensor = torch.tensor(
+            self.info_state_encoding_cache[info_state], dtype=torch.float32, device=self.device
+        )
+        actor_logits_tensor = torch.tensor(
+            self.actor_logits[state_idx], dtype=torch.float32, device=self.device
+        )
+        regret_tensor = torch.tensor(
+            self.regret_table[state_idx], dtype=torch.float32, device=self.device
+        )
+        scheduler_input = compute_scheduler_input(
+            state_tensor.unsqueeze(0),
+            actor_logits_tensor.unsqueeze(0),
+            regret_tensor.unsqueeze(0),
+            self.iteration_count,
+        )
+        feature_dict = {
+            "state": state_tensor,
+            "scheduler": scheduler_input.squeeze(0),
+            "lambda": torch.tensor([self.current_lambda], dtype=torch.float32, device=self.device),
+            "iter": torch.tensor([self.iteration_count / max(1, self.meta_unroll)], dtype=torch.float32, device=self.device),
+        }
+        return gate_context(feature_dict)
+
+    def _cluster_key(self, info_state: str) -> str:
+        if self.state_cluster_spec == "round+position+pot":
+            tokens = info_state.split(" ")
+            prefix = tokens[0] if tokens else info_state
+            player = tokens[1] if len(tokens) > 1 else "p"
+            bucket = tokens[2] if len(tokens) > 2 else "b"
+            return f"{prefix}:{player}:{bucket}"
+        return info_state.split(":", 1)[0]
+
+    def _gate_forward(self, features: torch.Tensor) -> torch.Tensor:
+        if features.dim() == 1:
+            features = features.unsqueeze(0)
+        return self.gate(features).logits
+
+    def _expert_policies(
+        self, state_idx: int, info_state: str, legal_actions: Sequence[int]
+    ) -> Dict[str, Dict[int, float]]:
         actor_logits = self.actor_logits[state_idx]
         actor_policy = masked_softmax(actor_logits, legal_actions)
 
-        # Regret policy from non-negative regrets
         regrets = self.regret_table[state_idx]
         positive = {a: max(regrets[a], 0.0) for a in legal_actions}
         pos_sum = sum(positive.values())
@@ -234,53 +355,149 @@ class NeuralARMACTrainer:
         else:
             regret_policy = {a: 1.0 / len(legal_actions) for a in legal_actions}
 
-        critic_values = self.critic_table[state_idx]
-        actor_expected = sum(actor_policy[a] * critic_values[a] for a in legal_actions)
-        regret_expected = sum(regret_policy[a] * critic_values[a] for a in legal_actions)
-        advantage_delta = actor_expected - regret_expected
-        target_lambda = 1.0 / (1.0 + math.exp(-self.scheduler_kappa * advantage_delta))
+        temp_logits = {a: actor_logits[a] / max(self.risk_temperature, 1e-3) for a in legal_actions}
+        risk_policy = masked_softmax(temp_logits, legal_actions)
 
-        lam = self.current_lambda
-        if self.scheduler is not None:
-            state_encoding = torch.tensor(
-                self.info_state_encoding_cache[info_state],
-                dtype=torch.float32,
-                device=self.device,
-            ).unsqueeze(0)
-            actor_logits_tensor = torch.tensor(
-                self.actor_logits[state_idx], dtype=torch.float32, device=self.device
-            ).unsqueeze(0)
-            regret_logits_tensor = torch.tensor(
-                self.regret_table[state_idx], dtype=torch.float32, device=self.device
-            ).unsqueeze(0)
-            scheduler_input = compute_scheduler_input(
-                state_encoding,
-                actor_logits_tensor,
-                regret_logits_tensor,
-                self.iteration_count,
-            )
-            sched_out = self.scheduler.forward_with_warmup(
-                scheduler_input, iteration=self.iteration_count
-            )
-            if sched_out["mode"] == "continuous":
-                lam_tensor = sched_out["lambda"]
-            else:
-                probs = F.softmax(sched_out["logits"], dim=-1)
-                lam_tensor = probs @ self.scheduler.k_bins.to(self.device)
-            lam = float(lam_tensor.squeeze().cpu().item())
-            lam = max(0.0, min(1.0, lam))
-            self.scheduler_training_buffer.append(
-                (scheduler_input.detach().cpu(), float(target_lambda))
+        explore_policy = {
+            a: (1 - self.explore_epsilon) * actor_policy[a] + self.explore_epsilon / len(legal_actions)
+            for a in legal_actions
+        }
+
+        policies: Dict[str, Dict[int, float]] = {
+            "actor": actor_policy,
+            "regret": regret_policy,
+            "ra": risk_policy,
+            "explore": explore_policy,
+        }
+
+        if self.cfr_head is not None:
+            policies["cfr"] = self.cfr_head.policy(state_idx, legal_actions)
+
+        return {name: policies[name] for name in self.expert_names if name in policies}
+
+    def _compute_gate_utilities(self, trace: GateTrace) -> torch.Tensor:
+        critic_values = self.critic_table[trace.state_idx]
+        utilities = []
+        for policy in trace.expert_policies:
+            value = sum(policy[a] * critic_values[a] for a in trace.legal_actions)
+            utilities.append(value)
+        mixed_value = sum(
+            trace.probs[idx].item() * sum(policy[a] * critic_values[a] for a in trace.legal_actions)
+            for idx, policy in enumerate(trace.expert_policies)
+        )
+        tensor = torch.tensor(utilities, dtype=torch.float32)
+        tensor -= mixed_value
+        return tensor
+
+    def _update_gate(self) -> float:
+        if not self.gate_traces:
+            return 0.0
+
+        bandit_targets: Dict[str, torch.Tensor] = {}
+        meta_batch: List[MetaBatchItem] = []
+        for trace in self.gate_traces:
+            utilities = self._compute_gate_utilities(trace)
+            self.gate_bandit.observe(trace.cluster, utilities)
+
+        for trace in self.gate_traces:
+            if trace.cluster not in bandit_targets:
+                bandit_targets[trace.cluster] = self.gate_bandit.target(trace.cluster)
+
+        for trace in self.gate_traces:
+            meta_batch.append(
+                MetaBatchItem(
+                    features=trace.features,
+                    gate_probs=trace.probs,
+                    cluster=trace.cluster,
+                    expert_policies=trace.expert_policies,
+                )
             )
 
-        mixed: Dict[int, float] = {}
-        for action in legal_actions:
-            mixed[action] = lam * regret_policy[action] + (1 - lam) * actor_policy[action]
-        norm = sum(mixed.values()) + 1e-8
+        loss = self.meta_objective.evaluate(meta_batch, self._gate_forward, bandit_targets)
+        self.gate_optimizer.zero_grad()
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.gate.parameters(), 5.0)
+        self.gate_optimizer.step()
+        if bandit_targets:
+            regret_norms: List[float] = []
+            avg_utils: List[float] = []
+            for cluster in bandit_targets:
+                diag = self.gate_bandit.diagnostics(cluster)
+                regret_norms.append(diag.get("regret_norm", 0.0))
+                avg_utils.append(diag.get("avg_utility", 0.0))
+            self._last_gate_regret_norm = float(sum(regret_norms) / len(regret_norms)) if regret_norms else 0.0
+            self._last_gate_avg_utility = float(sum(avg_utils) / len(avg_utils)) if avg_utils else 0.0
+        else:
+            self._last_gate_regret_norm = 0.0
+            self._last_gate_avg_utility = 0.0
+        self.gate_traces.clear()
+        return float(loss.item())
+
+    def _apply_anytime_handoff(self, exploitability: float) -> None:
+        for cluster in self.iteration_clusters:
+            history = self.cluster_history[cluster]
+            history.append(exploitability)
+            if len(history) == self.handoff_patience and all(v <= self.handoff_tau for v in history):
+                if cluster not in self.frozen_clusters:
+                    self.frozen_clusters[cluster] = self.iteration_count
+        self.iteration_clusters.clear()
+
+    def _policy_components(
+        self,
+        state_idx: int,
+        legal_actions: Sequence[int],
+        *,
+        record_trace: bool = False,
+    ) -> Tuple[Dict[int, float], Dict[int, float], Dict[int, float]]:
+        info_state = self.info_states[state_idx]
+        policies = self._expert_policies(state_idx, info_state, legal_actions)
+        cluster = self._cluster_key(info_state)
+        self.iteration_clusters.add(cluster)
+
+        features = self._build_gate_features(info_state)
+        gate_out = self.gate(features.unsqueeze(0))
+        probs = gate_out.probs.squeeze(0)
+
+        if cluster in self.frozen_clusters and self.cfr_index is not None:
+            frozen = torch.zeros_like(probs)
+            frozen[self.cfr_index] = 1.0
+            probs = frozen
+
+        actor_policy = policies.get("actor") or {
+            a: 1.0 / len(legal_actions) for a in legal_actions
+        }
+        regret_policy = policies.get("regret") or actor_policy
+
+        mixed = {a: 0.0 for a in legal_actions}
+        expert_list = [policies[name] for name in self.expert_names]
+        for weight, expert_policy in zip(probs.tolist(), expert_list):
+            for action in legal_actions:
+                mixed[action] += weight * expert_policy[action]
+        normaliser = sum(mixed.values()) + 1e-8
         for action in mixed:
-            mixed[action] /= norm
+            mixed[action] /= normaliser
 
-        self.current_lambda = lam
+        if self.regret_index is not None:
+            self.current_lambda = float(probs[self.regret_index].item())
+
+        if record_trace:
+            probs_safe = probs.clamp(min=1e-8)
+            entropy = float(-(probs_safe * probs_safe.log()).sum().item())
+            self._gate_entropy_trace.append(entropy)
+            prob_list = probs.tolist()
+            for idx, weight in enumerate(prob_list):
+                self._gate_prob_sums[idx] += float(weight)
+            self._gate_prob_count += 1
+            self.gate_traces.append(
+                GateTrace(
+                    state_idx=state_idx,
+                    cluster=cluster,
+                    features=features.detach(),
+                    probs=probs.detach(),
+                    expert_policies=expert_list,
+                    legal_actions=tuple(legal_actions),
+                )
+            )
 
         return actor_policy, regret_policy, mixed
 
@@ -306,7 +523,9 @@ class NeuralARMACTrainer:
             legal_actions = self.info_state_actions[info_state]
             state_idx = self.info_state_index[info_state]
 
-            actor_policy, regret_policy, mixed_policy = self._policy_components(state_idx, legal_actions)
+            actor_policy, regret_policy, mixed_policy = self._policy_components(
+                state_idx, legal_actions, record_trace=True
+            )
             probs = [mixed_policy[a] for a in legal_actions]
             action = random.choices(legal_actions, weights=probs, k=1)[0]
 
@@ -359,7 +578,7 @@ class NeuralARMACTrainer:
             state_idx = self.info_state_index[info_state]
 
             actor_policy, regret_policy, mixed_policy = self._policy_components(
-                state_idx, legal_actions
+                state_idx, legal_actions, record_trace=True
             )
             probs = [mixed_policy[a] for a in legal_actions]
             action = random.choices(legal_actions, weights=probs, k=1)[0]
@@ -432,13 +651,24 @@ class NeuralARMACTrainer:
             grad_critic[idx][action] += 2.0 * (critic_values[action] - returns)
 
             target_regret = max(critic_values[action] - value_eval, 0.0)
+            target_by_action = {
+                a: max(critic_values[a] - value_eval, 0.0) for a in legal_actions
+            }
             for a in legal_actions:
-                target = max(critic_values[a] - value_eval, 0.0)
+                target = target_by_action[a]
                 grad_regret[idx][a] += 2.0 * (self.regret_table[idx][a] - target)
 
             actor_losses.append(-advantage * math.log(actor_policy[action] + 1e-8))
             critic_losses.append((critic_values[action] - returns) ** 2)
             regret_losses.append((self.regret_table[idx][action] - target_regret) ** 2)
+
+            if self.cfr_head is not None:
+                self.cfr_head.observe(
+                    idx,
+                    legal_actions,
+                    {a: self.regret_table[idx][a] - target_by_action[a] for a in legal_actions},
+                )
+                self.cfr_head.accumulate_policy(idx, legal_actions, mixed_policy)
 
         inv_bs = 1.0 / batch_size
         for table in (grad_actor, grad_critic, grad_regret):
@@ -509,6 +739,13 @@ class NeuralARMACTrainer:
         start = time.perf_counter()
         episodes: List[Episode] = []
         lambda_samples: List[float] = []
+        self.gate_traces.clear()
+        self.iteration_clusters.clear()
+        self._gate_entropy_trace.clear()
+        self._gate_prob_sums = [0.0 for _ in range(self.num_experts)]
+        self._gate_prob_count = 0
+        self._last_gate_regret_norm = 0.0
+        self._last_gate_avg_utility = 0.0
 
         for _ in range(self.episodes_per_iteration):
             episode, experiences = self._collect_episode()
@@ -517,22 +754,43 @@ class NeuralARMACTrainer:
             for exp in experiences:
                 self.buffer.append(exp)
 
+        gate_loss_value = self._update_gate()
         update = self._update_parameters()
         if update is None:
             actor_loss_value = 0.0
             regret_loss_value = 0.0
             critic_loss_value = 0.0
-            scheduler_loss_value = 0.0
+            scheduler_loss_value = gate_loss_value
         else:
             actor_loss_value, regret_loss_value, critic_loss_value, scheduler_loss_value = update
+            scheduler_loss_value = gate_loss_value if gate_loss_value else scheduler_loss_value
 
         self.iteration_count += 1
         nash_conv, exploitability, value_p0, value_p1 = self._evaluate_policy()
+        self._apply_anytime_handoff(exploitability)
 
         mean_length = statistics.mean(len(ep.steps) for ep in episodes) if episodes else 0.0
         mean_lambda = statistics.mean(lambda_samples) if lambda_samples else self.current_lambda
         mean_return_p0 = statistics.mean(ep.returns[0] for ep in episodes) if episodes else 0.0
         mean_return_p1 = statistics.mean(ep.returns[1] for ep in episodes) if episodes else 0.0
+
+        if self._gate_prob_count:
+            avg_gate_probs = [total / self._gate_prob_count for total in self._gate_prob_sums]
+        else:
+            avg_gate_probs = [1.0 / self.num_experts for _ in range(self.num_experts)]
+        avg_gate_entropy = (
+            sum(self._gate_entropy_trace) / len(self._gate_entropy_trace)
+            if self._gate_entropy_trace
+            else 0.0
+        )
+        extra_metrics = {
+            "gate_entropy": avg_gate_entropy,
+            "gate_regret_norm": self._last_gate_regret_norm,
+            "gate_avg_utility": self._last_gate_avg_utility,
+            "handoff_frozen_clusters": float(len(self.frozen_clusters)),
+        }
+        for name, prob in zip(self.expert_names, avg_gate_probs):
+            extra_metrics[f"gate_prob_{name}"] = float(prob)
 
         metrics = IterationMetrics(
             iteration=self.iteration_count,
@@ -545,6 +803,7 @@ class NeuralARMACTrainer:
             mean_return_player1=mean_return_p1,
             wall_time_sec=time.perf_counter() - start,
             scheduler_loss=scheduler_loss_value,
+            extra=extra_metrics,
         )
 
         return metrics, {"lambda_samples": lambda_samples, "values": [value_p0, value_p1]}
@@ -634,7 +893,18 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=["neural_tabular", "cfr"],
         help="Training algorithm to run",
     )
-    parser.add_argument("--output-dir", type=pathlib.Path, default=pathlib.Path("results"))
+    parser.add_argument(
+        "--output-dir",
+        type=pathlib.Path,
+        default=pathlib.Path("results"),
+        help="Root directory for experiment artefacts (default: results).",
+    )
+    parser.add_argument(
+        "--manifest-path",
+        type=pathlib.Path,
+        default=pathlib.Path("results/manifest.csv"),
+        help="CSV manifest that records a summary row for each training run.",
+    )
     parser.add_argument(
         "--experiment-name",
         type=str,
@@ -648,6 +918,24 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Optional free-form label appended to result filenames for easier filtering.",
     )
     parser.add_argument("--tag", type=str, default="")
+    parser.add_argument(
+        "--experts",
+        type=str,
+        default="actor,regret,ra,explore,cfr",
+        help="Comma separated list of experts for the MARM-K gate",
+    )
+    parser.add_argument("--meta-unroll", type=int, default=16)
+    parser.add_argument("--br-budget", type=int, default=64)
+    parser.add_argument("--gate-lr", type=float, default=1e-3)
+    parser.add_argument("--gate-kl-weight", type=float, default=0.1)
+    parser.add_argument("--handoff-tau", type=float, default=0.15)
+    parser.add_argument("--handoff-patience", type=int, default=3)
+    parser.add_argument(
+        "--state-cluster",
+        type=str,
+        default="round+position+pot",
+        help="Clustering heuristic for gate bandit tables",
+    )
     parser.add_argument(
         "--backend",
         type=str,
@@ -675,6 +963,14 @@ def run_training(opts: argparse.Namespace) -> Dict[str, object]:
             lambda_alpha=opts.lambda_alpha,
             loss_beta=opts.loss_beta,
             backend=opts.backend,
+            experts=[exp.strip() for exp in opts.experts.split(",") if exp.strip()],
+            meta_unroll=opts.meta_unroll,
+            br_budget=opts.br_budget,
+            gate_lr=opts.gate_lr,
+            gate_kl_weight=opts.gate_kl_weight,
+            handoff_tau=opts.handoff_tau,
+            handoff_patience=opts.handoff_patience,
+            state_cluster=opts.state_cluster,
         )
         policy_type = "neural_tabular"
 
@@ -721,6 +1017,9 @@ def run_training(opts: argparse.Namespace) -> Dict[str, object]:
     if tqdm is not None:
         progress.close()
 
+    total_wall_time = float(sum(entry["wall_time_sec"] for entry in training_history)) if training_history else 0.0
+    final_metrics = training_history[-1] if training_history else {}
+
     summary = {
         "game": opts.game,
         "seed": opts.seed,
@@ -737,8 +1036,15 @@ def run_training(opts: argparse.Namespace) -> Dict[str, object]:
         "training_history": training_history,
         "lambda_samples": lambda_samples,
         "average_strategy": trainer.average_strategy_table(),
+        "total_wall_time_sec": total_wall_time,
+        "final_metrics": final_metrics,
     }
     return summary
+
+
+def _manifest_notes(opts: argparse.Namespace) -> str:
+    notes = [item for item in (opts.run_label, opts.tag) if item]
+    return ",".join(notes)
 
 
 def save_results(summary: Dict[str, object], opts: argparse.Namespace) -> pathlib.Path:
@@ -766,18 +1072,83 @@ def save_results(summary: Dict[str, object], opts: argparse.Namespace) -> pathli
         components.append(opts.run_label)
     if opts.tag:
         components.append(opts.tag)
-    filename = "_".join(str(part) for part in components) + f"_{timestamp}.json"
-    output_path = target_dir / filename
-    with output_path.open("w", encoding="utf-8") as fh:
+    base_name = "_".join(str(part) for part in components) + f"_{timestamp}"
+
+    json_path = target_dir / f"{base_name}.json"
+    with json_path.open("w", encoding="utf-8") as fh:
         json.dump(summary, fh, indent=2)
-    return output_path
+
+    history = summary.get("training_history", [])
+    csv_path: Optional[pathlib.Path] = None
+    if history:
+        csv_path = target_dir / f"{base_name}_history.csv"
+        fieldnames = list(history[0].keys())
+        with csv_path.open("w", newline="", encoding="utf-8") as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(history)
+
+    manifest_run_id: Optional[str] = None
+    try:
+        manifest = ManifestManager(str(opts.manifest_path))
+        final_metrics: Dict[str, float] = summary.get("final_metrics", {}) or {}
+        manifest_config = {
+            "iterations": summary.get("iterations"),
+            "episodes_per_iteration": summary.get("episodes_per_iteration"),
+            "actor_lr": summary.get("actor_lr"),
+            "critic_lr": summary.get("critic_lr"),
+            "regret_lr": summary.get("regret_lr"),
+            "batch_size": summary.get("batch_size"),
+            "buffer_size": summary.get("buffer_size"),
+            "lambda_alpha": summary.get("lambda_alpha"),
+            "loss_beta": summary.get("loss_beta"),
+            "backend": opts.backend,
+            "experts": opts.experts,
+            "meta_unroll": opts.meta_unroll,
+            "br_budget": opts.br_budget,
+            "gate_lr": opts.gate_lr,
+            "gate_kl_weight": opts.gate_kl_weight,
+            "handoff_tau": opts.handoff_tau,
+            "handoff_patience": opts.handoff_patience,
+            "state_cluster": opts.state_cluster,
+        }
+        manifest_run_id = manifest.log_experiment(
+            algorithm=str(policy),
+            game=summary.get("game", "unknown"),
+            config=manifest_config,
+            seed=summary.get("seed", 0),
+            iteration=summary.get("iterations", 0),
+            nash_conv=float(final_metrics.get("nash_conv", 0.0)),
+            exploitability=float(final_metrics.get("exploitability", 0.0)),
+            wall_clock_time=float(summary.get("total_wall_time_sec", 0.0)),
+            final_reward=float(final_metrics.get("mean_return_player0", 0.0)),
+            parameters=0,
+            flops_per_forward=0,
+            training_flops=0,
+            model_size_mb=0.0,
+            notes=_manifest_notes(opts),
+        )
+    except Exception as exc:  # pragma: no cover - manifest is best-effort logging
+        print(f"[WARN] Failed to update manifest at {opts.manifest_path}: {exc}")
+
+    print(f"Results saved to {json_path}")
+    if csv_path is not None:
+        print(f"Per-iteration metrics saved to {csv_path}")
+    if manifest_run_id is not None:
+        print(
+            "Manifest updated",
+            f"(run_id={manifest_run_id}) at {opts.manifest_path}",
+        )
+
+    return json_path
 
 
 def main(argv: Sequence[str] | None = None) -> None:
     opts = parse_args(argv)
+    opts.output_dir = opts.output_dir.expanduser()
+    opts.manifest_path = opts.manifest_path.expanduser()
     summary = run_training(opts)
-    output_path = save_results(summary, opts)
-    print(f"Results saved to {output_path}")
+    save_results(summary, opts)
 
 
 if __name__ == "__main__":

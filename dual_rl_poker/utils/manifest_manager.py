@@ -9,11 +9,19 @@ import json
 import hashlib
 import time
 import datetime
-import numpy as np
-import pandas as pd
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 import logging
+
+try:  # Optional heavy dependencies used only for analysis helpers
+    import numpy as np  # type: ignore
+except Exception:  # pragma: no cover - numpy is optional
+    np = None  # type: ignore
+
+try:
+    import pandas as pd  # type: ignore
+except Exception:  # pragma: no cover - pandas is optional
+    pd = None  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -161,6 +169,12 @@ class ManifestManager:
         Returns:
             DataFrame of matching experiments
         """
+        if pd is None:  # pragma: no cover - depends on optional pandas install
+            raise ImportError(
+                "pandas is required for ManifestManager.get_experiments(); "
+                "install pandas or read the CSV manually."
+            )
+
         df = pd.read_csv(self.manifest_path)
 
         # Apply filters
@@ -216,6 +230,12 @@ class ManifestManager:
         Returns:
             Comparison DataFrame
         """
+        if pd is None:  # pragma: no cover - optional dependency
+            raise ImportError(
+                "pandas is required for ManifestManager.compare_algorithms(); "
+                "install pandas to use this helper."
+            )
+
         comparison_data = []
 
         for algorithm in algorithms:
@@ -247,6 +267,12 @@ class ManifestManager:
         Returns:
             Report string
         """
+        if pd is None:  # pragma: no cover - optional dependency
+            raise ImportError(
+                "pandas is required for ManifestManager.generate_summary_report(); "
+                "install pandas to use this helper."
+            )
+
         df = pd.read_csv(self.manifest_path)
 
         if df.empty:
@@ -308,6 +334,12 @@ class ManifestManager:
         Args:
             output_path: Path to save formatted results
         """
+        if pd is None or np is None:  # pragma: no cover - optional dependencies
+            raise ImportError(
+                "pandas and numpy are required for ManifestManager.export_for_paper(); "
+                "install them to use this helper."
+            )
+
         df = pd.read_csv(self.manifest_path)
 
         if df.empty:
@@ -351,6 +383,12 @@ class ManifestManager:
         Returns:
             List of validation warnings
         """
+        if pd is None:  # pragma: no cover - optional dependency
+            raise ImportError(
+                "pandas is required for ManifestManager.validate_manifest(); "
+                "install it to perform validation."
+            )
+
         df = pd.read_csv(self.manifest_path)
         warnings = []
 
