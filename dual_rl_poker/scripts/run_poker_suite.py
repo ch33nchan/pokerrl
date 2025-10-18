@@ -109,6 +109,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     neural_jobs: List[Tuple[str, int]] = [(game, seed) for game in ("kuhn_poker", "leduc_poker") for seed in opts.seeds]
     cfr_jobs: List[Tuple[str, int]] = [(game, 0) for game in ("kuhn_poker", "leduc_poker")]
 
+    manifest_path = opts.output_dir / "manifest.csv"
+
     run_label = f"iter{opts.iterations}_epi{opts.episodes_per_iteration}"
 
     # Execute neural ARMAC runs
@@ -134,6 +136,8 @@ def main(argv: Sequence[str] | None = None) -> None:
             opts.backend,
             "--output-dir",
             str(opts.output_dir),
+            "--manifest-path",
+            str(manifest_path),
             "--experiment-name",
             experiment_name,
             "--run-label",
@@ -164,6 +168,8 @@ def main(argv: Sequence[str] | None = None) -> None:
             str(seed),
             "--output-dir",
             str(opts.output_dir),
+            "--manifest-path",
+            str(manifest_path),
             "--experiment-name",
             experiment_name,
             "--run-label",
