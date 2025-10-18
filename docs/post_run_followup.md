@@ -9,7 +9,8 @@ python3.11 -m json.tool results/submission_suite/summary/experiment_summary.json
 ```
 
 * Confirms the aggregator captured every run, seed, and configuration.
-* Review `summary/experiment_summary.json` for mean, standard deviation, and confidence intervals.
+* Review `summary/experiment_summary.json` for mean, standard deviation, and 95% confidence intervals per policy.
+* The summary also includes area-under-curve values for exploitability and NashConv plus gate-entropy diagnostics for neural policies.
 
 ## 2. Review per-run JSON and CSV logs
 
@@ -55,7 +56,7 @@ python3.11 generate_results.py \
   --output results/submission_suite/summary/experiment_summary.json
 ```
 
-This refreshes `results/experiment_summary.json` and plots under `results/plots/` when invoked through `scripts/run_poker_suite.py`.
+This refreshes `results/experiment_summary.json` and the LaTeX-ready statistics consumed by `analysis/publication_report.py`. The plotting helper also consumes the updated JSON when invoked through `scripts/run_poker_suite.py`.
 
 ## 5. Optional sanity checks
 
@@ -70,5 +71,23 @@ This refreshes `results/experiment_summary.json` and plots under `results/plots/
 * Duplicate the command with new flags (e.g., `--meta-unroll`, `--br-budget`, `--experts`) to launch alternative configurations.
 * Use `--experiment-name` to isolate artefacts per study.
 * Keep the `--manifest-path` consistent so all runs append to the same CSV.
+* Generate publication figures via:
+
+  ```bash
+  python3.11 create_plots.py \
+    --results-dir results/submission_suite \
+    --output-dir results/plots_publication \
+    --metrics exploitability,nash_conv,gate_entropy \
+    --include-individual-curves
+  ```
+
+  Adjust `--log-scale` or `--formats` to produce log-scaled PNG/PDF pairs for camera-ready submissions.
+* Produce LaTeX tables from the refreshed summary with:
+
+  ```bash
+  python3.11 analysis/publication_report.py \
+    results/submission_suite/summary/experiment_summary.json \
+    --output results/submission_suite/summary/experiment_table.tex
+  ```
 
 Following this checklist keeps artefacts organised, validates that the suite executed correctly, and readies the workspace for additional benchmarks.

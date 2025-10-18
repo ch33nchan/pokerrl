@@ -19,7 +19,7 @@ import statistics
 import sys
 import time
 from collections import defaultdict, deque
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Deque, Dict, List, Optional, Sequence, Tuple
 
@@ -80,9 +80,10 @@ class IterationMetrics:
     mean_return_player1: float
     wall_time_sec: float
     scheduler_loss: float
+    extra: Dict[str, float] = field(default_factory=dict)
 
     def as_dict(self) -> Dict[str, float]:
-        return {
+        data = {
             "iteration": self.iteration,
             "exploitability": self.exploitability,
             "nash_conv": self.nash_conv,
@@ -94,6 +95,8 @@ class IterationMetrics:
             "wall_time_sec": self.wall_time_sec,
             "scheduler_loss": self.scheduler_loss,
         }
+        data.update(self.extra)
+        return data
 
 
 @dataclass
@@ -256,6 +259,13 @@ class NeuralARMACTrainer:
         self.frozen_clusters: Dict[str, int] = {}
         self.cfr_head = TabularCFRHead(self.num_states, self.num_actions) if self.cfr_index is not None else None
 
+        # Diagnostics accumulated per iteration for publication-quality reporting
+        self._gate_entropy_trace: List[float] = []
+        self._gate_prob_sums: List[float] = [0.0 for _ in range(self.num_experts)]
+        self._gate_prob_count: int = 0
+        self._last_gate_regret_norm: float = 0.0
+        self._last_gate_avg_utility: float = 0.0
+
         # Backwards compatibility scheduler (kept for lambda diagnostics) -----------
         state_dim = len(next(iter(self.info_state_encoding_cache.values())))
         dummy_state = torch.zeros(1, state_dim, dtype=torch.float32, device=self.device)
@@ -408,6 +418,18 @@ class NeuralARMACTrainer:
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.gate.parameters(), 5.0)
         self.gate_optimizer.step()
+        if bandit_targets:
+            regret_norms: List[float] = []
+            avg_utils: List[float] = []
+            for cluster in bandit_targets:
+                diag = self.gate_bandit.diagnostics(cluster)
+                regret_norms.append(diag.get("regret_norm", 0.0))
+                avg_utils.append(diag.get("avg_utility", 0.0))
+            self._last_gate_regret_norm = float(sum(regret_norms) / len(regret_norms)) if regret_norms else 0.0
+            self._last_gate_avg_utility = float(sum(avg_utils) / len(avg_utils)) if avg_utils else 0.0
+        else:
+            self._last_gate_regret_norm = 0.0
+            self._last_gate_avg_utility = 0.0
         self.gate_traces.clear()
         return float(loss.item())
 
@@ -459,6 +481,13 @@ class NeuralARMACTrainer:
             self.current_lambda = float(probs[self.regret_index].item())
 
         if record_trace:
+            probs_safe = probs.clamp(min=1e-8)
+            entropy = float(-(probs_safe * probs_safe.log()).sum().item())
+            self._gate_entropy_trace.append(entropy)
+            prob_list = probs.tolist()
+            for idx, weight in enumerate(prob_list):
+                self._gate_prob_sums[idx] += float(weight)
+            self._gate_prob_count += 1
             self.gate_traces.append(
                 GateTrace(
                     state_idx=state_idx,
@@ -712,6 +741,11 @@ class NeuralARMACTrainer:
         lambda_samples: List[float] = []
         self.gate_traces.clear()
         self.iteration_clusters.clear()
+        self._gate_entropy_trace.clear()
+        self._gate_prob_sums = [0.0 for _ in range(self.num_experts)]
+        self._gate_prob_count = 0
+        self._last_gate_regret_norm = 0.0
+        self._last_gate_avg_utility = 0.0
 
         for _ in range(self.episodes_per_iteration):
             episode, experiences = self._collect_episode()
@@ -740,6 +774,24 @@ class NeuralARMACTrainer:
         mean_return_p0 = statistics.mean(ep.returns[0] for ep in episodes) if episodes else 0.0
         mean_return_p1 = statistics.mean(ep.returns[1] for ep in episodes) if episodes else 0.0
 
+        if self._gate_prob_count:
+            avg_gate_probs = [total / self._gate_prob_count for total in self._gate_prob_sums]
+        else:
+            avg_gate_probs = [1.0 / self.num_experts for _ in range(self.num_experts)]
+        avg_gate_entropy = (
+            sum(self._gate_entropy_trace) / len(self._gate_entropy_trace)
+            if self._gate_entropy_trace
+            else 0.0
+        )
+        extra_metrics = {
+            "gate_entropy": avg_gate_entropy,
+            "gate_regret_norm": self._last_gate_regret_norm,
+            "gate_avg_utility": self._last_gate_avg_utility,
+            "handoff_frozen_clusters": float(len(self.frozen_clusters)),
+        }
+        for name, prob in zip(self.expert_names, avg_gate_probs):
+            extra_metrics[f"gate_prob_{name}"] = float(prob)
+
         metrics = IterationMetrics(
             iteration=self.iteration_count,
             exploitability=exploitability,
@@ -751,6 +803,7 @@ class NeuralARMACTrainer:
             mean_return_player1=mean_return_p1,
             wall_time_sec=time.perf_counter() - start,
             scheduler_loss=scheduler_loss_value,
+            extra=extra_metrics,
         )
 
         return metrics, {"lambda_samples": lambda_samples, "values": [value_p0, value_p1]}
