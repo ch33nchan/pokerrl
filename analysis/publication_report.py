@@ -14,10 +14,22 @@ def _format_ci(mean: float, ci: float) -> str:
 
 
 def build_rows(summary: Dict[str, object]) -> Iterable[Tuple[str, str, Dict[str, float]]]:
+    """Yield (game, policy, stats) triples from historical or new summaries."""
+
     games = summary.get("games", {})
-    for game, policies in games.items():
+    for game, payload in games.items():
+        # Old summaries stored policy data under a "policies" key; the new
+        # aggregator returns the mapping directly. Normalise both shapes.
+        if isinstance(payload, dict) and "policies" in payload:
+            policies = payload.get("policies", {})
+        elif isinstance(payload, dict):
+            policies = payload
+        else:
+            continue
+
         for policy, stats in policies.items():
-            yield game, policy, stats
+            if isinstance(stats, dict):
+                yield game, policy, stats
 
 
 def make_table(summary: Dict[str, object]) -> str:
