@@ -16,13 +16,26 @@ import math
 import pathlib
 import random
 import statistics
+import sys
 import time
 from collections import defaultdict, deque
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Deque, Dict, List, Optional, Sequence, Tuple
 
 import torch
 import torch.nn.functional as F
+
+# When executed as ``python run_real_training.py`` the package root (containing the
+# ``dual_rl_poker`` module) is not automatically placed on ``sys.path``.  Ensure the
+# parent directory is importable before attempting package imports so the script
+# works both as ``python -m dual_rl_poker.run_real_training`` and via a direct
+# file invocation.
+if __package__ in {None, ""}:
+    package_dir = Path(__file__).resolve().parent
+    parent_dir = package_dir.parent
+    if str(parent_dir) not in sys.path:
+        sys.path.insert(0, str(parent_dir))
 
 import pyspiel
 
