@@ -117,15 +117,19 @@ global aggregates mirrored in `results/combined/`.
    ```
    The command produces `…json`, `…_history.csv`, and `…_summary.tex` files
    alongside an updated `results/manifest.csv` entry.
-4. **Aggregate finished runs into JSON/CSV/TeX summaries**
+4. **Aggregate finished runs into JSON/CSV/TeX summaries (auto + manual refresh)**
+   Every call to `run_real_training.py` now rebuilds the per-experiment digests
+   under `results/<experiment>/summary/` and the global combined manifests in
+   `results/{combined,by_algorithm}/`. Re-run the standalone tool if you need to
+   regenerate indices from scratch or after pruning files:
    ```bash
    python3.11 generate_results.py \
      --results-dir results/submission_suite \
      --output results/submission_suite/summary/experiment_summary.json
    ```
-   Running without arguments aggregates the entire `results/` tree and refreshes
-   `results/combined/{runs_summary.json,runs_summary.csv,summary.tex}` along with
-   per-algorithm folders under `results/by_algorithm/` for quick plotting.
+   Invoking the script without arguments re-aggregates the entire `results/`
+   tree and refreshes `results/combined/{runs_summary.json,runs_summary.csv,summary.tex}`
+   plus per-algorithm folders under `results/by_algorithm/` for plotting.
 5. **Launch the full benchmark sweep (includes evaluation + plots)**
    ```bash
    python3.11 scripts/run_poker_suite.py \

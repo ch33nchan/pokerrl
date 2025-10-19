@@ -1238,6 +1238,21 @@ def save_results(summary: Dict[str, object], opts: argparse.Namespace) -> pathli
     except Exception as exc:  # pragma: no cover - manifest is best-effort logging
         print(f"[WARN] Failed to update manifest at {opts.manifest_path}: {exc}")
 
+    try:
+        from utils.results_manager import DEFAULT_SUMMARY_NAME, refresh_indices
+
+        experiment_dir = opts.output_dir / experiment
+        refresh_indices(
+            experiment_dir,
+            summary_output=experiment_dir / "summary" / DEFAULT_SUMMARY_NAME,
+        )
+        refresh_indices(
+            opts.output_dir,
+            summary_output=opts.output_dir / DEFAULT_SUMMARY_NAME,
+        )
+    except Exception as exc:  # pragma: no cover - aggregation best effort
+        print(f"[WARN] Failed to refresh aggregate indices: {exc}")
+
     print(f"Results saved to {json_path}")
     if csv_path is not None:
         print(f"Per-iteration metrics saved to {csv_path}")
