@@ -137,8 +137,6 @@ the suite summary sits inside `results/submission_suite/summary/`.
   directory.
 - `results/plots/*.png`, `results/tables/performance_table.tex` – visualisations
   and LaTeX-ready tables generated from the manifests.
-- `SUBMISSION_OVERVIEW.md` – one-page summary of experiments, commands, and
-  final metrics.
 
 ## Repository layout
 
