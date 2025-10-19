@@ -8,7 +8,9 @@ ARMAC (actor + regret) paradigm. The repository currently ships:
   approximate best-response utilities and a regret-matching bandit target.
 - **OpenSpiel CFR anchors** for both games to validate evaluation metrics.
 - **Scheduler, meta-regret, and Rust environment infrastructure** ready for
-  integration once higher-capacity experiments resume.
+  cross-backend (OpenSpiel/Rust) evaluation on CPU or GPU accelerators.
+- **Publication assets** – architecture diagrams, project page, and ICML-style
+  manuscript sources under `docs/` to streamline submissions.
 
 Fresh submission runs (500 iterations, 128 episodes per iteration, seeds 0–4)
 now land under structured folders inside `results/`, grouped by experiment name,
@@ -19,17 +21,17 @@ automatically.
 ## Environment setup
 
 ```bash
-git checkout -b sriniii
 python3.11 -m venv .venv311
 source .venv311/bin/activate
 pip3.11 install --upgrade pip
 pip3.11 install -r requirements.txt
 # Install OpenSpiel manually if not already available:
 # https://github.com/deepmind/open_spiel
+cargo build --release --manifest-path rust/Cargo.toml  # optional, enables Rust backend
 ```
 
-The training scripts only require CPU PyTorch. Optional extras such as `tqdm`
-enhance logging but are not mandatory.
+The training scripts automatically select `cuda` when available (override with
+`--device`). Optional extras such as `tqdm` enhance logging but are not mandatory.
 
 ## Running MARM-K training (CPU/Rust backends)
 
@@ -40,6 +42,7 @@ The default training loop now ships with the Meta-Adaptive K-Expert Gate
 python3.11 run_real_training.py \
   --game leduc_poker \
   --backend rust \
+  --device auto \
   --episodes-per-iteration 128 \
   --iterations 500 \
   --experts actor,regret,ra,explore,cfr \
@@ -67,6 +70,7 @@ default uses the Rust backend.
 python3.11 scripts/run_poker_suite.py \
   --output-dir results \
   --backend rust \
+  --device auto \
   --experiment-name submission_suite
 ```
 
@@ -81,11 +85,10 @@ All artefacts appear under
 `results/submission_suite/<game>/<policy>/seed_<n>/…timestamp….{json,csv}`, and
 the suite summary sits inside `results/submission_suite/summary/`.
 
-## Sequential workflow (Mac CPU / `sriniii` branch)
+## Sequential workflow (CPU/GPU parity)
 
 1. **Create/activate the virtual environment**
    ```bash
-   git checkout -b sriniii  # only needed the first time
    python3.11 -m venv .venv311
    source .venv311/bin/activate
    pip3.11 install --upgrade pip
@@ -100,6 +103,7 @@ the suite summary sits inside `results/submission_suite/summary/`.
    python3.11 run_real_training.py \
      --game kuhn_poker \
      --backend rust \
+     --device auto \
      --iterations 500 \
      --episodes-per-iteration 128 \
      --experts actor,regret,ra,explore,cfr \
@@ -123,6 +127,7 @@ the suite summary sits inside `results/submission_suite/summary/`.
    python3.11 scripts/run_poker_suite.py \
      --output-dir results \
      --backend rust \
+     --device auto \
      --experiment-name submission_suite
    ```
    Each invocation appends to `results/manifest.csv`, ensuring CSV + JSON logs
@@ -138,6 +143,14 @@ the suite summary sits inside `results/submission_suite/summary/`.
 - `results/plots/*.png`, `results/tables/performance_table.tex` – visualisations
   and LaTeX-ready tables generated from the manifests.
 
+## Documentation assets
+
+- `docs/architecture_diagram.tex` – TikZ diagram describing the end-to-end
+  training and evaluation data flow (build with `latexmk -pdf`).
+- `docs/project_page.html` – standalone HTML project overview for researchers.
+- `docs/paper_draft.tex` – ICML-style manuscript skeleton (results section left
+  intentionally blank) alongside `docs/icml2024.cls`.
+
 ## Repository layout
 
 ```
@@ -145,14 +158,15 @@ dual_rl_poker/
 ├── algs/            # ARMAC core, scheduler/meta-regret infrastructure
 ├── analysis/        # Notebooks and off-line tooling
 ├── configs/         # Reference configuration files
-├── diagrams/        # Project diagrams
+├── docs/            # Architecture diagram, project page, ICML draft
 ├── eval/            # OpenSpiel-based evaluators
-├── experiments/     # Legacy experiment helpers (kept for reference)
 ├── games/           # OpenSpiel wrappers
 ├── nets/            # Neural network definitions used by ARMAC
 ├── results/         # Manifests, plots, and experiment logs
 ├── scripts/         # Utility scripts and automation
 ├── rust/            # PyO3 bindings for high-throughput environments
+├── tools/           # Approximate BR and helper utilities
+├── utils/           # Logging, manifests, Rust bindings
 ├── run_real_training.py  # Primary training loop for current experiments
 └── generate_results.py   # Aggregates *_seed*.json files into manifests
 ```

@@ -178,6 +178,7 @@ class NeuralARMACTrainer:
         handoff_tau: float = 0.15,
         handoff_patience: int = 3,
         state_cluster: str = "round+position+pot",
+        device: str = "auto",
     ) -> None:
         if game_name not in {"kuhn_poker", "leduc_poker"}:
             raise ValueError("Supported games: kuhn_poker, leduc_poker")
@@ -192,7 +193,31 @@ class NeuralARMACTrainer:
         self.game_name = game_name
         self._rust_utils = None
         self._rust_env = None
-        self.device = torch.device("cpu")
+
+        device_lower = device.strip().lower()
+        if device_lower in {"gpu", "cuda"}:
+            requested_device = "cuda"
+        elif device_lower in {"cpu", "auto", "mps"}:
+            requested_device = device_lower
+        else:
+            raise ValueError(
+                "device must be one of {'auto', 'cpu', 'cuda', 'gpu', 'mps'}"
+            )
+
+        if requested_device == "auto":
+            requested_device = "cuda" if torch.cuda.is_available() else "cpu"
+
+        if requested_device == "cuda" and not torch.cuda.is_available():
+            raise ValueError("CUDA requested but torch.cuda.is_available() is False")
+        if requested_device == "mps":
+            if not getattr(torch.backends, "mps", None) or not torch.backends.mps.is_available():
+                raise ValueError("MPS requested but torch.backends.mps.is_available() is False")
+
+        try:
+            self.device = torch.device(requested_device)
+        except (TypeError, RuntimeError) as exc:
+            raise ValueError(f"Unsupported device specification: {device}") from exc
+
         if self.use_rust_backend:
             try:
                 from utils import rust_env as rust_env_utils
@@ -251,7 +276,7 @@ class NeuralARMACTrainer:
             num_experts=self.num_experts,
             temperature=1.0,
             entropy_reg=1e-3,
-        )
+        ).to(self.device)
         self.gate_optimizer = torch.optim.Adam(self.gate.parameters(), lr=gate_lr)
         self.gate_bandit = GateBandit(self.num_experts, device=self.device)
         self.approx_br = ApproxBestResponse(self.game, budget=br_budget, seed=seed)
@@ -281,7 +306,7 @@ class NeuralARMACTrainer:
         dummy_regret = torch.zeros(1, self.num_actions, dtype=torch.float32, device=self.device)
         dummy_input = compute_scheduler_input(dummy_state, dummy_actor, dummy_regret, iteration=0)
         self.scheduler_input_dim = dummy_input.shape[-1]
-        self.scheduler = Scheduler(input_dim=self.scheduler_input_dim)
+        self.scheduler = Scheduler(input_dim=self.scheduler_input_dim).to(self.device)
         self.scheduler.train()
         self.scheduler_optimizer = torch.optim.Adam(self.scheduler.parameters(), lr=1e-3)
 
@@ -393,7 +418,7 @@ class NeuralARMACTrainer:
             trace.probs[idx].item() * sum(policy[a] * critic_values[a] for a in trace.legal_actions)
             for idx, policy in enumerate(trace.expert_policies)
         )
-        tensor = torch.tensor(utilities, dtype=torch.float32)
+        tensor = torch.tensor(utilities, dtype=torch.float32, device=self.device)
         tensor -= mixed_value
         return tensor
 
@@ -963,6 +988,13 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=["pyspiel", "rust"],
         help="State transition backend (default: pyspiel)",
     )
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="auto",
+        choices=["auto", "cpu", "cuda", "gpu", "mps"],
+        help="Device for neural components; 'auto' selects CUDA when available.",
+    )
     return parser.parse_args(argv)
 
 
@@ -970,6 +1002,7 @@ def run_training(opts: argparse.Namespace) -> Dict[str, object]:
     if opts.algorithm == "cfr":
         trainer: object = CFRTrainer(opts.game)
         policy_type = "cfr"
+        device_used = "cpu"
     else:
         trainer = NeuralARMACTrainer(
             opts.game,
@@ -991,8 +1024,10 @@ def run_training(opts: argparse.Namespace) -> Dict[str, object]:
             handoff_tau=opts.handoff_tau,
             handoff_patience=opts.handoff_patience,
             state_cluster=opts.state_cluster,
+            device=opts.device,
         )
         policy_type = "neural_tabular"
+        device_used = str(trainer.device)
 
     training_history: List[Dict[str, float]] = []
     lambda_samples: List[float] = []
@@ -1055,6 +1090,7 @@ def run_training(opts: argparse.Namespace) -> Dict[str, object]:
         "policy_type": policy_type,
         "training_history": training_history,
         "lambda_samples": lambda_samples,
+        "device": device_used,
         "average_strategy": trainer.average_strategy_table(),
         "total_wall_time_sec": total_wall_time,
         "final_metrics": final_metrics,
@@ -1087,6 +1123,7 @@ def save_results(summary: Dict[str, object], opts: argparse.Namespace) -> pathli
         f"iter{summary['iterations']}",
         f"epi{summary['episodes_per_iteration']}",
         f"backend{opts.backend}",
+        f"device{summary.get('device', 'cpu')}",
     ]
     if opts.run_label:
         components.append(opts.run_label)
@@ -1131,6 +1168,8 @@ def save_results(summary: Dict[str, object], opts: argparse.Namespace) -> pathli
             "handoff_tau": opts.handoff_tau,
             "handoff_patience": opts.handoff_patience,
             "state_cluster": opts.state_cluster,
+            "device": summary.get("device"),
+            "requested_device": opts.device,
         }
         manifest_run_id = manifest.log_experiment(
             algorithm=str(policy),

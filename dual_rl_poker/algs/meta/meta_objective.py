@@ -62,9 +62,13 @@ class MetaObjective:
             if target is None:
                 num_experts = utilities_tensor.numel()
                 target = torch.full(
-                    (num_experts,), 1.0 / max(1, num_experts), dtype=torch.float32
+                    (num_experts,),
+                    1.0 / max(1, num_experts),
+                    dtype=torch.float32,
+                    device=log_probs.device,
                 )
-            target = target.to(log_probs.device)
+            else:
+                target = target.to(log_probs.device)
             kl = torch.nn.functional.kl_div(log_probs, target.unsqueeze(0), reduction="batchmean")
             losses.append(policy_loss + self.kl_weight * kl)
         loss = torch.stack(losses).mean() if losses else torch.tensor(0.0, dtype=torch.float32)

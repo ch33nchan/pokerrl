@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>MARM-K Poker Research Stack</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+        margin: 0;
+        background: #f5f7fb;
+        color: #1f2933;
+        line-height: 1.6;
+      }
+      header {
+        background: linear-gradient(120deg, #3b82f6, #1e3a8a);
+        color: white;
+        padding: 3rem 1.5rem;
+        text-align: center;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 2.8rem;
+      }
+      header p {
+        margin-top: 0.8rem;
+        font-size: 1.15rem;
+        opacity: 0.85;
+      }
+      main {
+        max-width: 960px;
+        margin: -2rem auto 0;
+        padding: 0 1.5rem 3rem;
+      }
+      section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-top: 2rem;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+      }
+      h2 {
+        margin-top: 0;
+        font-size: 1.8rem;
+        color: #1d4ed8;
+      }
+      h3 {
+        color: #1f2937;
+        margin-top: 1.6rem;
+      }
+      ul {
+        padding-left: 1.4rem;
+      }
+      li {
+        margin-bottom: 0.5rem;
+      }
+      code {
+        background: #eef2ff;
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        font-family: "JetBrains Mono", Consolas, "Liberation Mono", monospace;
+        font-size: 0.95rem;
+      }
+      .pill {
+        display: inline-block;
+        background: #e0e7ff;
+        color: #3730a3;
+        padding: 0.35rem 0.8rem;
+        border-radius: 999px;
+        margin-right: 0.4rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+      a {
+        color: #1d4ed8;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      footer {
+        text-align: center;
+        padding: 2rem 0 3rem;
+        color: #6b7280;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>MARM-K Poker Research Stack</h1>
+      <p>
+        Meta-adaptive multi-expert regret minimisation with anytime CFR handoff for
+        reproducible Kuhn and Leduc poker experiments.
+      </p>
+      <div>
+        <span class="pill">CPU &amp; GPU Ready</span>
+        <span class="pill">Deterministic Rust Backend</span>
+        <span class="pill">Sublinear Scheduler Regret</span>
+      </div>
+    </header>
+    <main>
+      <section id="overview">
+        <h2>Overview</h2>
+        <p>
+          MARM-K couples a bi-level expert gate with approximate best-response
+          feedback and a regret-matching bandit objective. The project provides a
+          reproducible training pipeline for two-player zero-sum poker, combining
+          differentiable meta-learning with classical CFR stability to reach
+          submission-ready results under constrained compute budgets.
+        </p>
+        <ul>
+          <li>Deterministic self-play via interchangeable Rust or OpenSpiel backends.</li>
+          <li>Neural-tabular ARMAC policy optimiser with actor, regret, and specialised experts.</li>
+          <li>Meta-objective driven by anytime approximate best responses and KL-tracked bandit targets.</li>
+          <li>Curriculum handoff into tabular CFR heads when local exploitability stabilises.</li>
+          <li>End-to-end experiment manifesting, plotting, and manuscript assets.</li>
+        </ul>
+      </section>
+
+      <section id="stack">
+        <h2>System Stack</h2>
+        <h3>Core Algorithms</h3>
+        <ul>
+          <li><strong>MARM-K Gate:</strong> mixes $K$ experts using context-aware features, meta-gradients, and regret-matching.</li>
+          <li><strong>Experts:</strong> actor, regret, risk-averse, exploratory, and tabular CFR heads tailored per state cluster.</li>
+          <li><strong>Approximate BR:</strong> shared-trajectory rollouts reduce high-variance estimates while retaining CPU efficiency.</li>
+          <li><strong>Anytime CFR Handoff:</strong> freezes gate logits toward CFR when subgame exploitability drops below a threshold.</li>
+        </ul>
+        <h3>Infrastructure</h3>
+        <ul>
+          <li>Rust bindings delivering bit-stable rollouts with parity checks against OpenSpiel.</li>
+          <li>Training CLI with <code>--backend</code> and <code>--device</code> toggles for CPU/GPU parity.</li>
+          <li>Result manifests, aggregation scripts, and plotting utilities for publication figures.</li>
+        </ul>
+      </section>
+
+      <section id="getting-started">
+        <h2>Getting Started</h2>
+        <h3>Environment</h3>
+        <pre><code>python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cargo build --release --manifest-path rust/Cargo.toml</code></pre>
+        <h3>Training</h3>
+        <pre><code>python run_real_training.py \
+  --game leduc_poker \
+  --backend rust \
+  --device auto \
+  --episodes-per-iteration 128 \
+  --iterations 500</code></pre>
+        <p>
+          Results are written to <code>results/&lt;experiment&gt;/&lt;game&gt;/&lt;policy&gt;/seed_*/</code>
+          alongside CSV history tables and the global manifest.
+        </p>
+      </section>
+
+      <section id="benchmarks">
+        <h2>Benchmark Suite</h2>
+        <ul>
+          <li>E1: Meta-$\lambda$ comparisons against fixed schedules.</li>
+          <li>E2: Expert ablations from 2-head to 5-head MARM-K configurations.</li>
+          <li>E3: Anytime CFR handoff sensitivity across exploitability thresholds.</li>
+          <li>E4: Approximate BR budget sweeps (16, 64, 256 rollouts).</li>
+          <li>E5: Rust vs OpenSpiel parity including throughput and determinism checks.</li>
+        </ul>
+      </section>
+
+      <section id="manuscript">
+        <h2>Paper Assets</h2>
+        <p>
+          A draft ICML-style manuscript and TikZ architecture diagram ship with the repository under
+          <code>docs/</code>. Use <code>latexmk</code> or <code>pdflatex</code> to build the
+          architecture figure and paper draft.
+        </p>
+      </section>
+
+      <section id="contact">
+        <h2>Contact</h2>
+        <p>
+          Please open a GitHub issue for bug reports or email the maintainers for collaboration
+          enquiries. Pull requests with reproducibility improvements are especially welcome.
+        </p>
+      </section>
+    </main>
+    <footer>
+      &copy; 2024 MARM-K Poker Research Stack. Released under the MIT License.
+    </footer>
+  </body>
+</html>
