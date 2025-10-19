@@ -6,10 +6,22 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import math
 from typing import Dict, Iterable, List, Tuple
 
 
-def _format_ci(mean: float, ci: float) -> str:
+def _format_interval(stats: Dict[str, object], mean_key: str, ci_key: str, std_key: str) -> str:
+    mean = float(stats.get(mean_key, 0.0))
+    ci = float(stats.get(ci_key, 0.0) or 0.0)
+
+    if ci == 0.0:
+        std = float(stats.get(std_key, 0.0) or 0.0)
+        n = int(stats.get("num_runs", 0))
+        if std > 0.0 and n > 1:
+            ci = 1.96 * std / math.sqrt(n)
+        elif std > 0.0:
+            ci = std
+
     return f"{mean:.4f} \\pm {ci:.4f}"
 
 
@@ -58,9 +70,9 @@ def make_table(summary: Dict[str, object]) -> str:
     )
     lines = [header]
     for game, policy, stats in build_rows(summary):
-        exp = _format_ci(stats.get("mean_exploitability", 0.0), stats.get("ci95_exploitability", 0.0))
-        nash = _format_ci(stats.get("mean_nash_conv", 0.0), stats.get("ci95_nash_conv", 0.0))
-        auc = _format_ci(stats.get("mean_exploit_auc", 0.0), stats.get("ci95_exploit_auc", 0.0))
+        exp = _format_interval(stats, "mean_exploitability", "ci95_exploitability", "stdev_exploitability")
+        nash = _format_interval(stats, "mean_nash_conv", "ci95_nash_conv", "stdev_nash_conv")
+        auc = _format_interval(stats, "mean_exploit_auc", "ci95_exploit_auc", "stdev_exploit_auc")
         lines.append(f"{game.replace('_', ' ')} & {policy.replace('_', ' ')} & {exp} & {nash} & {auc} \\\\ \n")
     lines.append("\\bottomrule\n\\end{tabular}\n")
     return "".join(lines)
