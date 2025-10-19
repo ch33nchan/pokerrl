@@ -158,44 +158,37 @@ global aggregates mirrored in `results/combined/`.
 - `docs/architecture_diagram.tex` – TikZ diagram describing the end-to-end
   training and evaluation data flow (build with `latexmk -pdf`).
 - `docs/project_page.html` – standalone HTML project overview for researchers.
-- `docs/paper_draft.tex` – ICML-style manuscript skeleton (results section left
-  intentionally blank) alongside `docs/icml2024.cls`.
+- `docs/paper_draft.tex` – ICML template with abstract, introduction, related
+  work, method, experiments plan, and empty results section ready for data.
 
-## Repository layout
+## Submission finishing checklist
 
-```
-dual_rl_poker/
-├── algs/            # ARMAC core, scheduler/meta-regret infrastructure
-├── analysis/        # Notebooks and off-line tooling
-├── configs/         # Reference configuration files
-├── docs/            # Architecture diagram, project page, ICML draft
-├── eval/            # OpenSpiel-based evaluators
-├── games/           # OpenSpiel wrappers
-├── nets/            # Neural network definitions used by ARMAC
-├── results/         # Manifests, plots, and experiment logs
-├── scripts/         # Utility scripts and automation
-├── rust/            # PyO3 bindings for high-throughput environments
-├── tools/           # Approximate BR and helper utilities
-├── utils/           # Logging, manifests, Rust bindings
-├── run_real_training.py  # Primary training loop for current experiments
-└── generate_results.py   # Aggregates *_seed*.json files into manifests
-```
+1. **Run the full benchmark suite**
+   ```bash
+   python3.11 scripts/run_poker_suite.py --backend both --device auto --experiment-name submission_suite
+   ```
+   Verify that `results/submission_suite/summary/experiment_summary.json` and `results/combined/summary.tex`
+   update with the latest timestamp.
+2. **Refresh plots and tables**
+   ```bash
+   python3.11 create_plots.py --results-root results
+   ```
+   Confirm regenerated PNGs live under `results/plots/` and LaTeX tables under `results/tables/`.
+3. **Populate the manuscript**
+   - Import the newest figures/tables into `docs/paper_draft.tex`.
+   - Compile with `latexmk -pdf docs/paper_draft.tex`.
+   - Fill the Results section once experiments conclude; update discussion and conclusion accordingly.
+4. **Archive reproducibility bundle**
+   - Copy `requirements.txt`, `requirements.lock`, and the Rust build hash into `results/artifacts/`.
+   - Export the run manifest with `python3.11 generate_results.py --output results/combined/runs_summary.json` (already invoked by the suite).
+   - Zip `results/`, `docs/`, and the architecture diagram PDF for submission supplements.
+5. **Final QA sweep**
+   - Re-run `python -m compileall dual_rl_poker` to ensure there are no syntax errors.
+   - Execute a short sanity run (`--iterations 5`) on both backends to double-check logging integrity.
+   - Review telemetry for `handoff_missing_clusters` spikes and confirm parity logs report no drift > 1e-7.
+6. **Submission packaging**
+   - Produce the camera-ready README appendix summarising system requirements.
+   - Upload project page (`docs/project_page.html`) and manuscript PDF to the conference submission site.
+   - Verify checksum of the supplementary zip and include it in the paper appendix.
 
-## Additional tooling
-
-- `generate_results.py` now accepts `--results-dir` and `--output` to summarise
-  arbitrary directories (e.g. `results/submission_runs`).
-- `create_plots.py` consumes the global manifest and regenerates every plot and
-  LaTeX table required for reports/blog posts.
-- `utils/rust_env.py` offers a parity checker against OpenSpiel when the Rust
-  module is built locally (`python3 -m utils.rust_env kuhn_poker`).
-
-## Next steps
-
-- Extend the expert catalogue with specialised domain heads (e.g., bluff
-  detectors, variance-aware policies) while retaining the sublinear gate regret
-  guarantees.
-- Tighten the approximate best-response estimator with batched Rust rollouts
-  and cached value functions for larger games.
-- Automate multi-game sweeps that compare fixed-λ baselines against the
-  anytime-CFR handoff under realistic CPU budgets.
+Following these steps yields a submission-ready package with reproducible code, documentation, and experiment artefacts.
