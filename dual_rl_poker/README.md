@@ -14,9 +14,9 @@ ARMAC (actor + regret) paradigm. The repository currently ships:
 
 Fresh submission runs (500 iterations, 128 episodes per iteration, seeds 0–4)
 now land under structured folders inside `results/`, grouped by experiment name,
-game, policy type, and seed. The canonical “submission” sweep is reproduced by
-the helper script described below; aggregate manifests and plots refresh
-automatically.
+game, policy type, and seed. Every run automatically produces JSON, CSV, and
+TeX summaries. The canonical “submission” sweep is reproduced by the helper
+script described below; aggregate manifests and plots refresh automatically.
 
 ## Environment setup
 
@@ -63,13 +63,13 @@ evaluations.
 ## Reproducing the submission sweep
 
 The helper script below re-creates every result included in the submission
-package. Pass `--backend pyspiel` if you prefer the OpenSpiel environment; the
-default uses the Rust backend.
+package. Use `--backend both` to execute OpenSpiel and Rust variants back to
+back (with identical seeds), or select a specific backend explicitly.
 
 ```bash
 python3.11 scripts/run_poker_suite.py \
   --output-dir results \
-  --backend rust \
+  --backend both \
   --device auto \
   --experiment-name submission_suite
 ```
@@ -82,8 +82,9 @@ This expands to:
    `create_plots.py`.
 
 All artefacts appear under
-`results/submission_suite/<game>/<policy>/seed_<n>/…timestamp….{json,csv}`, and
-the suite summary sits inside `results/submission_suite/summary/`.
+`results/submission_suite/<game>/<policy>/seed_<n>/…timestamp….{json,csv,tex}`,
+and the suite summary sits inside `results/submission_suite/summary/` with the
+global aggregates mirrored in `results/combined/`.
 
 ## Sequential workflow (CPU/GPU parity)
 
@@ -98,7 +99,7 @@ the suite summary sits inside `results/submission_suite/summary/`.
    ```bash
    cargo build --release --manifest-path rust/Cargo.toml
    ```
-3. **Run a single training job and capture JSON + CSV logs**
+3. **Run a single training job and capture JSON/CSV/TeX logs**
    ```bash
    python3.11 run_real_training.py \
      --game kuhn_poker \
@@ -114,30 +115,39 @@ the suite summary sits inside `results/submission_suite/summary/`.
      --state-cluster round+position+pot \
      --manifest-path results/manifest.csv
    ```
-   The command produces both `…json` and `…_history.csv` files alongside an
-   updated `results/manifest.csv` entry.
-4. **Aggregate finished runs into JSON/CSV summaries**
+   The command produces `…json`, `…_history.csv`, and `…_summary.tex` files
+   alongside an updated `results/manifest.csv` entry.
+4. **Aggregate finished runs into JSON/CSV/TeX summaries**
    ```bash
    python3.11 generate_results.py \
      --results-dir results/submission_suite \
      --output results/submission_suite/summary/experiment_summary.json
    ```
+   Running without arguments aggregates the entire `results/` tree and refreshes
+   `results/combined/{runs_summary.json,runs_summary.csv,summary.tex}` along with
+   per-algorithm folders under `results/by_algorithm/` for quick plotting.
 5. **Launch the full benchmark sweep (includes evaluation + plots)**
    ```bash
    python3.11 scripts/run_poker_suite.py \
      --output-dir results \
-     --backend rust \
+     --backend both \
      --device auto \
      --experiment-name submission_suite
    ```
-   Each invocation appends to `results/manifest.csv`, ensuring CSV + JSON logs
-   for every run in the suite.
+   Each invocation appends to `results/manifest.csv`, ensuring JSON/CSV/TeX logs
+   for every run in the suite and refreshing global aggregates under
+   `results/combined/`.
 
 ## Key artefacts
 
-- `results/<experiment>/<game>/<policy>/seed_*/…json` – raw logs per run.
+- `results/<experiment>/<game>/<policy>/seed_*/…{json,csv,tex}` – raw logs plus
+  per-run LaTeX tables.
 - `results/<experiment>/summary/experiment_summary.json` – aggregate stats for the
   experiment suite executed via `run_poker_suite.py`.
+- `results/combined/` – merged manifests (`runs_summary.{json,csv}`,
+  `all_iterations.csv`, `summary.{csv,tex}`) spanning every run in `results/`.
+- `results/by_algorithm/<policy>/` – per-algorithm JSON/CSV/TeX summaries for
+  quick plotting and paper tables.
 - `results/experiment_summary.json` – aggregate over the entire `results/`
   directory.
 - `results/plots/*.png`, `results/tables/performance_table.tex` – visualisations

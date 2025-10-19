@@ -11,6 +11,7 @@ manifest location.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import math
 import statistics
@@ -67,6 +68,8 @@ def load_run(path: Path) -> Dict[str, object]:
         "game": data["game"],
         "seed": int(data["seed"]),
         "iterations": int(data["iterations"]),
+        "backend": data.get("backend", "unknown"),
+        "device": data.get("device", "unknown"),
         "final_exploitability": float(final["exploitability"]),
         "final_nash_conv": float(final["nash_conv"]),
         "history": history,
@@ -162,6 +165,51 @@ def build_payload(runs: Sequence[Dict[str, object]]) -> Dict[str, object]:
     return payload
 
 
+def _tex_escape(text: str) -> str:
+    return (
+        text.replace("\\", "\\textbackslash{}")
+        .replace("_", "\\_")
+        .replace("%", "\\%")
+        .replace("&", "\\&")
+        .replace("$", "\\$")
+        .replace("#", "\\#")
+        .replace("{", "\\{")
+        .replace("}", "\\}")
+    )
+
+
+def _write_csv(path: Path, fieldnames: Sequence[str], rows: Sequence[Dict[str, object]]) -> None:
+    with path.open("w", newline="", encoding="utf-8") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({name: row.get(name, "") for name in fieldnames})
+
+
+def _write_tex_table(path: Path, columns: Sequence[str], rows: Sequence[Sequence[object]]) -> None:
+    if not rows:
+        path.write_text("% No data available\n", encoding="utf-8")
+        return
+    align = "l" + "r" * (len(columns) - 1)
+    with path.open("w", encoding="utf-8") as fh:
+        fh.write("% Auto-generated summary table\n")
+        fh.write(f"\\begin{{tabular}}{{{align}}}\n")
+        fh.write("\\hline\\hline\n")
+        header = " & ".join(_tex_escape(col) for col in columns)
+        fh.write(f"{header}\\\\\n")
+        fh.write("\\hline\n")
+        for row in rows:
+            formatted = []
+            for value in row:
+                if isinstance(value, float):
+                    formatted.append(f"{value:.6g}")
+                else:
+                    formatted.append(_tex_escape(str(value)))
+            fh.write(" & ".join(formatted) + "\\\\\n")
+        fh.write("\\hline\\hline\n")
+        fh.write("\\end{tabular}\n")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Aggregate JSON runs produced by run_real_training.py."
@@ -212,7 +260,191 @@ def main() -> None:
     with output_path.open("w", encoding="utf-8") as fh:
         json.dump(payload, fh, indent=2)
 
+    combined_dir = results_dir / "combined"
+    combined_dir.mkdir(parents=True, exist_ok=True)
+    combined_json = combined_dir / "runs_summary.json"
+    with combined_json.open("w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2)
+
+    per_run_rows: List[Dict[str, object]] = []
+    history_rows: List[Dict[str, object]] = []
+    per_algorithm_rows: Dict[str, List[Dict[str, object]]] = {}
+
+    for run in runs:
+        run_id = Path(run["path"]).stem
+        record = {
+            "run_id": run_id,
+            "game": run["game"],
+            "policy": run.get("policy_type", "unknown"),
+            "backend": run.get("backend", "unknown"),
+            "device": run.get("device", "unknown"),
+            "seed": run["seed"],
+            "iterations": run["iterations"],
+            "final_exploitability": run["final_exploitability"],
+            "final_nash_conv": run["final_nash_conv"],
+            "exploit_auc": run["exploit_auc"],
+            "nash_auc": run["nash_auc"],
+        }
+        per_run_rows.append(record)
+        policy = record["policy"]
+        per_algorithm_rows.setdefault(policy, []).append(record)
+
+        scheduler_curve = [float(step.get("scheduler_loss", 0.0)) for step in run["history"]]
+        for iteration, exploit, nash, sched in zip(
+            run["iterations_curve"],
+            run["exploit_curve"],
+            run["nash_curve"],
+            scheduler_curve,
+        ):
+            history_rows.append(
+                {
+                    "run_id": run_id,
+                    "game": run["game"],
+                    "policy": policy,
+                    "backend": run.get("backend", "unknown"),
+                    "device": run.get("device", "unknown"),
+                    "iteration": iteration,
+                    "exploitability": exploit,
+                    "nash_conv": nash,
+                    "scheduler_loss": sched,
+                }
+            )
+
+    per_run_fieldnames = [
+        "run_id",
+        "game",
+        "policy",
+        "backend",
+        "device",
+        "seed",
+        "iterations",
+        "final_exploitability",
+        "final_nash_conv",
+        "exploit_auc",
+        "nash_auc",
+    ]
+    _write_csv(combined_dir / "runs_summary.csv", per_run_fieldnames, per_run_rows)
+
+    history_fieldnames = [
+        "run_id",
+        "game",
+        "policy",
+        "backend",
+        "device",
+        "iteration",
+        "exploitability",
+        "nash_conv",
+        "scheduler_loss",
+    ]
+    _write_csv(combined_dir / "all_iterations.csv", history_fieldnames, history_rows)
+
+    summary_rows = []
+    summary_csv_rows = []
+    for game, policies in payload["games"].items():
+        for policy, stats in policies.items():
+            row = (
+                game,
+                policy,
+                int(stats.get("num_runs", 0)),
+                float(stats.get("mean_exploitability", 0.0)),
+                float(stats.get("ci95_exploitability", 0.0)),
+                float(stats.get("mean_nash_conv", 0.0)),
+                float(stats.get("ci95_nash_conv", 0.0)),
+                float(stats.get("mean_exploit_auc", 0.0)),
+            )
+            summary_rows.append(row)
+            summary_csv_rows.append(
+                {
+                    "game": game,
+                    "policy": policy,
+                    "num_runs": row[2],
+                    "mean_exploitability": row[3],
+                    "ci95_exploitability": row[4],
+                    "mean_nash_conv": row[5],
+                    "ci95_nash_conv": row[6],
+                    "mean_exploit_auc": row[7],
+                }
+            )
+
+    summary_columns = [
+        "Game",
+        "Policy",
+        "Runs",
+        "Mean exploitability",
+        "CI95 exploitability",
+        "Mean NashConv",
+        "CI95 NashConv",
+        "Mean exploit AUC",
+    ]
+    _write_csv(combined_dir / "summary.csv", [
+        "game",
+        "policy",
+        "num_runs",
+        "mean_exploitability",
+        "ci95_exploitability",
+        "mean_nash_conv",
+        "ci95_nash_conv",
+        "mean_exploit_auc",
+    ], summary_csv_rows)
+    _write_tex_table(combined_dir / "summary.tex", summary_columns, summary_rows)
+
+    algorithms_root = results_dir / "by_algorithm"
+    algorithms_root.mkdir(parents=True, exist_ok=True)
+    for policy, rows in per_algorithm_rows.items():
+        algo_dir = algorithms_root / str(policy)
+        algo_dir.mkdir(parents=True, exist_ok=True)
+        _write_csv(algo_dir / "runs.csv", per_run_fieldnames, rows)
+        with (algo_dir / "runs.json").open("w", encoding="utf-8") as fh:
+            json.dump(rows, fh, indent=2)
+
+        policy_summary_rows = []
+        policy_summary_json: Dict[str, Dict[str, float]] = {}
+        for game, policies in payload["games"].items():
+            stats = policies.get(policy)
+            if not stats:
+                continue
+            policy_summary_json[game] = stats
+            policy_summary_rows.append(
+                (
+                    game,
+                    policy,
+                    int(stats.get("num_runs", 0)),
+                    float(stats.get("mean_exploitability", 0.0)),
+                    float(stats.get("ci95_exploitability", 0.0)),
+                    float(stats.get("mean_nash_conv", 0.0)),
+                    float(stats.get("ci95_nash_conv", 0.0)),
+                    float(stats.get("mean_exploit_auc", 0.0)),
+                )
+            )
+
+        _write_csv(algo_dir / "summary.csv", [
+            "game",
+            "policy",
+            "num_runs",
+            "mean_exploitability",
+            "ci95_exploitability",
+            "mean_nash_conv",
+            "ci95_nash_conv",
+            "mean_exploit_auc",
+        ], [
+            {
+                "game": row[0],
+                "policy": row[1],
+                "num_runs": row[2],
+                "mean_exploitability": row[3],
+                "ci95_exploitability": row[4],
+                "mean_nash_conv": row[5],
+                "ci95_nash_conv": row[6],
+                "mean_exploit_auc": row[7],
+            }
+            for row in policy_summary_rows
+        ])
+        _write_tex_table(algo_dir / "summary.tex", summary_columns, policy_summary_rows)
+        with (algo_dir / "summary.json").open("w", encoding="utf-8") as fh:
+            json.dump(policy_summary_json, fh, indent=2)
+
     print(f"Wrote summary for {len(runs)} runs to {output_path}")
+    print(f"Combined artefacts available under {combined_dir}")
 
 
 if __name__ == "__main__":

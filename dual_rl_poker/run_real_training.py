@@ -1091,6 +1091,7 @@ def run_training(opts: argparse.Namespace) -> Dict[str, object]:
         "training_history": training_history,
         "lambda_samples": lambda_samples,
         "device": device_used,
+        "backend": opts.backend if opts.algorithm != "cfr" else "pyspiel",
         "average_strategy": trainer.average_strategy_table(),
         "total_wall_time_sec": total_wall_time,
         "final_metrics": final_metrics,
@@ -1144,6 +1145,53 @@ def save_results(summary: Dict[str, object], opts: argparse.Namespace) -> pathli
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(history)
+
+    def _tex_escape(text: str) -> str:
+        return (
+            text.replace("\\", "\\textbackslash{}")
+            .replace("_", "\\_")
+            .replace("%", "\\%")
+            .replace("&", "\\&")
+            .replace("$", "\\$")
+            .replace("#", "\\#")
+            .replace("{", "\\{")
+            .replace("}", "\\}")
+        )
+
+    def _fmt(value: object) -> str:
+        if isinstance(value, float):
+            return f"{value:.6g}"
+        if isinstance(value, int):
+            return str(value)
+        if value is None:
+            return "--"
+        return _tex_escape(str(value))
+
+    final_metrics: Dict[str, float] = summary.get("final_metrics", {}) or {}
+    tex_rows = [
+        ("Game", summary.get("game", "unknown")),
+        ("Algorithm", summary.get("policy_type", "unknown")),
+        ("Backend", opts.backend),
+        ("Device", summary.get("device", "cpu")),
+        ("Iterations", summary.get("iterations")),
+        ("Episodes/Iter", summary.get("episodes_per_iteration")),
+        ("Final exploitability", final_metrics.get("exploitability")),
+        ("Final NashConv", final_metrics.get("nash_conv")),
+        ("Average lambda", final_metrics.get("average_lambda")),
+        ("Total wall time (s)", summary.get("total_wall_time_sec")),
+    ]
+
+    tex_path = target_dir / f"{base_name}_summary.tex"
+    with tex_path.open("w", encoding="utf-8") as fh:
+        fh.write("% Auto-generated run summary\n")
+        fh.write("\\begin{tabular}{ll}\n")
+        fh.write("\\hline\\hline\n")
+        fh.write("Metric & Value\\\\\n")
+        fh.write("\\hline\n")
+        for label, value in tex_rows:
+            fh.write(f"{_tex_escape(str(label))} & {_fmt(value)}\\\\\n")
+        fh.write("\\hline\\hline\n")
+        fh.write("\\end{tabular}\n")
 
     manifest_run_id: Optional[str] = None
     try:

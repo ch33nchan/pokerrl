@@ -60,7 +60,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     )
     parser.add_argument(
         "--backend",
-        choices=["pyspiel", "rust"],
+        choices=["pyspiel", "rust", "both"],
         default="rust",
         help="Environment backend for neural ARMAC runs (default: rust).",
     )
@@ -96,6 +96,12 @@ def main(argv: Sequence[str] | None = None) -> None:
         help="Optional experiment bucket; defaults to poker_suite_<timestamp> if not provided.",
     )
     parser.add_argument(
+        "--device",
+        choices=["auto", "cpu", "cuda", "gpu", "mps"],
+        default="auto",
+        help="Device specification forwarded to neural training runs.",
+    )
+    parser.add_argument(
         "--skip-aggregation",
         action="store_true",
         help="If set, skip aggregation/plotting steps.",
@@ -106,7 +112,13 @@ def main(argv: Sequence[str] | None = None) -> None:
     timestamp_suffix = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     experiment_name = opts.experiment_name or f"poker_suite_{timestamp_suffix}"
 
-    neural_jobs: List[Tuple[str, int]] = [(game, seed) for game in ("kuhn_poker", "leduc_poker") for seed in opts.seeds]
+    backend_values = ["pyspiel", "rust"] if opts.backend == "both" else [opts.backend]
+    neural_jobs: List[Tuple[str, str, int]] = [
+        (backend, game, seed)
+        for backend in backend_values
+        for game in ("kuhn_poker", "leduc_poker")
+        for seed in opts.seeds
+    ]
     cfr_jobs: List[Tuple[str, int]] = [(game, 0) for game in ("kuhn_poker", "leduc_poker")]
 
     manifest_path = opts.output_dir / "manifest.csv"
@@ -120,7 +132,10 @@ def main(argv: Sequence[str] | None = None) -> None:
         if tqdm is not None
         else neural_jobs
     )
-    for game, seed in neural_progress:
+    for backend, game, seed in neural_progress:
+        job_label = run_label
+        if job_label:
+            job_label = f"{job_label}_{backend}"
         cmd = [
             sys.executable,
             str(TRAINING_SCRIPT),
@@ -133,7 +148,7 @@ def main(argv: Sequence[str] | None = None) -> None:
             "--seed",
             str(seed),
             "--backend",
-            opts.backend,
+            backend,
             "--output-dir",
             str(opts.output_dir),
             "--manifest-path",
@@ -141,9 +156,11 @@ def main(argv: Sequence[str] | None = None) -> None:
             "--experiment-name",
             experiment_name,
             "--run-label",
-            run_label,
+            job_label,
             "--tag",
             "neural",
+            "--device",
+            opts.device,
         ]
         run_command(cmd)
 
