@@ -28,8 +28,13 @@ def build_rows(summary: Dict[str, object]) -> Iterable[Tuple[str, str, Dict[str,
             continue
 
         for policy, stats in policies.items():
-            if isinstance(stats, dict):
-                yield game, policy, stats
+            if not isinstance(stats, dict):
+                continue
+            if "mean_exploitability" not in stats and "mean_nash_conv" not in stats:
+                # Skip metadata entries such as ``num_runs`` that appear in
+                # some legacy summaries.
+                continue
+            yield game, policy, stats
 
 
 def make_table(summary: Dict[str, object]) -> str:
