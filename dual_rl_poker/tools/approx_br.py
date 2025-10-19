@@ -36,7 +36,15 @@ class ApproxBestResponse:
             player = state.current_player()
             policy = player_policy if player == 0 else opponent_policy
             info_policy = policy(state, player)
-            actions, probs = zip(*info_policy.items())
+            legal_actions = state.legal_actions(player)
+            if not legal_actions:
+                raise RuntimeError("State without legal actions encountered in BR rollout")
+            legal_set = set(legal_actions)
+            filtered = [(a, p) for a, p in info_policy.items() if a in legal_set and p > 0.0]
+            if not filtered:
+                uniform_prob = 1.0 / len(legal_actions)
+                filtered = [(a, uniform_prob) for a in legal_actions]
+            actions, probs = zip(*filtered)
             action = self.random.choices(actions, weights=probs, k=1)[0]
             state = state.child(action)
         returns = state.returns()
