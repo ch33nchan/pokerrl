@@ -6,75 +6,106 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-import math
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, List, Tuple
 
 
-def _format_interval(stats: Dict[str, object], mean_key: str, ci_key: str, std_key: str) -> str:
-    mean = float(stats.get(mean_key, 0.0))
-    ci = float(stats.get(ci_key, 0.0) or 0.0)
+def _policy_display_name(name: str) -> str:
+    """Return a human-friendly representation for a policy identifier."""
 
-    if ci == 0.0:
-        std = float(stats.get(std_key, 0.0) or 0.0)
-        n = int(stats.get("num_runs", 0))
-        if std > 0.0 and n > 1:
-            ci = 1.96 * std / math.sqrt(n)
-        elif std > 0.0:
-            ci = std
+    if not name:
+        return "Unknown"
+    tokens = name.replace("-", " ").replace("_", " ").split()
+    return " ".join(token.capitalize() for token in tokens)
 
-    return f"{mean:.4f} \\pm {ci:.4f}"
+
+def _game_display_name(name: str) -> str:
+    if not name:
+        return "Game"
+    pretty = name.replace("_", " ")
+    if pretty.lower().endswith("poker"):
+        pretty = pretty[:-5] + "Poker"
+    return pretty.title()
+
+
+def _format_value(stats: Dict[str, object]) -> str:
+    """Format mean ± spread for exploitability values."""
+
+    mean = float(stats.get("mean_exploitability", 0.0) or 0.0)
+    std = float(stats.get("stdev_exploitability", 0.0) or 0.0)
+    if std == 0.0:
+        ci = float(stats.get("ci95_exploitability", 0.0) or 0.0)
+        if ci != 0.0:
+            std = ci
+    return f"{mean:.3f} \\pm {std:.3f}" if std or mean else "--"
 
 
 def _has_metrics(stats: Dict[str, object]) -> bool:
     return any(key in stats for key in ("mean_exploitability", "mean_nash_conv", "mean_exploit_auc"))
 
 
-def build_rows(summary: Dict[str, object]) -> Iterable[Tuple[str, str, Dict[str, float]]]:
-    """Yield (game, policy, stats) triples from historical or new summaries."""
+def _extract_policy_stats(summary: Dict[str, object]) -> Tuple[List[str], Dict[str, Dict[str, Dict[str, float]]]]:
+    games_payload = summary.get("games", {})
+    games: List[str] = []
+    policies: Dict[str, Dict[str, Dict[str, float]]] = {}
 
-    games = summary.get("games", {})
-    for game, payload in games.items():
+    for game, payload in games_payload.items():
         if not isinstance(payload, dict):
             continue
+        games.append(game)
 
-        rows: List[Tuple[str, str, Dict[str, float]]] = []
+        containers: List[Dict[str, object]] = []
+        for key in ("policies", "policy_types", "policy types"):
+            container = payload.get(key)
+            if isinstance(container, dict):
+                containers.append(container)
+        if not containers:
+            containers.append(payload)
 
-        def add_entries(container: Dict[str, object]) -> None:
+        added = False
+        for container in containers:
             for policy, stats in container.items():
-                if not isinstance(stats, dict):
+                if not isinstance(stats, dict) or not _has_metrics(stats):
                     continue
-                if not _has_metrics(stats):
-                    continue
-                rows.append((game, policy, stats))
+                policies.setdefault(policy, {})[game] = stats
+                added = True
 
-        if "policies" in payload and isinstance(payload["policies"], dict):
-            add_entries(payload["policies"])
-        elif "policy_types" in payload and isinstance(payload["policy_types"], dict):
-            add_entries(payload["policy_types"])
-        elif "policy types" in payload and isinstance(payload["policy types"], dict):
-            add_entries(payload["policy types"])
-        else:
-            add_entries(payload)
+        if not added and _has_metrics(payload):
+            policies.setdefault("aggregate", {})[game] = payload
 
-        if not rows and _has_metrics(payload):
-            rows.append((game, "aggregate", payload))
-
-        for row in rows:
-            yield row
+    games = sorted(set(games))
+    return games, policies
 
 
 def make_table(summary: Dict[str, object]) -> str:
-    header = (
-        "\\begin{tabular}{l l r r r}\\toprule\n"
-        "Game & Policy & Exploitability & NashConv & AUC \\\\ \\midrule\n"
-    )
-    lines = [header]
-    for game, policy, stats in build_rows(summary):
-        exp = _format_interval(stats, "mean_exploitability", "ci95_exploitability", "stdev_exploitability")
-        nash = _format_interval(stats, "mean_nash_conv", "ci95_nash_conv", "stdev_nash_conv")
-        auc = _format_interval(stats, "mean_exploit_auc", "ci95_exploit_auc", "stdev_exploit_auc")
-        lines.append(f"{game.replace('_', ' ')} & {policy.replace('_', ' ')} & {exp} & {nash} & {auc} \\\\ \n")
-    lines.append("\\bottomrule\n\\end{tabular}\n")
+    games, policies = _extract_policy_stats(summary)
+    if not games or not policies:
+        return (
+            "\\begin{tabular}{l}\n"
+            "\\toprule\n"
+            "No data \\ \n"
+            "\\midrule\n"
+            "\\bottomrule\n"
+            "\\end{tabular}\n"
+        )
+
+    column_spec = "l" + "r" * len(games)
+    lines = [f"\\begin{{tabular}}{{{column_spec}}}\n", "\\toprule\n"]
+    header_cells = ["Algorithm"] + [_game_display_name(game) for game in games]
+    header_line = " & ".join(header_cells)
+    lines.append(f"{header_line} \\ \n")
+    lines.append("\\midrule\n")
+
+    for policy in sorted(policies.keys()):
+        display_policy = _policy_display_name(policy)
+        cells = [display_policy]
+        for game in games:
+            stats = policies[policy].get(game)
+            cells.append(_format_value(stats) if stats else "--")
+        row_line = " & ".join(cells)
+        lines.append(f"{row_line} \\ \n")
+
+    lines.append("\\bottomrule\n")
+    lines.append("\\end{tabular}\n")
     return "".join(lines)
 
 
