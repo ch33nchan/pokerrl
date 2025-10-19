@@ -51,13 +51,17 @@ class ApproxBestResponse:
             return np.zeros(0)
         utilities = np.zeros(len(experts))
         for _ in range(self.budget):
+            rng_state = self.random.getstate()
             base_return = self._play_episode(
                 self.game.new_initial_state().clone(), base_policy, base_policy
             )[0]
+            post_state = self.random.getstate()
             for idx, expert in enumerate(experts):
+                self.random.setstate(rng_state)
                 expert_return = self._play_episode(
                     self.game.new_initial_state().clone(), expert, base_policy
                 )[0]
                 utilities[idx] += expert_return - base_return
+            self.random.setstate(post_state)
         utilities /= max(1, self.budget)
         return utilities

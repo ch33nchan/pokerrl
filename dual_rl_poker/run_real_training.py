@@ -109,6 +109,12 @@ class GateTrace:
     legal_actions: Tuple[int, ...]
 
 
+@dataclass
+class GateUpdateResult:
+    loss: float
+    cluster_improvements: Dict[str, float]
+
+
 def masked_softmax(logits: Dict[int, float], legal_actions: Sequence[int]) -> Dict[int, float]:
     if not legal_actions:
         return {}
@@ -265,6 +271,8 @@ class NeuralARMACTrainer:
         self._gate_prob_count: int = 0
         self._last_gate_regret_norm: float = 0.0
         self._last_gate_avg_utility: float = 0.0
+        self._last_cluster_improvements: Dict[str, float] = {}
+        self._handoff_missing_clusters: int = 0
 
         # Backwards compatibility scheduler (kept for lambda diagnostics) -----------
         state_dim = len(next(iter(self.info_state_encoding_cache.values())))
@@ -389,9 +397,9 @@ class NeuralARMACTrainer:
         tensor -= mixed_value
         return tensor
 
-    def _update_gate(self) -> float:
+    def _update_gate(self) -> GateUpdateResult:
         if not self.gate_traces:
-            return 0.0
+            return GateUpdateResult(loss=0.0, cluster_improvements={})
 
         bandit_targets: Dict[str, torch.Tensor] = {}
         meta_batch: List[MetaBatchItem] = []
@@ -413,11 +421,13 @@ class NeuralARMACTrainer:
                 )
             )
 
-        loss = self.meta_objective.evaluate(meta_batch, self._gate_forward, bandit_targets)
+        result = self.meta_objective.evaluate(meta_batch, self._gate_forward, bandit_targets)
+        loss = result.loss
         self.gate_optimizer.zero_grad()
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.gate.parameters(), 5.0)
         self.gate_optimizer.step()
+        self._last_cluster_improvements = dict(result.cluster_improvements)
         if bandit_targets:
             regret_norms: List[float] = []
             avg_utils: List[float] = []
@@ -431,16 +441,24 @@ class NeuralARMACTrainer:
             self._last_gate_regret_norm = 0.0
             self._last_gate_avg_utility = 0.0
         self.gate_traces.clear()
-        return float(loss.item())
+        return GateUpdateResult(
+            loss=float(loss.item()), cluster_improvements=dict(self._last_cluster_improvements)
+        )
 
-    def _apply_anytime_handoff(self, exploitability: float) -> None:
+    def _apply_anytime_handoff(self, cluster_improvements: Dict[str, float]) -> None:
+        missing = 0
         for cluster in self.iteration_clusters:
+            local_metric = cluster_improvements.get(cluster)
+            if local_metric is None:
+                missing += 1
+                continue
             history = self.cluster_history[cluster]
-            history.append(exploitability)
+            history.append(local_metric)
             if len(history) == self.handoff_patience and all(v <= self.handoff_tau for v in history):
                 if cluster not in self.frozen_clusters:
                     self.frozen_clusters[cluster] = self.iteration_count
         self.iteration_clusters.clear()
+        self._handoff_missing_clusters = missing
 
     def _policy_components(
         self,
@@ -754,7 +772,8 @@ class NeuralARMACTrainer:
             for exp in experiences:
                 self.buffer.append(exp)
 
-        gate_loss_value = self._update_gate()
+        gate_update = self._update_gate()
+        gate_loss_value = gate_update.loss
         update = self._update_parameters()
         if update is None:
             actor_loss_value = 0.0
@@ -767,7 +786,7 @@ class NeuralARMACTrainer:
 
         self.iteration_count += 1
         nash_conv, exploitability, value_p0, value_p1 = self._evaluate_policy()
-        self._apply_anytime_handoff(exploitability)
+        self._apply_anytime_handoff(gate_update.cluster_improvements)
 
         mean_length = statistics.mean(len(ep.steps) for ep in episodes) if episodes else 0.0
         mean_lambda = statistics.mean(lambda_samples) if lambda_samples else self.current_lambda
@@ -788,6 +807,7 @@ class NeuralARMACTrainer:
             "gate_regret_norm": self._last_gate_regret_norm,
             "gate_avg_utility": self._last_gate_avg_utility,
             "handoff_frozen_clusters": float(len(self.frozen_clusters)),
+            "handoff_missing_clusters": float(self._handoff_missing_clusters),
         }
         for name, prob in zip(self.expert_names, avg_gate_probs):
             extra_metrics[f"gate_prob_{name}"] = float(prob)
