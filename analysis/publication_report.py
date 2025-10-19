@@ -6,11 +6,15 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import Dict, Iterable, Tuple
+from typing import Dict, Iterable, List, Tuple
 
 
 def _format_ci(mean: float, ci: float) -> str:
     return f"{mean:.4f} \\pm {ci:.4f}"
+
+
+def _has_metrics(stats: Dict[str, object]) -> bool:
+    return any(key in stats for key in ("mean_exploitability", "mean_nash_conv", "mean_exploit_auc"))
 
 
 def build_rows(summary: Dict[str, object]) -> Iterable[Tuple[str, str, Dict[str, float]]]:
@@ -18,23 +22,33 @@ def build_rows(summary: Dict[str, object]) -> Iterable[Tuple[str, str, Dict[str,
 
     games = summary.get("games", {})
     for game, payload in games.items():
-        # Old summaries stored policy data under a "policies" key; the new
-        # aggregator returns the mapping directly. Normalise both shapes.
-        if isinstance(payload, dict) and "policies" in payload:
-            policies = payload.get("policies", {})
-        elif isinstance(payload, dict):
-            policies = payload
-        else:
+        if not isinstance(payload, dict):
             continue
 
-        for policy, stats in policies.items():
-            if not isinstance(stats, dict):
-                continue
-            if "mean_exploitability" not in stats and "mean_nash_conv" not in stats:
-                # Skip metadata entries such as ``num_runs`` that appear in
-                # some legacy summaries.
-                continue
-            yield game, policy, stats
+        rows: List[Tuple[str, str, Dict[str, float]]] = []
+
+        def add_entries(container: Dict[str, object]) -> None:
+            for policy, stats in container.items():
+                if not isinstance(stats, dict):
+                    continue
+                if not _has_metrics(stats):
+                    continue
+                rows.append((game, policy, stats))
+
+        if "policies" in payload and isinstance(payload["policies"], dict):
+            add_entries(payload["policies"])
+        elif "policy_types" in payload and isinstance(payload["policy_types"], dict):
+            add_entries(payload["policy_types"])
+        elif "policy types" in payload and isinstance(payload["policy types"], dict):
+            add_entries(payload["policy types"])
+        else:
+            add_entries(payload)
+
+        if not rows and _has_metrics(payload):
+            rows.append((game, "aggregate", payload))
+
+        for row in rows:
+            yield row
 
 
 def make_table(summary: Dict[str, object]) -> str:
