@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
+import statistics
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -76,8 +78,38 @@ def _extract_policy_stats(summary: Dict[str, object]) -> Tuple[List[str], Dict[s
     return games, policies
 
 
+def _aggregate_stats(summary: Dict[str, object]) -> Dict[str, Dict[str, float]]:
+    runs = summary.get("runs", [])
+    per_game: Dict[str, List[float]] = {}
+    for run in runs:
+        game = run.get("game")
+        value = run.get("final_exploitability")
+        if game is None or value is None:
+            continue
+        per_game.setdefault(str(game), []).append(float(value))
+
+    aggregates: Dict[str, Dict[str, float]] = {}
+    for game, values in per_game.items():
+        if not values:
+            continue
+        mean_val = statistics.fmean(values)
+        if len(values) > 1:
+            stdev_val = statistics.stdev(values)
+        else:
+            stdev_val = 0.0
+        aggregates[game] = {
+            "mean_exploitability": mean_val,
+            "stdev_exploitability": stdev_val,
+            "ci95_exploitability": 1.96 * stdev_val / math.sqrt(len(values)) if len(values) > 1 else 0.0,
+        }
+    return aggregates
+
+
 def make_table(summary: Dict[str, object]) -> str:
     games, policies = _extract_policy_stats(summary)
+    aggregate = _aggregate_stats(summary)
+    if aggregate:
+        policies.setdefault("aggregate", {}).update(aggregate)
     if not games or not policies:
         return (
             "\\begin{tabular}{l}\n"
@@ -95,7 +127,11 @@ def make_table(summary: Dict[str, object]) -> str:
     lines.append(f"{header_line} \\ \n")
     lines.append("\\midrule\n")
 
-    for policy in sorted(policies.keys()):
+    ordered_policies = sorted(policies.keys())
+    if "aggregate" in policies:
+        ordered_policies = ["aggregate"] + [p for p in ordered_policies if p != "aggregate"]
+
+    for policy in ordered_policies:
         display_policy = _policy_display_name(policy)
         cells = [display_policy]
         for game in games:
