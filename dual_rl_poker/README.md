@@ -33,6 +33,75 @@ cargo build --release --manifest-path rust/Cargo.toml  # optional, enables Rust 
 The training scripts automatically select `cuda` when available (override with
 `--device`). Optional extras such as `tqdm` enhance logging but are not mandatory.
 
+### Quick command checklist
+
+To move from a clean checkout to a full benchmark sweep, execute the following
+shell commands in order (omit the ones you have already completed):
+
+```bash
+# 1. Create and activate the environment
+python3.11 -m venv .venv311
+source .venv311/bin/activate
+pip3.11 install --upgrade pip
+pip3.11 install -r requirements.txt
+
+# 2. Build both runtime backends
+# (follow https://github.com/deepmind/open_spiel for source builds if wheels are unavailable)
+python3.11 -m pip install open-spiel
+cargo build --release --manifest-path rust/Cargo.toml
+
+# 3. Run short smoke tests on both backends to verify logging
+python3.11 run_real_training.py \
+  --game kuhn_poker \
+  --backend rust \
+  --device auto \
+  --iterations 5 \
+  --episodes-per-iteration 32 \
+  --experts actor,regret,ra,explore,cfr \
+  --br-budget 16 \
+  --meta-unroll 8 \
+  --handoff-tau 0.2 \
+  --handoff-patience 2 \
+  --state-cluster round+position+pot \
+  --manifest-path results/manifest.csv
+
+python3.11 run_real_training.py \
+  --game kuhn_poker \
+  --backend pyspiel \
+  --device auto \
+  --iterations 5 \
+  --episodes-per-iteration 32 \
+  --experts actor,regret,ra,explore,cfr \
+  --br-budget 16 \
+  --meta-unroll 8 \
+  --handoff-tau 0.2 \
+  --handoff-patience 2 \
+  --state-cluster round+position+pot \
+  --manifest-path results/manifest.csv
+
+# 4. Launch the submission sweep (500 iterations, seeds 0-4)
+python3.11 scripts/run_poker_suite.py \
+  --backend both \
+  --device auto \
+  --experiment-name submission_suite \
+  --output-dir results
+
+# 5. Regenerate plots/tables for the manuscript
+python3.11 create_plots.py --results-root results
+
+# 6. Compile the ICML draft with the refreshed artefacts
+latexmk -pdf docs/paper_draft.tex
+```
+
+Steps 3–6 automatically populate `results/` with per-run JSON/CSV/TeX logs,
+update `results/combined/` with merged manifests, and refresh the manuscript
+inputs. Re-run `generate_results.py` whenever you prune runs or after manual
+log edits:
+
+```bash
+python3.11 generate_results.py --results-dir results
+```
+
 ## Running MARM-K training (CPU/Rust backends)
 
 The default training loop now ships with the Meta-Adaptive K-Expert Gate
