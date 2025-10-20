@@ -3,7 +3,9 @@ from __future__ import annotations
 import csv
 import json
 import math
+import os
 import statistics
+import tempfile
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -184,6 +186,18 @@ def _write_csv(path: Path, fieldnames: Sequence[str], rows: Sequence[Dict[str, o
             writer.writerow({name: row.get(name, "") for name in fieldnames})
 
 
+def _atomic_json_dump(path: Path, payload: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        "w", dir=str(path.parent), delete=False, encoding="utf-8"
+    ) as tmp:
+        json.dump(payload, tmp, indent=2)
+        tmp.flush()
+        os.fsync(tmp.fileno())
+        temp_path = Path(tmp.name)
+    temp_path.replace(path)
+
+
 def _write_tex_table(path: Path, columns: Sequence[str], rows: Sequence[Sequence[object]]) -> None:
     if not rows:
         path.write_text("% No data available\n", encoding="utf-8")
@@ -231,9 +245,7 @@ def refresh_indices(
     payload = build_payload(runs)
 
     summary_path = summary_output or results_dir / DEFAULT_SUMMARY_NAME
-    summary_path.parent.mkdir(parents=True, exist_ok=True)
-    with summary_path.open("w", encoding="utf-8") as fh:
-        json.dump(payload, fh, indent=2)
+    _atomic_json_dump(summary_path, payload)
 
     combined_dir = None
     if ensure_combined:
@@ -241,8 +253,7 @@ def refresh_indices(
         combined_dir.mkdir(parents=True, exist_ok=True)
 
         combined_json = combined_dir / "runs_summary.json"
-        with combined_json.open("w", encoding="utf-8") as fh:
-            json.dump(payload, fh, indent=2)
+        _atomic_json_dump(combined_json, payload)
 
         per_run_rows: List[Dict[str, object]] = []
         history_rows: List[Dict[str, object]] = []
@@ -414,8 +425,7 @@ def refresh_indices(
             algo_dir = algorithms_root / str(policy)
             algo_dir.mkdir(parents=True, exist_ok=True)
             _write_csv(algo_dir / "runs.csv", per_run_fieldnames, rows)
-            with (algo_dir / "runs.json").open("w", encoding="utf-8") as fh:
-                json.dump(rows, fh, indent=2)
+            _atomic_json_dump(algo_dir / "runs.json", rows)
 
             policy_summary_rows = []
             policy_summary_json: Dict[str, Dict[str, float]] = {}
@@ -464,8 +474,7 @@ def refresh_indices(
                 ],
             )
             _write_tex_table(algo_dir / "summary.tex", summary_columns, policy_summary_rows)
-            with (algo_dir / "summary.json").open("w", encoding="utf-8") as fh:
-                json.dump(policy_summary_json, fh, indent=2)
+            _atomic_json_dump(algo_dir / "summary.json", policy_summary_json)
 
     return {
         "payload": payload,

@@ -35,6 +35,8 @@ def load_runs(results_dir: Path) -> Dict[str, Dict[str, List[Dict[str, object]]]
                 data = json.load(fh)
         except Exception:
             continue
+        if not isinstance(data, dict):
+            continue
         history = data.get("training_history")
         if not history:
             continue
