@@ -1,0 +1,2 @@
+game,policy,num_runs,mean_exploitability,ci95_exploitability,mean_nash_conv,ci95_nash_conv,mean_exploit_auc
+leduc_poker,neural_tabular,1,2.626251663217415,0.0,5.25250332643483,0.0,1196.8109268050925

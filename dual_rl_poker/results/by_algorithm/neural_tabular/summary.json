@@ -1,0 +1,34 @@
+{
+  "leduc_poker": {
+    "num_runs": 31,
+    "iterations": 500,
+    "mean_exploitability": 2.4445054465120175,
+    "stdev_exploitability": 0.11061078679405842,
+    "ci95_exploitability": 0.0389379161883495,
+    "mean_nash_conv": 4.889010893024035,
+    "stdev_nash_conv": 0.22122157358811684,
+    "ci95_nash_conv": 0.077875832376699,
+    "mean_exploit_auc": 1195.722882580767,
+    "stdev_exploit_auc": 15.464176866631144,
+    "ci95_exploit_auc": 5.443798387184434,
+    "mean_gate_entropy": 0.03151303868402134,
+    "stdev_gate_entropy": 6.281185327670491e-08,
+    "ci95_gate_entropy": 3.711943322028579e-08
+  },
+  "kuhn_poker": {
+    "num_runs": 30,
+    "iterations": 500,
+    "mean_exploitability": 0.30408361952609303,
+    "stdev_exploitability": 0.07929413628095133,
+    "ci95_exploitability": 0.02837504225105768,
+    "mean_nash_conv": 0.6081672390521861,
+    "stdev_nash_conv": 0.15858827256190267,
+    "ci95_nash_conv": 0.05675008450211536,
+    "mean_exploit_auc": 152.90635308001356,
+    "stdev_exploit_auc": 29.02643110264834,
+    "ci95_exploit_auc": 10.386974971476164,
+    "mean_gate_entropy": 7.368272463281755e-07,
+    "stdev_gate_entropy": 0.0,
+    "ci95_gate_entropy": 0.0
+  }
+}

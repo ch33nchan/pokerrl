@@ -1,0 +1,34 @@
+{
+  "kuhn_poker": {
+    "num_runs": 3,
+    "iterations": 1000,
+    "mean_exploitability": 0.0009376166469928296,
+    "stdev_exploitability": 0.0,
+    "ci95_exploitability": 0.0,
+    "mean_nash_conv": 0.0018752332939856592,
+    "stdev_nash_conv": 0.0,
+    "ci95_nash_conv": 0.0,
+    "mean_exploit_auc": 5.18907430542863,
+    "stdev_exploit_auc": 0.0,
+    "ci95_exploit_auc": 0.0,
+    "mean_gate_entropy": 0.0,
+    "stdev_gate_entropy": 0.0,
+    "ci95_gate_entropy": 0.0
+  },
+  "leduc_poker": {
+    "num_runs": 3,
+    "iterations": 1000,
+    "mean_exploitability": 0.01181720325037413,
+    "stdev_exploitability": 0.0,
+    "ci95_exploitability": 0.0,
+    "mean_nash_conv": 0.02363440650074826,
+    "stdev_nash_conv": 0.0,
+    "ci95_nash_conv": 0.0,
+    "mean_exploit_auc": 59.31419698143802,
+    "stdev_exploit_auc": 0.0,
+    "ci95_exploit_auc": 0.0,
+    "mean_gate_entropy": 0.0,
+    "stdev_gate_entropy": 0.0,
+    "ci95_gate_entropy": 0.0
+  }
+}

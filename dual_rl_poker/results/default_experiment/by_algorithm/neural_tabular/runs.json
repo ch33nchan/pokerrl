@@ -1,0 +1,15 @@
+[
+  {
+    "run_id": "leduc_poker_neural_tabular_seed0_iter500_epi128_backendrust_devicecpu_20251019_171716",
+    "game": "leduc_poker",
+    "policy": "neural_tabular",
+    "backend": "rust",
+    "device": "cpu",
+    "seed": 0,
+    "iterations": 500,
+    "final_exploitability": 2.626251663217415,
+    "final_nash_conv": 5.25250332643483,
+    "exploit_auc": 1196.8109268050925,
+    "nash_auc": 2393.621853610185
+  }
+]

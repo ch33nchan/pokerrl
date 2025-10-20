@@ -1,0 +1,18 @@
+{
+  "leduc_poker": {
+    "num_runs": 1,
+    "iterations": 500,
+    "mean_exploitability": 2.626251663217415,
+    "stdev_exploitability": 0.0,
+    "ci95_exploitability": 0.0,
+    "mean_nash_conv": 5.25250332643483,
+    "stdev_nash_conv": 0.0,
+    "ci95_nash_conv": 0.0,
+    "mean_exploit_auc": 1196.8109268050925,
+    "stdev_exploit_auc": 0.0,
+    "ci95_exploit_auc": 0.0,
+    "mean_gate_entropy": 0.03151305019855499,
+    "stdev_gate_entropy": 0.0,
+    "ci95_gate_entropy": 0.0
+  }
+}

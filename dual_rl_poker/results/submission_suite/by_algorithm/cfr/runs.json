@@ -1,0 +1,80 @@
+[
+  {
+    "run_id": "kuhn_poker_cfr_seed0_iter1000_epi128_backendpyspiel_cfr_iter1000_cfr_20251017_222840",
+    "game": "kuhn_poker",
+    "policy": "cfr",
+    "backend": "unknown",
+    "device": "unknown",
+    "seed": 0,
+    "iterations": 1000,
+    "final_exploitability": 0.0009376166469928296,
+    "final_nash_conv": 0.0018752332939856592,
+    "exploit_auc": 5.18907430542863,
+    "nash_auc": 10.37814861085726
+  },
+  {
+    "run_id": "kuhn_poker_cfr_seed0_iter1000_epi128_backendpyspiel_cfr_iter1000_cfr_20251017_224424",
+    "game": "kuhn_poker",
+    "policy": "cfr",
+    "backend": "unknown",
+    "device": "unknown",
+    "seed": 0,
+    "iterations": 1000,
+    "final_exploitability": 0.0009376166469928296,
+    "final_nash_conv": 0.0018752332939856592,
+    "exploit_auc": 5.18907430542863,
+    "nash_auc": 10.37814861085726
+  },
+  {
+    "run_id": "kuhn_poker_cfr_seed0_iter1000_epi128_backendpyspiel_devicecpu_cfr_iter1000_cfr_20251020_050315",
+    "game": "kuhn_poker",
+    "policy": "cfr",
+    "backend": "pyspiel",
+    "device": "cpu",
+    "seed": 0,
+    "iterations": 1000,
+    "final_exploitability": 0.0009376166469928296,
+    "final_nash_conv": 0.0018752332939856592,
+    "exploit_auc": 5.18907430542863,
+    "nash_auc": 10.37814861085726
+  },
+  {
+    "run_id": "leduc_poker_cfr_seed0_iter1000_epi128_backendpyspiel_cfr_iter1000_cfr_20251017_222931",
+    "game": "leduc_poker",
+    "policy": "cfr",
+    "backend": "unknown",
+    "device": "unknown",
+    "seed": 0,
+    "iterations": 1000,
+    "final_exploitability": 0.01181720325037413,
+    "final_nash_conv": 0.02363440650074826,
+    "exploit_auc": 59.31419698143802,
+    "nash_auc": 118.62839396287605
+  },
+  {
+    "run_id": "leduc_poker_cfr_seed0_iter1000_epi128_backendpyspiel_cfr_iter1000_cfr_20251017_224519",
+    "game": "leduc_poker",
+    "policy": "cfr",
+    "backend": "unknown",
+    "device": "unknown",
+    "seed": 0,
+    "iterations": 1000,
+    "final_exploitability": 0.01181720325037413,
+    "final_nash_conv": 0.02363440650074826,
+    "exploit_auc": 59.31419698143802,
+    "nash_auc": 118.62839396287605
+  },
+  {
+    "run_id": "leduc_poker_cfr_seed0_iter1000_epi128_backendpyspiel_devicecpu_cfr_iter1000_cfr_20251020_050422",
+    "game": "leduc_poker",
+    "policy": "cfr",
+    "backend": "pyspiel",
+    "device": "cpu",
+    "seed": 0,
+    "iterations": 1000,
+    "final_exploitability": 0.01181720325037413,
+    "final_nash_conv": 0.02363440650074826,
+    "exploit_auc": 59.31419698143802,
+    "nash_auc": 118.62839396287605
+  }
+]
