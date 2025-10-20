@@ -1,0 +1,35 @@
+# Project Page Patch Instructions (docs/project_page.html)
+
+Edit docs/project_page.html in-place. Do not create a new file.
+
+Required updates:
+
+1) Title and abstract
+- Ensure the abstract describes: MARM-K gate, sublinear scheduler regret, anytime CFR handoff, deterministic Rust backend.
+
+2) Figures section
+- Insert image tags pointing to the generated assets (relative paths ok if hosted; otherwise absolute paths in your site):
+  <img src="../results/plots/kuhn_poker_exploitability.png" alt="Kuhn exploitability">
+  <img src="../results/plots/leduc_poker_exploitability.png" alt="Leduc exploitability">
+  <img src="../results/plots/gate_entropy_over_time.png" alt="Gate entropy">
+  <img src="../results/plots/lambda_evolution.png" alt="Lambda dynamics">
+  <img src="../results/plots/performance_comparison.png" alt="Performance comparison">
+
+3) Headline numbers
+- Parse `results/combined/summary.tex` and `results/combined/runs_summary.json` to show:
+  - Final exploitability for each game/agent
+  - Wall-clock speedup Rust vs OpenSpiel
+  - Seeds and episodes per iteration
+
+4) Architecture diagram
+- Link to:
+  <a href="architecture_diagram.pdf">Architecture diagram (PDF)</a>
+  Ensure docs/architecture_diagram.pdf is present.
+
+5) Manuscript link
+- Link to the compiled paper:
+  <a href="paper_draft.pdf">Manuscript (PDF)</a>
+
+6) Repro instructions excerpt
+- Include the minimal CPU repro commands from README for Python 3.11 and Rust build.
+

@@ -1,0 +1,69 @@
+# Codex Verification and Implementation Checklist (Branch: codex/review-code-quality-and-checklist-tasks)
+
+Goal: Codex must verify that the repository is fully functional, implement any missing pieces, regenerate assets (plots/tables), and sync them into the manuscript and project page. No ghost runs. Use existing results where available; otherwise run the minimal required computations deterministically.
+
+Scope:
+- Do NOT create a new branch. Work strictly on: codex/review-code-quality-and-checklist-tasks
+- Respect repo structure in README and repo_structure.txt
+- Confirm the following are present and passing:
+  1) Rust env build (pyo3 extension) and parity with OpenSpiel on a small sample.
+  2) Exact exploitability computations for Kuhn/Leduc via OpenSpiel for evaluation.
+  3) Aggregation: `generate_results.py` produces combined manifests and per-experiment summaries.
+  4) Plotting: `create_plots.py` regenerates figures under `results/plots/`.
+  5) Paper: `docs/paper_draft.tex` compiles with all figures and tables included.
+  6) Project page: `docs/project_page.html` references updated figures and key numbers.
+  7) Architecture diagram: `docs/architecture_diagram.tex` compiles; resulting PDF is referenced in paper.
+
+Required checks and actions:
+
+A. Environment and build
+- Ensure Python 3.11 venv present; if not, create it per README.
+- Build Rust backend in release mode: cargo build --release --manifest-path rust/Cargo.toml
+- Import OpenSpiel evaluator; if missing, install open-spiel (CPU) as per README.
+
+B. Parity
+- Run a 5-iteration smoke on both backends for Kuhn:
+  - rust backend: verify logs are created under results/.
+  - pyspiel backend: same logging.
+- Use deterministic replay to re-run and assert parity tolerance <= 1e-7.
+- If parity fails, diff action masks and deck orders; fix masking in experts before proceeding.
+
+C. Results aggregation
+- Rebuild experiment summaries:
+  python3.11 generate_results.py --results-dir results/submission_suite \
+    --output results/submission_suite/summary/experiment_summary.json
+- Rebuild combined manifests under results/combined/ and by_algorithm/.
+
+D. Plots and tables
+- Regenerate plots:
+  python3.11 create_plots.py --results-root results
+- Confirm mandatory figures exist:
+  results/plots/{kuhn_poker_exploitability.png, leduc_poker_exploitability.png, lambda_evolution.png, gate_entropy_over_time.png, performance_comparison.png}
+- Confirm LaTeX tables exist:
+  results/tables/performance_table.tex
+  results/combined/summary.tex
+
+E. Manuscript (ICML class)
+- Edit `docs/paper_draft.tex` in-place:
+  - Update Results section to include the latest figures and performance table (paths under results/plots and results/tables).
+  - Ensure references are present and compile under icml2024.cls (either natbib+BibTeX or thebibliography).
+  - Include architecture diagram PDF (compiled from docs/architecture_diagram.tex).
+- Compile:
+  latexmk -pdf docs/paper_draft.tex
+- If failed, fix LaTeX paths and figure includes.
+
+F. Project page
+- Edit `docs/project_page.html`:
+  - Insert links to generated PNGs in results/plots/.
+  - List final numbers from results/combined/summary.tex and experiment_summary.json.
+  - Link to the compiled architecture diagram PDF and manuscript PDF.
+
+G. Final artefact check
+- Confirm that all the following exist with current timestamps:
+  results/combined/{runs_summary.json, runs_summary.csv, summary.tex}
+  results/<experiment>/summary/experiment_summary.json
+  results/plots/*.png
+  results/tables/performance_table.tex
+  docs/architecture_diagram.pdf
+  docs/paper_draft.pdf
+

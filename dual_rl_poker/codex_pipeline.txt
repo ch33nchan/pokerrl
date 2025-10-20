@@ -1,0 +1,52 @@
+# Codex Execution Pipeline (Non-ghost; verify and fix as needed)
+
+Branch: codex/review-code-quality-and-checklist-tasks
+
+1) Build and sanity smoke
+- python3.11 -m venv .venv311 || true
+- source .venv311/bin/activate
+- pip3.11 install --upgrade pip
+- pip3.11 install -r requirements.txt
+- python3.11 -m pip install open-spiel || true
+- cargo build --release --manifest-path rust/Cargo.toml
+
+2) Parity smoke (Kuhn; 5 iterations)
+- python3.11 run_real_training.py --game kuhn_poker --backend rust --device cpu --iterations 5 --episodes-per-iteration 32 --experts actor,regret,ra,explore,cfr --br-budget 16 --meta-unroll 8 --handoff-tau 0.2 --handoff-patience 2 --state-cluster round+position+pot --manifest-path results/manifest.csv
+- python3.11 run_real_training.py --game kuhn_poker --backend pyspiel --device cpu --iterations 5 --episodes-per-iteration 32 --experts actor,regret,ra,explore,cfr --br-budget 16 --meta-unroll 8 --handoff-tau 0.2 --handoff-patience 2 --state-cluster round+position+pot --manifest-path results/manifest.csv
+- python3.11 generate_results.py --results-dir results --output results/experiment_summary.json
+
+3) Aggregation (use completed long runs; refresh indices)
+- python3.11 generate_results.py --results-dir results/submission_suite --output results/submission_suite/summary/experiment_summary.json
+- python3.11 generate_results.py  # refresh entire results tree
+
+4) Figures and tables
+- python3.11 create_plots.py --results-root results
+- Confirm presence and non-empty size of:
+  results/plots/kuhn_poker_exploitability.png
+  results/plots/leduc_poker_exploitability.png
+  results/plots/lambda_evolution.png
+  results/plots/gate_entropy_over_time.png
+  results/plots/performance_comparison.png
+  results/tables/performance_table.tex
+  results/combined/summary.tex
+
+5) Manuscript sync (docs/paper_draft.tex)
+- Insert \input{results/tables/performance_table.tex}
+- Include figures:
+  \includegraphics{results/plots/kuhn_poker_exploitability.png}
+  \includegraphics{results/plots/leduc_poker_exploitability.png}
+  \includegraphics{results/plots/lambda_evolution.png}
+  \includegraphics{results/plots/gate_entropy_over_time.png}
+  \includegraphics{results/plots/performance_comparison.png}
+- Compile:
+  latexmk -pdf docs/paper_draft.tex
+
+6) Project page sync (docs/project_page.html)
+- Insert <img> tags to reference the five mandatory figures above.
+- Summarize headline numbers from results/combined/summary.tex and experiment_summary.json.
+
+7) Commit and push (same branch)
+- git add agents.txt codex_checklist.txt codex_pipeline.txt README.md docs/paper_draft.tex docs/project_page.html results/combined/* results/plots/* results/tables/* docs/architecture_diagram.pdf
+- git commit -m "Codex: verified pipeline, refreshed plots/tables, synced manuscript and project page"
+- git push origin codex/review-code-quality-and-checklist-tasks
+

@@ -1,0 +1,108 @@
+# Paper Patch Instructions (docs/paper_draft.tex)
+
+Edit docs/paper_draft.tex in-place to meet ICML standards (icml2024.cls present). Do not add new .tex files; use in-place changes. Steps:
+
+1) Preamble checks
+- Ensure the ICML class is in use:
+  \documentclass{icml2024}
+  \usepackage{times}
+  \usepackage{graphicx}
+  \usepackage{amsmath,amssymb}
+  \usepackage{booktabs}
+  \usepackage{hyperref}
+  \usepackage{natbib}
+
+2) Figures (paths are relative to repo root or make them relative with ../)
+Add to Results section:
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{results/plots/kuhn_poker_exploitability.png}
+  \caption{Exploitability on Kuhn Poker over iterations; mean ± one std across seeds.}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{results/plots/leduc_poker_exploitability.png}
+  \caption{Exploitability on Leduc Poker over iterations; mean ± one std across seeds.}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{results/plots/gate_entropy_over_time.png}
+  \caption{Gate entropy evolution for the MARM-K scheduler.}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{results/plots/lambda_evolution.png}
+  \caption{Lambda/meta-gate mixture dynamics.}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{results/plots/performance_comparison.png}
+  \caption{Performance comparison across agents and backends.}
+\end{figure}
+
+3) Table inclusion (do not duplicate content)
+Place near the end of Results:
+
+\input{results/tables/performance_table.tex}
+
+4) Architecture Diagram
+Ensure the TikZ file compiles and include the PDF once:
+- Compile separately:
+  latexmk -pdf docs/architecture_diagram.tex
+- In the paper:
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{docs/architecture_diagram.pdf}
+  \caption{End-to-end training and evaluation architecture.}
+\end{figure}
+
+5) References (ICML with natbib)
+Prefer BibTeX, but if no .bib is available, embed the bibliography block directly at the end before \end{document}:
+
+\begin{thebibliography}{}
+\bibitem{zinkevich2008}
+Zinkevich, M., Johanson, M., Bowling, M., & Piccione, C. (2008).
+Regret minimization in games with incomplete information.
+In \emph{Advances in Neural Information Processing Systems} (pp. 1729–1736).
+
+\bibitem{brown2018}
+Brown, N., Lerer, A., Gross, A., & Sandholm, T. (2019).
+Deep counterfactual regret minimization.
+In \emph{International Conference on Machine Learning} (pp. 793–802).
+
+\bibitem{steinberger2019}
+Steinberger, N. (2019).
+Single deep counterfactual regret minimization.
+arXiv:1901.06263.
+
+\bibitem{brown2020}
+Brown, N., Lerer, A., & Sandholm, T. (2020).
+Bayesian action-depth counterfactual regret minimization.
+In \emph{International Conference on Machine Learning} (pp. 1219–1229).
+
+\bibitem{konda2000}
+Konda, V.R. & Tsitsiklis, J.N. (2000).
+Actor-critic algorithms.
+In \emph{Advances in Neural Information Processing Systems} (pp. 1008–1014).
+
+\bibitem{heinrich2016}
+Heinrich, J., & Silver, D. (2016).
+Deep reinforcement learning from self-play in imperfect-information games.
+arXiv:1603.01121.
+
+\bibitem{lanctot2019}
+Lanctot, M., et al. (2019).
+OpenSpiel: A framework for reinforcement learning in games.
+arXiv:1908.09453.
+\end{thebibliography}
+
+6) Compile
+- latexmk -pdf docs/paper_draft.tex
+- If figure paths fail, prefix with “./” or adjust graphics path using:
+  \graphicspath{{./}{../}{../../}}
+

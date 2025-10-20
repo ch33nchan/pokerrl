@@ -1,0 +1,70 @@
+# Agents Overview (MARM-K / ARMAC Dual-RL)
+
+This document describes the runnable agents, where they live in the repo, and how they’re orchestrated for evaluation and paper assets. It reflects the repository layout in `repo_structure.txt` and the README quickstart. See `docs/paper_draft.tex` and `docs/project_page.html` for manuscript and project page assets.
+
+## Core agents and components
+
+- ARMAC Dual-RL (neural-tabular baseline + MARM-K gate)
+  - Code: `algs/armac_dual_rl.py`, scheduler logic in `algs/scheduler/{gate.py, gate_bandit.py, policy_mixer.py}`, meta signals in `algs/meta/meta_objective.py`.
+  - Networks: `nets/` MLP heads (actor, critic, regret) and policy mixing.
+  - Approx-BR utilities: `tools/approx_br.py`.
+  - Deterministic replay: `algs/scheduler/utils/replay/deterministic_replay.py`.
+
+- CFR anchors
+  - Tabular CFR: `algs/tabular_cfr.py` (+ `algs/cfr/cfr_head.py` for tiny subgames).
+  - SD-CFR / Deep CFR: `algs/sd_cfr.py`, `algs/deep_cfr.py`.
+
+- Runners / Suites
+  - Unified runner: `run_real_training.py`.
+  - Suites: `scripts/run_poker_suite.py`, `scripts/run_all_experiments.py`.
+  - Analysis + plotting: `analysis/{reports.py, plotting.py, statistics.py}`, `create_plots.py`, `generate_results.py`.
+
+- Evaluators
+  - OpenSpiel exact exploitability: `eval/openspiel_exact_evaluator.py`.
+  - Adaptors: `eval/{policy_adapter.py, policy_adaptor*.py}`.
+
+- Environments
+  - Rust batch env: `rust/src/*.rs` and Python shim `utils/rust_env.py`.
+  - OpenSpiel fallback: `eval/openspiel_evaluator.py` uses OpenSpiel games.
+
+## Expected artefacts (already produced by your long runs)
+
+- Per-run JSON/CSV/TEX under `results/<experiment>/<game>/<policy>/seed_*/`.
+- Combined manifests under `results/combined/`.
+- Plots and figures under `results/plots/`.
+- Tables under `results/tables/`.
+- Experiment summaries under `results/<experiment>/summary/experiment_summary.json`.
+
+## Canonical agent CLI
+
+ARMAC Dual-RL (neural-tabular + MARM-K gate):
+
+python3.11 run_real_training.py \
+  --game {kuhn_poker|leduc_poker} \
+  --backend {rust|pyspiel} \
+  --device cpu \
+  --iterations 500 \
+  --episodes-per-iteration 128 \
+  --experts actor,regret,ra,explore,cfr \
+  --br-budget 64 \
+  --meta-unroll 16 \
+  --handoff-tau 0.15 \
+  --handoff-patience 3 \
+  --state-cluster round+position+pot \
+  --manifest-path results/manifest.csv
+
+Tabular CFR anchor:
+
+python3.11 run_real_training.py \
+  --game {kuhn_poker|leduc_poker} \
+  --algorithm cfr \
+  --iterations 1000 \
+  --device cpu \
+  --manifest-path results/manifest.csv
+
+## Reproducibility and parity
+
+- Parity verification compares Rust and OpenSpiel rollouts via deterministic replays.
+- All runs log seeds, masks, logits, and deck orders.
+- Aggregation and plotting read only from on-disk JSON/CSV logs.
+
