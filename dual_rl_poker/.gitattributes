@@ -1,0 +1,14 @@
+# Treat common artefacts as non-diffable to avoid PR UI errors
+*.pdf -diff
+*.png -diff
+*.jpg -diff
+*.jpeg -diff
+*.gif -diff
+*.tgz -diff
+*.tar.gz -diff
+*.zip -diff
+*.npy -diff
+*.npz -diff
+*.onnx -diff
+*.csv -diff
+*.json -diff
